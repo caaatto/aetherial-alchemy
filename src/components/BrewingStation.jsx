@@ -1,0 +1,299 @@
+import { useState } from 'react'
+import './BrewingStation.css'
+
+function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
+  const [selectedRecipe, setSelectedRecipe] = useState(null)
+  const [modifier, setModifier] = useState(0)
+  const [brewing, setBrewing] = useState(false)
+  const [result, setResult] = useState(null)
+  const [diceRoll, setDiceRoll] = useState(null)
+
+  const getIngredientName = (ingredientId) => {
+    return ingredients.find(ing => ing.id === ingredientId)?.name || 'Unbekannt'
+  }
+
+  const checkIngredientAvailability = (recipe) => {
+    if (!recipe.requiredIngredients || recipe.requiredIngredients.length === 0) {
+      return { available: true, missing: [] }
+    }
+
+    const missing = []
+    for (const reqIng of recipe.requiredIngredients) {
+      const available = inventory.ingredients[reqIng.ingredientId] || 0
+      if (available < reqIng.amount) {
+        missing.push({
+          name: getIngredientName(reqIng.ingredientId),
+          needed: reqIng.amount,
+          have: available
+        })
+      }
+    }
+
+    return { available: missing.length === 0, missing }
+  }
+
+  const rollDice = () => {
+    return Math.floor(Math.random() * 20) + 1
+  }
+
+  const consumeIngredients = (recipe) => {
+    const newIngredients = { ...inventory.ingredients }
+
+    for (const reqIng of recipe.requiredIngredients) {
+      if (newIngredients[reqIng.ingredientId]) {
+        newIngredients[reqIng.ingredientId] -= reqIng.amount
+        if (newIngredients[reqIng.ingredientId] <= 0) {
+          delete newIngredients[reqIng.ingredientId]
+        }
+      }
+    }
+
+    return newIngredients
+  }
+
+  const handleBrew = async () => {
+    if (!selectedRecipe) return
+
+    setBrewing(true)
+    setResult(null)
+
+    // Würfel-Animation
+    await new Promise(resolve => setTimeout(resolve, 500))
+    const roll = rollDice()
+    setDiceRoll(roll)
+
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    const total = roll + modifier
+    const dc = selectedRecipe.dc
+    const success = total >= dc
+    const critSuccess = roll === 20
+    const critFail = roll === 1
+
+    let quality = 'Normal'
+    let effectMultiplier = 1
+
+    if (critSuccess) {
+      quality = 'Meisterwerk'
+      effectMultiplier = 1.5
+    } else if (critFail) {
+      quality = 'Fehlschlag (Kritisch)'
+    } else if (!success) {
+      quality = 'Fehlschlag'
+    } else if (total >= dc + 5) {
+      quality = 'Überragend'
+      effectMultiplier = 1.25
+    }
+
+    // Zutaten verbrauchen
+    const newIngredients = consumeIngredients(selectedRecipe)
+
+    // Bei Erfolg: Trank hinzufügen
+    let newPotions = [...inventory.potions]
+    if (success || critSuccess) {
+      const potion = {
+        id: Date.now().toString(),
+        recipeId: selectedRecipe.id,
+        name: selectedRecipe.name,
+        effect: selectedRecipe.effect,
+        quality,
+        effectMultiplier,
+        brewedAt: new Date().toISOString()
+      }
+      newPotions.push(potion)
+    }
+
+    setInventory({
+      ingredients: newIngredients,
+      potions: newPotions
+    })
+
+    setResult({
+      roll,
+      modifier,
+      total,
+      dc,
+      success: success || critSuccess,
+      quality,
+      critSuccess,
+      critFail
+    })
+
+    setBrewing(false)
+  }
+
+  const resetBrewing = () => {
+    setSelectedRecipe(null)
+    setResult(null)
+    setDiceRoll(null)
+  }
+
+  const availability = selectedRecipe ? checkIngredientAvailability(selectedRecipe) : null
+
+  return (
+    <div className="brewing-station">
+      <h2>🧪 Brau-Station</h2>
+
+      {!selectedRecipe ? (
+        <div className="recipe-selection">
+          <h3>Wähle ein Rezept</h3>
+          {recipes.length === 0 ? (
+            <div className="card empty-state">
+              <p>Keine Rezepte vorhanden. Erstelle erst Rezepte in der Rezept-Verwaltung!</p>
+            </div>
+          ) : (
+            <div className="recipes-list grid grid-2">
+              {recipes.map(recipe => {
+                const check = checkIngredientAvailability(recipe)
+                return (
+                  <div
+                    key={recipe.id}
+                    className={`card recipe-card ${!check.available ? 'unavailable' : ''}`}
+                    onClick={() => check.available && setSelectedRecipe(recipe)}
+                  >
+                    <div className="recipe-header">
+                      <h3>{recipe.name}</h3>
+                      <span className={`rarity-badge rarity-${recipe.rarity.toLowerCase().replace(' ', '-')}`}>
+                        {recipe.rarity}
+                      </span>
+                    </div>
+                    <div className="recipe-meta">
+                      <span>🎲 DC {recipe.dc}</span>
+                      <span>⏱️ {recipe.brewTime}</span>
+                    </div>
+                    {recipe.effect && (
+                      <p className="recipe-effect"><strong>Effekt:</strong> {recipe.effect}</p>
+                    )}
+                    {!check.available && (
+                      <div className="missing-ingredients">
+                        <strong>⚠️ Fehlende Zutaten:</strong>
+                        <ul>
+                          {check.missing.map((miss, idx) => (
+                            <li key={idx}>
+                              {miss.name}: {miss.have}/{miss.needed}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {check.available && (
+                      <button className="brew-button">Dieses Rezept brauen</button>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="brewing-process">
+          <div className="card">
+            <div className="brewing-header">
+              <div>
+                <h3>{selectedRecipe.name}</h3>
+                <p className="brewing-dc">Schwierigkeit: DC {selectedRecipe.dc}</p>
+              </div>
+              <button onClick={resetBrewing} className="btn-secondary">
+                ← Zurück
+              </button>
+            </div>
+
+            <div className="brewing-content">
+              <div className="modifier-section">
+                <label>Dein Alchemie-Bonus (Proficiency + Ability Modifier)</label>
+                <input
+                  type="number"
+                  value={modifier}
+                  onChange={(e) => setModifier(parseInt(e.target.value) || 0)}
+                  min="-5"
+                  max="15"
+                  disabled={brewing}
+                />
+              </div>
+
+              {!result && (
+                <div className="dice-section">
+                  {diceRoll !== null && brewing ? (
+                    <div className="dice-rolling">
+                      <div className="dice-animation">🎲</div>
+                      <p>Würfel rollt: {diceRoll}</p>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleBrew}
+                      disabled={brewing || !availability?.available}
+                      className="brew-action-button"
+                    >
+                      {brewing ? '⏳ Braue...' : '🎲 Würfeln und Brauen!'}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {result && (
+                <div className={`brew-result ${result.success ? 'success' : 'failure'}`}>
+                  <h3>{result.success ? '✅ Erfolg!' : '❌ Fehlgeschlagen!'}</h3>
+
+                  <div className="roll-breakdown">
+                    <div className="roll-detail">
+                      <span>🎲 Würfel:</span>
+                      <strong className={result.critSuccess ? 'crit-success' : result.critFail ? 'crit-fail' : ''}>
+                        {result.roll} {result.critSuccess && '(Kritischer Erfolg!)'}
+                        {result.critFail && '(Kritischer Fehlschlag!)'}
+                      </strong>
+                    </div>
+                    <div className="roll-detail">
+                      <span>➕ Bonus:</span>
+                      <strong>{result.modifier >= 0 ? '+' : ''}{result.modifier}</strong>
+                    </div>
+                    <div className="roll-detail total">
+                      <span>= Gesamt:</span>
+                      <strong>{result.total}</strong>
+                    </div>
+                    <div className="roll-detail">
+                      <span>🎯 Benötigt:</span>
+                      <strong>{result.dc}</strong>
+                    </div>
+                  </div>
+
+                  <div className="quality-badge">
+                    Qualität: <strong>{result.quality}</strong>
+                  </div>
+
+                  {result.success ? (
+                    <p className="result-message">
+                      Der Trank wurde erfolgreich gebraut und deinem Inventar hinzugefügt!
+                    </p>
+                  ) : (
+                    <p className="result-message">
+                      Die Zutaten wurden verbraucht, aber das Brauen ist fehlgeschlagen.
+                    </p>
+                  )}
+
+                  <div className="result-actions">
+                    <button onClick={resetBrewing}>Weiteres Rezept brauen</button>
+                  </div>
+                </div>
+              )}
+
+              {availability && availability.available && selectedRecipe.requiredIngredients.length > 0 && (
+                <div className="ingredients-used">
+                  <h4>Verbrauchte Zutaten:</h4>
+                  <ul>
+                    {selectedRecipe.requiredIngredients.map((reqIng, idx) => (
+                      <li key={idx}>
+                        {reqIng.amount}x {getIngredientName(reqIng.ingredientId)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default BrewingStation
