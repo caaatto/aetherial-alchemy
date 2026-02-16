@@ -1,0 +1,372 @@
+{
+  "sortedHerbs": [
+    [
+      "mondkresse",
+      {
+        "count": 19,
+        "totalAmount": 71
+      }
+    ],
+    [
+      "mondfarn",
+      {
+        "count": 19,
+        "totalAmount": 91
+      }
+    ],
+    [
+      "eisenkraut",
+      {
+        "count": 16,
+        "totalAmount": 87
+      }
+    ],
+    [
+      "bergveilchen",
+      {
+        "count": 15,
+        "totalAmount": 50
+      }
+    ],
+    [
+      "runenwurz",
+      {
+        "count": 15,
+        "totalAmount": 68
+      }
+    ],
+    [
+      "sternenfeuerkraut",
+      {
+        "count": 13,
+        "totalAmount": 60
+      }
+    ],
+    [
+      "ewiggrün",
+      {
+        "count": 13,
+        "totalAmount": 55
+      }
+    ],
+    [
+      "phonixfederkraut",
+      {
+        "count": 12,
+        "totalAmount": 47
+      }
+    ],
+    [
+      "silberweide",
+      {
+        "count": 11,
+        "totalAmount": 38
+      }
+    ],
+    [
+      "schattenmondblute",
+      {
+        "count": 11,
+        "totalAmount": 45
+      }
+    ],
+    [
+      "schattenkraut",
+      {
+        "count": 10,
+        "totalAmount": 41
+      }
+    ],
+    [
+      "manndrache",
+      {
+        "count": 10,
+        "totalAmount": 37
+      }
+    ],
+    [
+      "gotterbalsam",
+      {
+        "count": 10,
+        "totalAmount": 30
+      }
+    ],
+    [
+      "drachenauge",
+      {
+        "count": 9,
+        "totalAmount": 34
+      }
+    ],
+    [
+      "feuerblute",
+      {
+        "count": 8,
+        "totalAmount": 33
+      }
+    ],
+    [
+      "alraunenkraut",
+      {
+        "count": 8,
+        "totalAmount": 38
+      }
+    ],
+    [
+      "drachenmelisse",
+      {
+        "count": 8,
+        "totalAmount": 37
+      }
+    ],
+    [
+      "wolfsfarn",
+      {
+        "count": 7,
+        "totalAmount": 26
+      }
+    ],
+    [
+      "wanderkraut",
+      {
+        "count": 7,
+        "totalAmount": 27
+      }
+    ],
+    [
+      "elfenhaar",
+      {
+        "count": 7,
+        "totalAmount": 26
+      }
+    ],
+    [
+      "geisterzunge",
+      {
+        "count": 7,
+        "totalAmount": 34
+      }
+    ],
+    [
+      "wolkenkraut",
+      {
+        "count": 7,
+        "totalAmount": 29
+      }
+    ],
+    [
+      "glutwurz",
+      {
+        "count": 5,
+        "totalAmount": 23
+      }
+    ],
+    [
+      "todeswurz",
+      {
+        "count": 5,
+        "totalAmount": 14
+      }
+    ],
+    [
+      "eisblume",
+      {
+        "count": 5,
+        "totalAmount": 19
+      }
+    ],
+    [
+      "sturmklee",
+      {
+        "count": 5,
+        "totalAmount": 20
+      }
+    ],
+    [
+      "waldfarn",
+      {
+        "count": 4,
+        "totalAmount": 13
+      }
+    ],
+    [
+      "sonnenlaub",
+      {
+        "count": 4,
+        "totalAmount": 13
+      }
+    ],
+    [
+      "hexenholz",
+      {
+        "count": 4,
+        "totalAmount": 11
+      }
+    ],
+    [
+      "seealge",
+      {
+        "count": 4,
+        "totalAmount": 20
+      }
+    ]
+  ],
+  "herbUsage": {
+    "wolfsfarn": {
+      "count": 7,
+      "totalAmount": 26
+    },
+    "eisenkraut": {
+      "count": 16,
+      "totalAmount": 87
+    },
+    "mondkresse": {
+      "count": 19,
+      "totalAmount": 71
+    },
+    "schattenkraut": {
+      "count": 10,
+      "totalAmount": 41
+    },
+    "feuerblute": {
+      "count": 8,
+      "totalAmount": 33
+    },
+    "glutwurz": {
+      "count": 5,
+      "totalAmount": 23
+    },
+    "waldfarn": {
+      "count": 4,
+      "totalAmount": 13
+    },
+    "wanderkraut": {
+      "count": 7,
+      "totalAmount": 27
+    },
+    "manndrache": {
+      "count": 10,
+      "totalAmount": 37
+    },
+    "alraunenkraut": {
+      "count": 8,
+      "totalAmount": 38
+    },
+    "sonnenlaub": {
+      "count": 4,
+      "totalAmount": 13
+    },
+    "todeswurz": {
+      "count": 5,
+      "totalAmount": 14
+    },
+    "hexenholz": {
+      "count": 4,
+      "totalAmount": 11
+    },
+    "elfenhaar": {
+      "count": 7,
+      "totalAmount": 26
+    },
+    "silberweide": {
+      "count": 11,
+      "totalAmount": 38
+    },
+    "sternenfeuerkraut": {
+      "count": 13,
+      "totalAmount": 60
+    },
+    "bergveilchen": {
+      "count": 15,
+      "totalAmount": 50
+    },
+    "ewiggrün": {
+      "count": 13,
+      "totalAmount": 55
+    },
+    "drachenmelisse": {
+      "count": 8,
+      "totalAmount": 37
+    },
+    "schattenmondblute": {
+      "count": 11,
+      "totalAmount": 45
+    },
+    "mondfarn": {
+      "count": 19,
+      "totalAmount": 91
+    },
+    "drachenauge": {
+      "count": 9,
+      "totalAmount": 34
+    },
+    "geisterzunge": {
+      "count": 7,
+      "totalAmount": 34
+    },
+    "phonixfederkraut": {
+      "count": 12,
+      "totalAmount": 47
+    },
+    "gotterbalsam": {
+      "count": 10,
+      "totalAmount": 30
+    },
+    "runenwurz": {
+      "count": 15,
+      "totalAmount": 68
+    },
+    "eisblume": {
+      "count": 5,
+      "totalAmount": 19
+    },
+    "frostfarn": {
+      "count": 3,
+      "totalAmount": 11
+    },
+    "blitzgras": {
+      "count": 3,
+      "totalAmount": 10
+    },
+    "sturmklee": {
+      "count": 5,
+      "totalAmount": 20
+    },
+    "bitterlaub": {
+      "count": 3,
+      "totalAmount": 14
+    },
+    "wolkenkraut": {
+      "count": 7,
+      "totalAmount": 29
+    },
+    "wasserlilie": {
+      "count": 3,
+      "totalAmount": 14
+    },
+    "seealge": {
+      "count": 4,
+      "totalAmount": 20
+    },
+    "nachtschatten": {
+      "count": 3,
+      "totalAmount": 10
+    },
+    "silberzunge": {
+      "count": 4,
+      "totalAmount": 14
+    },
+    "steinflechte": {
+      "count": 3,
+      "totalAmount": 15
+    },
+    "liebeskraut": {
+      "count": 2,
+      "totalAmount": 8
+    },
+    "waldbeere": {
+      "count": 3,
+      "totalAmount": 16
+    }
+  }
+}

@@ -1,0 +1,373 @@
+[
+  {
+    "id": "wolfsfarn",
+    "name": "Wolfsfarn",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Wolfsfarn",
+    "currentDescription": "Vielseitiges Kraut, wächst in schattigen Wäldern. Basis für die meisten Heiltränke."
+  },
+  {
+    "id": "orgain",
+    "name": "Orgain",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Orgain",
+    "currentDescription": "Stärkendes Kraut mit erdigen Eigenschaften."
+  },
+  {
+    "id": "feuerblute",
+    "name": "Feuerblüte",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Feuerblüte",
+    "currentDescription": "Rote Blüte mit wärmenden Eigenschaften. Basis für Feuer-Resistenz."
+  },
+  {
+    "id": "eisenkraut",
+    "name": "Eisenkraut",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Eisenkraut",
+    "currentDescription": "Stärkt Körper und Geist, erhöht Widerstandskraft."
+  },
+  {
+    "id": "bergveilchen",
+    "name": "Bergveilchen",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Bergveilchen",
+    "currentDescription": "Wächst in hohen Bergen, reinigend."
+  },
+  {
+    "id": "schattenkraut",
+    "name": "Schattenkraut",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Schattenkraut",
+    "currentDescription": "Gedeiht im Schatten, verleiht Stealth-Eigenschaften."
+  },
+  {
+    "id": "mondkresse",
+    "name": "Mondkresse",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Mondkresse",
+    "currentDescription": "Blüht bei Mondlicht, enthält lunare Energie."
+  },
+  {
+    "id": "dammerungslilie",
+    "name": "Dämmerungslilie",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Dämmerungslilie",
+    "currentDescription": "Öffnet sich in der Dämmerung."
+  },
+  {
+    "id": "waldfarn",
+    "name": "Waldfarn",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Waldfarn",
+    "currentDescription": "Häufig in Wäldern, grundlegende Heilwirkung."
+  },
+  {
+    "id": "wiesensalbei",
+    "name": "Wiesensalbei",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Wiesensalbei",
+    "currentDescription": "Aromatisches Würzkraut mit heilenden Eigenschaften."
+  },
+  {
+    "id": "nachtflieder",
+    "name": "Nachtflieder",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Nachtflieder",
+    "currentDescription": "Duftet nachts intensiver, beruhigend."
+  },
+  {
+    "id": "sonnenlaub",
+    "name": "Sonnenlaub",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Sonnenlaub",
+    "currentDescription": "Speichert Sonnenlicht, energetisierend."
+  },
+  {
+    "id": "wanderkraut",
+    "name": "Wanderkraut",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Wanderkraut",
+    "currentDescription": "Unterstützt Ausdauer auf langen Reisen."
+  },
+  {
+    "id": "peseilie",
+    "name": "Peseilie",
+    "rarity": "Uncommon",
+    "url": "https://aetherial.fandom.com/wiki/Peseilie",
+    "currentDescription": "Magisch verstärktes Gewürzkraut."
+  },
+  {
+    "id": "elffuss",
+    "name": "Elffuß",
+    "rarity": "Uncommon",
+    "url": "https://aetherial.fandom.com/wiki/Elffuß",
+    "currentDescription": "Von Elfen kultiviert, verleiht Anmut."
+  },
+  {
+    "id": "manndrache",
+    "name": "Manndrache",
+    "rarity": "Uncommon",
+    "url": "https://aetherial.fandom.com/wiki/Manndrache",
+    "currentDescription": "Wurzel in humanoidischer Form, verstärkt Heilung."
+  },
+  {
+    "id": "glutwurz",
+    "name": "Glutwurz",
+    "rarity": "Uncommon",
+    "url": "https://aetherial.fandom.com/wiki/Glutwurz",
+    "currentDescription": "Feurig-scharfe Wurzel aus Vulkangebieten."
+  },
+  {
+    "id": "alraunenkraut",
+    "name": "Alraunenkraut",
+    "rarity": "Uncommon",
+    "url": "https://aetherial.fandom.com/wiki/Alraunenkraut",
+    "currentDescription": "Magische Wurzelpflanze mit Regenerationskräften."
+  },
+  {
+    "id": "silberspross",
+    "name": "Silberspross",
+    "rarity": "Uncommon",
+    "url": "https://aetherial.fandom.com/wiki/Silberspross",
+    "currentDescription": "Silbrig schimmernde Triebe, schützt vor Untoten."
+  },
+  {
+    "id": "silberdistel",
+    "name": "Silberdistel",
+    "rarity": "Uncommon",
+    "url": "https://aetherial.fandom.com/wiki/Silberdistel",
+    "currentDescription": "Stachelige Pflanze mit Silberglanz."
+  },
+  {
+    "id": "elfenhaar",
+    "name": "Elfenhaar",
+    "rarity": "Uncommon",
+    "url": "https://aetherial.fandom.com/wiki/Elfenhaar",
+    "currentDescription": "Feine, haarähnliche Fasern."
+  },
+  {
+    "id": "todeswurz",
+    "name": "Todeswurz",
+    "rarity": "Rare",
+    "url": "https://aetherial.fandom.com/wiki/Todeswurz",
+    "currentDescription": "Gefährliche Pflanze, Basis für tödliche Gifte und Nekromantie."
+  },
+  {
+    "id": "morak",
+    "name": "Morak/Moraqu",
+    "rarity": "Rare",
+    "url": "https://aetherial.fandom.com/wiki/Morak/Moraqu",
+    "currentDescription": "Seltene rituelle Pflanze mit vielseitigen Eigenschaften."
+  },
+  {
+    "id": "silberweide",
+    "name": "Silberweide",
+    "rarity": "Rare",
+    "url": "https://aetherial.fandom.com/wiki/Silberweide",
+    "currentDescription": "Zweige der magischen Weide, stark heilend."
+  },
+  {
+    "id": "hexenholz",
+    "name": "Hexenholz",
+    "rarity": "Rare",
+    "url": "https://aetherial.fandom.com/wiki/Hexenholz",
+    "currentDescription": "Holz mit dunkler Magie, verstärkt Flüche."
+  },
+  {
+    "id": "sternenfeuerkraut",
+    "name": "Sternenfeuerkraut",
+    "rarity": "Rare",
+    "url": "https://aetherial.fandom.com/wiki/Sternenfeuerkraut",
+    "currentDescription": "Leuchtet wie Sternenlicht, celestiale Energie."
+  },
+  {
+    "id": "flachlandische_grunwiesel",
+    "name": "Flachländische Grünwiesel",
+    "rarity": "Very Rare",
+    "url": "https://aetherial.fandom.com/wiki/Flachländische_Grünwiesel",
+    "currentDescription": "Extrem seltenes Gewächs aus dem Flachland."
+  },
+  {
+    "id": "blaubergische_hammelblume",
+    "name": "Blaubergische Hammelblume",
+    "rarity": "Very Rare",
+    "url": "https://aetherial.fandom.com/wiki/Blaubergische_Hammelblume",
+    "currentDescription": "Nur in den Blaubergen zu finden."
+  },
+  {
+    "id": "straters_wurzel",
+    "name": "Sträters Wurzel",
+    "rarity": "Very Rare",
+    "url": "https://aetherial.fandom.com/wiki/Sträters_Wurzel",
+    "currentDescription": "Nach dem berühmten Alchemisten benannt."
+  },
+  {
+    "id": "drachenmelisse",
+    "name": "Drachenmelisse",
+    "rarity": "Very Rare",
+    "url": "https://aetherial.fandom.com/wiki/Drachenmelisse",
+    "currentDescription": "Wächst in der Nähe von Drachennestern, Drachenkraft."
+  },
+  {
+    "id": "geisterzunge",
+    "name": "Geisterzunge",
+    "rarity": "Very Rare",
+    "url": "https://aetherial.fandom.com/wiki/Geisterzunge",
+    "currentDescription": "Ermöglicht Kommunikation mit Geistern."
+  },
+  {
+    "id": "flussperlminze",
+    "name": "Flussperlminze",
+    "rarity": "Very Rare",
+    "url": "https://aetherial.fandom.com/wiki/Flussperlminze",
+    "currentDescription": "Wächst an reinen Flüssen, Wassermagie."
+  },
+  {
+    "id": "schattenmondblute",
+    "name": "Schattenmondblüte",
+    "rarity": "Very Rare",
+    "url": "https://aetherial.fandom.com/wiki/Schattenmondblüte",
+    "currentDescription": "Blüht nur bei Neumond, Schattenmagie."
+  },
+  {
+    "id": "mondfarn",
+    "name": "Mondfarn",
+    "rarity": "Legendary",
+    "url": "https://aetherial.fandom.com/wiki/Mondfarn",
+    "currentDescription": "Legendärer Farn mit Mondkraft, extrem selten."
+  },
+  {
+    "id": "ewiggrün",
+    "name": "Ewiggrün",
+    "rarity": "Legendary",
+    "url": "https://aetherial.fandom.com/wiki/Ewiggrün",
+    "currentDescription": "Verwelkt niemals, ewige Lebenskraft."
+  },
+  {
+    "id": "bernsteinthymian",
+    "name": "Bernsteinthymian",
+    "rarity": "Legendary",
+    "url": "https://aetherial.fandom.com/wiki/Bernsteinthymian",
+    "currentDescription": "In Bernstein konserviertes uraltes Kraut."
+  },
+  {
+    "id": "drachenauge",
+    "name": "Drachenauge",
+    "rarity": "Legendary",
+    "url": "https://aetherial.fandom.com/wiki/Drachenauge",
+    "currentDescription": "Kristallisierte Träne eines Drachen."
+  },
+  {
+    "id": "runenwurz",
+    "name": "Runenwurz",
+    "rarity": "Legendary",
+    "url": "https://aetherial.fandom.com/wiki/Runenwurz",
+    "currentDescription": "Göttliche Pflanze mit eingravierten Runen."
+  },
+  {
+    "id": "phonixfederkraut",
+    "name": "Phönixfederkraut",
+    "rarity": "Legendary",
+    "url": "https://aetherial.fandom.com/wiki/Phönixfederkraut",
+    "currentDescription": "Wächst aus Phönixfedern, Auferstehungskraft."
+  },
+  {
+    "id": "gotterbalsam",
+    "name": "Götterbalsam",
+    "rarity": "Legendary",
+    "url": "https://aetherial.fandom.com/wiki/Götterbalsam",
+    "currentDescription": "Heilsalbe der Götter, heilt alles."
+  },
+  {
+    "id": "eisblume",
+    "name": "Eisblume",
+    "rarity": "Uncommon",
+    "url": "https://aetherial.fandom.com/wiki/Eisblume",
+    "currentDescription": "Kristallene Blume aus ewigem Eis, kalt bei Berührung."
+  },
+  {
+    "id": "frostfarn",
+    "name": "Frostfarn",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Frostfarn",
+    "currentDescription": "Farngewächs mit eisigen Wedeln, wächst in kalten Regionen."
+  },
+  {
+    "id": "blitzgras",
+    "name": "Blitzgras",
+    "rarity": "Uncommon",
+    "url": "https://aetherial.fandom.com/wiki/Blitzgras",
+    "currentDescription": "Grashalme die statisch aufgeladen sind und kleine Funken sprühen."
+  },
+  {
+    "id": "sturmklee",
+    "name": "Sturmklee",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Sturmklee",
+    "currentDescription": "Wilder Klee der nur während Gewittern blüht."
+  },
+  {
+    "id": "bitterlaub",
+    "name": "Bitterlaub",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Bitterlaub",
+    "currentDescription": "Extrem bittere Blätter, neutralisieren Gifte."
+  },
+  {
+    "id": "wolkenkraut",
+    "name": "Wolkenkraut",
+    "rarity": "Rare",
+    "url": "https://aetherial.fandom.com/wiki/Wolkenkraut",
+    "currentDescription": "Federleichtes Kraut das in der Luft schwebt."
+  },
+  {
+    "id": "wasserlilie",
+    "name": "Wasserlilie",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Wasserlilie",
+    "currentDescription": "Aquatische Blume mit heilenden Eigenschaften."
+  },
+  {
+    "id": "seealge",
+    "name": "Seealge",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Seealge",
+    "currentDescription": "Glitschige Meeresalge, essbar und nährstoffreich."
+  },
+  {
+    "id": "nachtschatten",
+    "name": "Nachtschatten",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Nachtschatten",
+    "currentDescription": "Dunkle Beeren die nur nachts sichtbar sind."
+  },
+  {
+    "id": "silberzunge",
+    "name": "Silberzunge",
+    "rarity": "Uncommon",
+    "url": "https://aetherial.fandom.com/wiki/Silberzunge",
+    "currentDescription": "Blatt in Form einer Zunge, erleichtert Kommunikation."
+  },
+  {
+    "id": "liebeskraut",
+    "name": "Liebeskraut",
+    "rarity": "Uncommon",
+    "url": "https://aetherial.fandom.com/wiki/Liebeskraut",
+    "currentDescription": "Herzförmige rote Blätter, wecken Zuneigung."
+  },
+  {
+    "id": "steinflechte",
+    "name": "Steinflechte",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Steinflechte",
+    "currentDescription": "Harte Flechte die auf Felsen wächst, extrem widerstandsfähig."
+  },
+  {
+    "id": "waldbeere",
+    "name": "Waldbeere",
+    "rarity": "Common",
+    "url": "https://aetherial.fandom.com/wiki/Waldbeere",
+    "currentDescription": "Süße Beeren aus dem Wald, beliebt bei Tieren."
+  }
+]
