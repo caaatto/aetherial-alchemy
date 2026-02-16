@@ -327,9 +327,9 @@
 
 .wallpaper-tree {
   position: relative;
-  min-width: 4000px;
-  min-height: 2000px;
-  padding: 40px;
+  min-width: 12000px;
+  min-height: 3500px;
+  padding: 60px;
   background:
     linear-gradient(90deg, rgba(74, 74, 106, 0.1) 1px, transparent 1px),
     linear-gradient(rgba(74, 74, 106, 0.1) 1px, transparent 1px);
@@ -671,7 +671,7 @@
   }
 
   .wallpaper-tree {
-    min-width: 3000px;
-    min-height: 1500px;
+    min-width: 8000px;
+    min-height: 2500px;
   }
 }

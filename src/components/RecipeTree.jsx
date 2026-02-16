@@ -242,8 +242,8 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
               const available = canUnlock(recipe)
 
               // Calculate position (horizontal flow)
-              const xPos = recipe.position.x * 350
-              const yPos = recipe.position.y * 280
+              const xPos = recipe.position.x * 380
+              const yPos = recipe.position.y * 350
 
               return (
                 <div key={recipe.id}>
@@ -251,8 +251,8 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                   {recipe.requires && recipe.requires.map(parentId => {
                     const parentRecipe = getRecipeById(parentId)
                     if (parentRecipe) {
-                      const parentX = parentRecipe.position.x * 350 + 70
-                      const parentY = parentRecipe.position.y * 280 + 90
+                      const parentX = parentRecipe.position.x * 380 + 70
+                      const parentY = parentRecipe.position.y * 350 + 90
                       const childX = xPos + 70
                       const childY = yPos + 90
 
