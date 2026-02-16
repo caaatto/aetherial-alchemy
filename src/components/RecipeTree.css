@@ -455,6 +455,7 @@
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  transition: filter 0.3s ease;
 }
 
 /* List view potion images */
@@ -464,6 +465,7 @@
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  transition: filter 0.3s ease;
 }
 
 /* Modal detail potion images */
@@ -473,6 +475,7 @@
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  transition: filter 0.3s ease;
 }
 
 .wallpaper-tree.radial .recipe-node.wallpaper.radial .recipe-name {
@@ -510,6 +513,7 @@
 .wallpaper-tree.radial .recipe-node.wallpaper.radial.center .recipe-icon img {
   width: 60px;
   height: auto;
+  transition: filter 0.3s ease;
 }
 
 .wallpaper-tree.radial .recipe-node.wallpaper.radial.center .recipe-name {

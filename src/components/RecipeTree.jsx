@@ -3,6 +3,7 @@ import './RecipeTree.css'
 import { aetherialRecipeTree, getRecipeById } from '../data/aetherialRecipeTree'
 import { herbsDatabase, getHerbById } from '../data/herbsDatabase'
 import { herbToPotionTree } from '../data/herbToPotionTree'
+import { getHerbColorFilter, getMainHerbId } from '../data/herbColorMapping'
 
 function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
   const [unlockedRecipes, setUnlockedRecipes] = useState([])
@@ -197,7 +198,13 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                         <div className="recipe-node-header">
                           <div className="recipe-icon">
                             {recipe.icon && recipe.icon.startsWith('/assets') ? (
-                              <img src={recipe.icon} alt={recipe.name} />
+                              <img
+                                src={recipe.icon}
+                                alt={recipe.name}
+                                style={{
+                                  filter: getHerbColorFilter(getMainHerbId(recipe))
+                                }}
+                              />
                             ) : (
                               recipe.icon
                             )}
@@ -323,7 +330,13 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                 >
                   <div className="recipe-icon">
                     {potion.icon && potion.icon.startsWith('/assets') ? (
-                      <img src={potion.icon} alt={potion.name} />
+                      <img
+                        src={potion.icon}
+                        alt={potion.name}
+                        style={{
+                          filter: getHerbColorFilter(getMainHerbId(potion))
+                        }}
+                      />
                     ) : (
                       potion.icon
                     )}
@@ -348,7 +361,13 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
             <div className="detail-header">
               <span className="detail-icon">
                 {selectedRecipe.icon && selectedRecipe.icon.startsWith('/assets') ? (
-                  <img src={selectedRecipe.icon} alt={selectedRecipe.name} />
+                  <img
+                    src={selectedRecipe.icon}
+                    alt={selectedRecipe.name}
+                    style={{
+                      filter: getHerbColorFilter(getMainHerbId(selectedRecipe))
+                    }}
+                  />
                 ) : (
                   selectedRecipe.icon
                 )}
