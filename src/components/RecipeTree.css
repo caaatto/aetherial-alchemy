@@ -349,6 +349,68 @@
   filter: drop-shadow(0 0 4px var(--success));
 }
 
+/* Herb to Potion Tree Styles */
+.wallpaper-tree.herb-to-potion {
+  min-width: 15000px;
+  min-height: 4000px;
+}
+
+.herb-node {
+  position: absolute;
+  background: var(--bg-card);
+  border: 3px solid var(--border);
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+  min-width: 140px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.herb-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0 rgba(0,0,0,0.4);
+  border-color: var(--primary);
+}
+
+.herb-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.herb-name {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.herb-rarity {
+  font-size: 10px;
+  padding: 4px 8px;
+  border: 2px solid var(--border);
+  background: var(--bg-secondary);
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.herb-connection-line {
+  pointer-events: none;
+}
+
+.herb-connection-line line {
+  transition: stroke 0.3s, opacity 0.3s;
+}
+
+.herb-node:hover ~ .herb-connection-line line,
+.recipe-node.wallpaper:hover ~ .herb-connection-line line {
+  stroke: var(--primary);
+  opacity: 0.8;
+  stroke-width: 3;
+}
+
 /* Recipe Details Modal */
 .recipe-details-modal {
   position: fixed;

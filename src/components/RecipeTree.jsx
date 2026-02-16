@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './RecipeTree.css'
 import { aetherialRecipeTree, getRecipeById } from '../data/aetherialRecipeTree'
 import { herbsDatabase, getHerbById } from '../data/herbsDatabase'
+import { herbToPotionTree } from '../data/herbToPotionTree'
 
 function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
   const [unlockedRecipes, setUnlockedRecipes] = useState([])
@@ -233,96 +234,126 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
         </div>
       )}
 
-      {/* Wallpaper View */}
+      {/* Wallpaper View - Herb to Potion Tree */}
       {viewMode === 'wallpaper' && (
         <div className="wallpaper-tree-container">
-          <div className="wallpaper-tree">
-            {aetherialRecipeTree.recipes.map(recipe => {
-              const unlocked = isUnlocked(recipe.id)
-              const available = canUnlock(recipe)
+          <div className="wallpaper-tree herb-to-potion">
+            {/* Draw all connections first (behind nodes) */}
+            {herbToPotionTree.connections.map((conn, idx) => {
+              const herb = herbsDatabase[conn.herbId]
+              if (!herb) return null
 
-              // Calculate position (horizontal flow)
-              const xPos = recipe.position.x * 380
-              const yPos = recipe.position.y * 350
+              const herbX = conn.herbPos.x * 200 + 80
+              const herbY = conn.herbPos.y * 150 + 60
+              const potionX = conn.potionPos.x * 200 + 80
+              const potionY = conn.potionPos.y * 150 + 60
 
               return (
-                <div key={recipe.id}>
-                  {/* Draw connection lines to parent recipes */}
-                  {recipe.requires && recipe.requires.map(parentId => {
-                    const parentRecipe = getRecipeById(parentId)
-                    if (parentRecipe) {
-                      const parentX = parentRecipe.position.x * 380 + 70
-                      const parentY = parentRecipe.position.y * 350 + 90
-                      const childX = xPos + 70
-                      const childY = yPos + 90
+                <svg
+                  key={`conn-${idx}`}
+                  className="herb-connection-line"
+                  style={{
+                    position: 'absolute',
+                    left: Math.min(herbX, potionX) - 5,
+                    top: Math.min(herbY, potionY) - 5,
+                    width: Math.abs(potionX - herbX) + 10,
+                    height: Math.abs(potionY - herbY) + 10,
+                    overflow: 'visible',
+                    pointerEvents: 'none',
+                    zIndex: 0
+                  }}
+                >
+                  <line
+                    x1={herbX < potionX ? 5 : Math.abs(potionX - herbX) + 5}
+                    y1={herbY < potionY ? 5 : Math.abs(potionY - herbY) + 5}
+                    x2={potionX < herbX ? 5 : Math.abs(potionX - herbX) + 5}
+                    y2={potionY < herbY ? 5 : Math.abs(potionY - herbY) + 5}
+                    stroke="#4a4a6a"
+                    strokeWidth="2"
+                    strokeDasharray="4,4"
+                    opacity="0.3"
+                  />
+                </svg>
+              )
+            })}
 
-                      return (
-                        <svg
-                          key={`line-${parentId}-${recipe.id}`}
-                          className={`connection-line-svg ${isUnlocked(parentId) ? 'active' : ''}`}
-                          style={{
-                            position: 'absolute',
-                            left: Math.min(parentX, childX),
-                            top: Math.min(parentY, childY),
-                            width: Math.abs(childX - parentX),
-                            height: Math.abs(childY - parentY),
-                            overflow: 'visible',
-                            pointerEvents: 'none'
-                          }}
-                        >
-                          <line
-                            x1={parentX > childX ? Math.abs(childX - parentX) : 0}
-                            y1={parentY > childY ? Math.abs(childY - parentY) : 0}
-                            x2={childX > parentX ? Math.abs(childX - parentX) : 0}
-                            y2={childY > parentY ? Math.abs(childY - parentY) : 0}
-                            stroke={isUnlocked(parentId) ? '#4ecca3' : '#4a4a6a'}
-                            strokeWidth="4"
-                            strokeDasharray="8,8"
-                          />
-                        </svg>
-                      )
-                    }
-                    return null
-                  })}
+            {/* Render Herbs (Top Layer) */}
+            {herbToPotionTree.herbs.map(herb => {
+              if (!herb.position) return null
 
-                  {/* Recipe Node */}
-                  <div
-                    className={`recipe-node wallpaper ${unlocked ? 'unlocked' : ''} ${available ? 'available' : 'locked'}`}
-                    style={{
-                      position: 'absolute',
-                      left: `${xPos}px`,
-                      top: `${yPos}px`
-                    }}
-                    onClick={() => setSelectedRecipe(recipe)}
-                  >
-                    <div className="recipe-node-header">
-                      <div className="recipe-icon">{recipe.icon}</div>
-                      {recipe.cost > 0 && !unlocked && (
-                        <div className="recipe-cost">{recipe.cost} SP</div>
-                      )}
-                      {unlocked && (
-                        <div className="recipe-unlocked"></div>
-                      )}
-                    </div>
+              const xPos = herb.position.x * 200
+              const yPos = herb.position.y * 150
 
-                    <div className="recipe-name">{recipe.name}</div>
+              return (
+                <div
+                  key={`herb-${herb.id}`}
+                  className="herb-node"
+                  style={{
+                    position: 'absolute',
+                    left: `${xPos}px`,
+                    top: `${yPos}px`,
+                    zIndex: 1
+                  }}
+                  title={`${herb.name} (${herb.rarity})`}
+                >
+                  <div className="herb-icon">{herb.categories.includes('Medicinal') ? '🌿' : herb.manaContent > 0 ? '✨' : '🌸'}</div>
+                  <div className="herb-name">{herb.name}</div>
+                  <div className={`herb-rarity rarity-${herb.rarity.toLowerCase().replace(' ', '-')}`}>
+                    {herb.rarity}
+                  </div>
+                </div>
+              )
+            })}
 
-                    <div className={`recipe-rarity rarity-${recipe.rarity.toLowerCase().replace(' ', '-')}`}>
-                      {recipe.rarity}
-                    </div>
+            {/* Render Potions (Bottom Layer) */}
+            {herbToPotionTree.potions.map(potion => {
+              if (!potion.position) return null
 
-                    {recipe.manaCost > 0 && (
-                      <div className="recipe-mana-cost">
-                         {recipe.manaCost}
-                      </div>
+              const unlocked = isUnlocked(potion.id)
+              const available = canUnlock(potion)
+
+              const xPos = potion.position.x * 200
+              const yPos = potion.position.y * 150
+
+              return (
+                <div
+                  key={`potion-${potion.id}`}
+                  className={`recipe-node wallpaper ${unlocked ? 'unlocked' : ''} ${available ? 'available' : 'locked'}`}
+                  style={{
+                    position: 'absolute',
+                    left: `${xPos}px`,
+                    top: `${yPos}px`,
+                    zIndex: 2
+                  }}
+                  onClick={() => setSelectedRecipe(potion)}
+                >
+                  <div className="recipe-node-header">
+                    <div className="recipe-icon">{potion.icon}</div>
+                    {potion.cost > 0 && !unlocked && (
+                      <div className="recipe-cost">{potion.cost} SP</div>
                     )}
-
-                    {recipe.manaLevelRequired > 1 && (
-                      <div className="recipe-level-req">
-                        Lvl {recipe.manaLevelRequired}
-                      </div>
+                    {unlocked && (
+                      <div className="recipe-unlocked">✓</div>
                     )}
                   </div>
+
+                  <div className="recipe-name">{potion.name}</div>
+
+                  <div className={`recipe-rarity rarity-${potion.rarity.toLowerCase().replace(' ', '-')}`}>
+                    {potion.rarity}
+                  </div>
+
+                  {potion.manaCost > 0 && (
+                    <div className="recipe-mana-cost">
+                      💧 {potion.manaCost}
+                    </div>
+                  )}
+
+                  {potion.manaLevelRequired > 1 && (
+                    <div className="recipe-level-req">
+                      Lvl {potion.manaLevelRequired}
+                    </div>
+                  )}
                 </div>
               )
             })}
