@@ -1,6 +1,22 @@
 // Aetherial Recipe Tree - D&D 5e basierte Tränke erweitert
 // Mana-Integration + Aetherial Kräuter
 
+import { getPotionIcon, getResistanceSubtype } from './potionIconMapper.js'
+
+// Helper function to get icon for a recipe
+const getIcon = (recipe) => {
+  let category = recipe.category
+
+  // Special handling for resistance potions
+  if (category === 'resistance') {
+    const subtype = getResistanceSubtype(recipe.name)
+    // Temporarily store subtype in recipe for icon selection
+    recipe._subtype = subtype
+  }
+
+  return getPotionIcon(category, recipe.tier, recipe.rarity)
+}
+
 export const aetherialRecipeTree = {
   recipes: [
     // ========== TIER 1: BASIC POTIONS (Common) ==========
@@ -9,7 +25,7 @@ export const aetherialRecipeTree = {
       name: 'Heiltrank',
       tier: 1,
       category: 'healing',
-      icon: '❤️',
+      icon: '/assets/potions/Small Vial - RED - 0000.png',
       rarity: 'Common',
       effect: 'Heilt 2d4+2 HP',
       dc: 10,
@@ -99,7 +115,7 @@ export const aetherialRecipeTree = {
       name: 'Großer Heiltrank',
       tier: 2,
       category: 'healing',
-      icon: '💗',
+      icon: '/assets/potions/Round Potion - RED - 0000.png',
       rarity: 'Uncommon',
       effect: 'Heilt 4d4+4 HP',
       dc: 13,
@@ -239,7 +255,7 @@ export const aetherialRecipeTree = {
       name: 'Überlegener Heiltrank',
       tier: 3,
       category: 'healing',
-      icon: '💖',
+      icon: '/assets/potions/Big Vial - RED - 0000.png',
       rarity: 'Rare',
       effect: 'Heilt 8d4+8 HP',
       dc: 15,
@@ -428,7 +444,7 @@ export const aetherialRecipeTree = {
       name: 'Supremer Heiltrank',
       tier: 4,
       category: 'healing',
-      icon: '💝',
+      icon: '/assets/potions/Large Bottle - RED - 0000.png',
       rarity: 'Very Rare',
       effect: 'Heilt 10d4+20 HP',
       dc: 18,
@@ -571,7 +587,7 @@ export const aetherialRecipeTree = {
       name: 'Göttliche Heilung',
       tier: 5,
       category: 'healing',
-      icon: '✨',
+      icon: '/assets/potions/Glowing Potion - RED - 0000.png',
       rarity: 'Legendary',
       effect: 'Volle Heilung + Regeneriert Gliedmaßen + entfernt ALLE Zustände',
       dc: 27,
@@ -667,7 +683,7 @@ export const aetherialRecipeTree = {
       name: 'Kältewiderstand',
       tier: 1,
       category: 'resistance',
-      icon: '️',
+      icon: '/assets/potions/Small Vial - TURQUOISE - 0000.png',
       rarity: 'Uncommon',
       effect: 'Resistenz gegen Kälteschaden für 1 Stunde',
       dc: 13,
@@ -829,7 +845,7 @@ export const aetherialRecipeTree = {
       name: 'Riesenstärke (Hügel)',
       tier: 1,
       category: 'combat',
-      icon: '🌟',
+      icon: '/assets/potions/Small Bottle - PURPLE - 0000.png',
       rarity: 'Uncommon',
       effect: 'Stärke wird 21 für 1 Stunde',
       dc: 14,
@@ -969,7 +985,7 @@ export const aetherialRecipeTree = {
       name: 'Geschwindigkeit',
       tier: 2,
       category: 'combat',
-      icon: '🌋',
+      icon: '/assets/potions/Round Potion - PURPLE - 0000.png',
       rarity: 'Rare',
       effect: 'Verdoppelt Bewegungsrate, +2 AC, Vorteil auf DEX-Rettungswürfe, zusätzliche Aktion für 1 Minute',
       dc: 17,
@@ -1039,7 +1055,7 @@ export const aetherialRecipeTree = {
       name: 'Wasseratmung',
       tier: 1,
       category: 'utility',
-      icon: '⛈️',
+      icon: '/assets/potions/Small Vial - LIME - 0000.png',
       rarity: 'Uncommon',
       effect: 'Kann unter Wasser atmen für 1 Stunde',
       dc: 12,
@@ -1176,7 +1192,7 @@ export const aetherialRecipeTree = {
       name: 'Steinhaut',
       tier: 2,
       category: 'combat',
-      icon: '️',
+      icon: '/assets/potions/Round Potion - PURPLE - 0000.png',
       rarity: 'Rare',
       effect: 'Resistenz gegen nicht-magische physische Schäden für 1 Stunde',
       dc: 17,
@@ -1272,7 +1288,7 @@ export const aetherialRecipeTree = {
       name: 'Bezauberung',
       tier: 2,
       category: 'social',
-      icon: '🌊',
+      icon: '/assets/potions/Round Potion - GOLD - 0000.png',
       rarity: 'Uncommon',
       effect: 'Ziel muss WIS-Rettungswurf DC 13 machen oder ist bezaubert für 1 Stunde',
       dc: 14,
@@ -1343,7 +1359,7 @@ export const aetherialRecipeTree = {
       name: 'Mana-Sicht',
       tier: 2,
       category: 'mana',
-      icon: '👁️',
+      icon: '/assets/potions/Round Potion - BLUE - 0000.png',
       rarity: 'Rare',
       effect: 'Sehe magische Auren und Manaströme, Detect Magic-Effekt für 1 Stunde',
       dc: 15,
@@ -1463,7 +1479,7 @@ export const aetherialRecipeTree = {
       name: 'Wachstum',
       tier: 2,
       category: 'combat',
-      icon: '📖',
+      icon: '/assets/potions/Round Potion - PURPLE - 0000.png',
       rarity: 'Uncommon',
       effect: 'Größe verdoppelt sich, +1d4 Waffenschaden, Vorteil auf STR-Checks für 1 Stunde',
       dc: 14,
@@ -1535,7 +1551,7 @@ export const aetherialRecipeTree = {
       name: 'Gasform',
       tier: 3,
       category: 'stealth',
-      icon: '💨',
+      icon: '/assets/potions/Bubbly Brew Bottle - BLACK - 0000.png',
       rarity: 'Rare',
       effect: 'Werde gasförmig, kann durch Spalten fliegen, Resistenz gegen nicht-magischen Schaden für 1 Stunde',
       dc: 18,
@@ -1677,7 +1693,7 @@ export const aetherialRecipeTree = {
       name: 'Hellsicht',
       tier: 3,
       category: 'utility',
-      icon: '🔭',
+      icon: '/assets/potions/Big Vial - LIME - 0000.png',
       rarity: 'Rare',
       effect: 'Erstelle einen unsichtbaren Sensor an bekanntem Ort (1 Meile) zum Sehen/Hören für 10 Minuten',
       dc: 17,
@@ -1726,7 +1742,7 @@ export const aetherialRecipeTree = {
       name: 'Elixier der Gesundheit',
       tier: 2,
       category: 'healing',
-      icon: '🦌',
+      icon: '/assets/potions/Round Potion - RED - 0000.png',
       rarity: 'Rare',
       effect: 'Heilung aller Krankheiten, vergiftet-Zustand endet, Blindheit/Taubheit geheilt',
       dc: 15,
@@ -1799,7 +1815,7 @@ export const aetherialRecipeTree = {
       name: 'Spiegelbilder',
       tier: 2,
       category: 'combat',
-      icon: '🪞',
+      icon: '/assets/potions/Round Potion - PURPLE - 0000.png',
       rarity: 'Uncommon',
       effect: '3 illusorische Duplikate erscheinen, Angriffe haben 25% Chance dich zu treffen für 1 Minute',
       dc: 15,
@@ -1893,7 +1909,7 @@ export const aetherialRecipeTree = {
       name: 'Baumrinde',
       tier: 2,
       category: 'combat',
-      icon: '🌳',
+      icon: '/assets/potions/Round Potion - PURPLE - 0000.png',
       rarity: 'Uncommon',
       effect: 'AC wird mindestens 16 (kann nicht höher als natürliche AC sein) für 1 Stunde',
       dc: 14,
@@ -2032,7 +2048,7 @@ export const aetherialRecipeTree = {
       name: 'Glück',
       tier: 3,
       category: 'utility',
-      icon: '🪵',
+      icon: '/assets/potions/Big Vial - LIME - 0000.png',
       rarity: 'Rare',
       effect: 'Würfle 1d10 bei jedem d20-Wurf und wähle welches Ergebnis du nutzt für 1 Stunde',
       dc: 18,
@@ -2126,7 +2142,7 @@ export const aetherialRecipeTree = {
       name: 'Öl der Schärfe',
       tier: 3,
       category: 'combat',
-      icon: '️',
+      icon: '/assets/potions/Big Vial - PURPLE - 0000.png',
       rarity: 'Very Rare',
       effect: 'Waffe wird +3, maximaler Waffenschaden bei kritischen Treffern für 1 Stunde',
       dc: 19,
@@ -2220,7 +2236,7 @@ export const aetherialRecipeTree = {
       name: 'Wachsamer Schlaf',
       tier: 1,
       category: 'utility',
-      icon: '🎯',
+      icon: '/assets/potions/Small Vial - LIME - 0000.png',
       rarity: 'Common',
       effect: 'Schlafe normal, aber wache sofort bei Gefahr auf, Vorteil auf Wahrnehmung während Rast',
       dc: 10,
@@ -2289,7 +2305,7 @@ export const aetherialRecipeTree = {
       name: 'Elemente Ertragen',
       tier: 1,
       category: 'utility',
-      icon: '️',
+      icon: '/assets/potions/Small Vial - LIME - 0000.png',
       rarity: 'Common',
       effect: 'Immunität gegen extreme Hitze und Kälte (nicht magisch) für 24 Stunden',
       dc: 11,

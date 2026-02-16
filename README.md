@@ -282,6 +282,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **D&D 5e Rules**: Based on Dungeon Master's Guide (DMG) potion rules
 - **Aetherial Herbs**: Inspired by the Aetherial campaign setting
 - **Pixel Art Font**: Press Start 2P by CodeMan38
+- **Potion Pixel Art**: Pixel Potion Pack by [Creator Name] - 150 unique potion sprites
 - **Open Source**: Built for the D&D community
 
 ##  Contributing
