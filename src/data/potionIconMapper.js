@@ -109,6 +109,15 @@ export const getPotionIcon = (category, tier, rarity) => {
       3: 'Classic Jar - BLUE_GOLD - 0000.png',
       4: 'Large Jar - TURQUOISE_GOLD - 0000.png',
       5: 'Bubbly Brew Bottle Rising - GOLD - 0000.png'
+    },
+
+    // Social potions - Pink/charm effects
+    social: {
+      1: 'Small Elixir - PINK - 0000.png',
+      2: 'Round Potion - MAGENTA - 0000.png',
+      3: 'Encased Potion - GOLD_PURPLE - 0000.png',
+      4: 'Large Bottle - PINK - 0000.png',
+      5: 'Glowing Potion - PINK - 0000.png'
     }
   }
 

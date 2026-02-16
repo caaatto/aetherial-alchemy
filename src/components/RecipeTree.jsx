@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import './RecipeTree.css'
 import { aetherialRecipeTree, getRecipeById } from '../data/aetherialRecipeTree'
 import { herbsDatabase, getHerbById } from '../data/herbsDatabase'
-import { herbToPotionTree } from '../data/herbToPotionTree'
+import { herbToPotionTree, createCurvedPath } from '../data/herbToPotionTree'
 import { getHerbColorFilter, getMainHerbId } from '../data/herbColorMapping'
 
 function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
@@ -236,7 +236,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                         )}
 
                         <div className="recipe-ingredients-count">
-                          {recipe.ingredients.length} Zutaten
+                          {recipe.ingredients.length} Ingredients
                         </div>
                       </div>
                     )
@@ -252,53 +252,141 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
       {viewMode === 'wallpaper' && (
         <div className="wallpaper-tree-container">
           <div className="wallpaper-tree herb-to-potion radial">
-            {/* Draw connections only for hovered nodes - only potion to potion */}
-            {hoveredNode && herbToPotionTree.connections
-              .filter(conn =>
-                conn.isRequirement && (
-                  conn.fromPotionId === hoveredNode ||
-                  conn.toPotionId === hoveredNode
-                )
-              )
-              .map((conn, idx) => {
+            {/* Draw ALL connections with curved lines */}
+            <svg
+              width="3600"
+              height="3600"
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                pointerEvents: 'none',
+                zIndex: 1
+              }}
+            >
+              <defs>
+                <linearGradient id="connection-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="rgba(78, 204, 163, 0.3)" />
+                  <stop offset="100%" stopColor="rgba(78, 204, 163, 0.6)" />
+                </linearGradient>
+              </defs>
+              {herbToPotionTree.connections.map((conn, idx) => {
                 const scale = 50
-                const centerOffset = 1200
+                const centerOffset = 1800
 
-                const x1 = conn.fromPos.x * scale + centerOffset
-                const y1 = conn.fromPos.y * scale + centerOffset
-                const x2 = conn.toPos.x * scale + centerOffset
-                const y2 = conn.toPos.y * scale + centerOffset
+                let x1, y1, x2, y2
+                let isActive = false
+                let strokeColor = 'url(#connection-gradient)'
+                let strokeWidth = 1.5
+
+                if (conn.herbId && conn.potionId) {
+                  // Herb to Potion connection
+                  if (!conn.herbPos || !conn.potionPos) return null // Skip invalid connections
+
+                  x1 = conn.herbPos.x * scale + centerOffset
+                  y1 = conn.herbPos.y * scale + centerOffset
+                  x2 = conn.potionPos.x * scale + centerOffset
+                  y2 = conn.potionPos.y * scale + centerOffset
+
+                  isActive = hoveredNode === conn.herbId || hoveredNode === conn.potionId
+                  strokeColor = isActive ? 'var(--primary)' : 'rgba(78, 204, 163, 0.2)'
+                  strokeWidth = isActive ? 3 : 1
+                } else if (conn.isRequirement) {
+                  // Potion to Potion requirement
+                  if (!conn.fromPos || !conn.toPos) return null // Skip invalid connections
+
+                  x1 = conn.fromPos.x * scale + centerOffset
+                  y1 = conn.fromPos.y * scale + centerOffset
+                  x2 = conn.toPos.x * scale + centerOffset
+                  y2 = conn.toPos.y * scale + centerOffset
+
+                  isActive = hoveredNode === conn.fromPotionId || hoveredNode === conn.toPotionId
+                  strokeColor = isActive ? 'var(--legendary)' : 'rgba(255, 193, 7, 0.3)'
+                  strokeWidth = isActive ? 3 : 1.5
+                } else {
+                  return null // Skip unknown connection types
+                }
+
+                // Validate coordinates
+                if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+                  console.warn('Invalid connection coordinates:', { x1, y1, x2, y2, conn })
+                  return null
+                }
+
+                const pathD = createCurvedPath(
+                  { x: x1, y: y1 },
+                  { x: x2, y: y2 },
+                  centerOffset,
+                  centerOffset
+                )
 
                 return (
-                  <svg
+                  <path
                     key={`conn-${idx}`}
-                    className="herb-connection-line requirement"
-                    style={{
-                      position: 'absolute',
-                      left: Math.min(x1, x2) - 5,
-                      top: Math.min(y1, y2) - 5,
-                      width: Math.abs(x2 - x1) + 10,
-                      height: Math.abs(y2 - y1) + 10,
-                      overflow: 'visible',
-                      pointerEvents: 'none',
-                      zIndex: 5
-                    }}
-                  >
-                    <line
-                      x1={x1 < x2 ? 5 : Math.abs(x2 - x1) + 5}
-                      y1={y1 < y2 ? 5 : Math.abs(y2 - y1) + 5}
-                      x2={x2 < x1 ? 5 : Math.abs(x2 - x1) + 5}
-                      y2={y2 < y1 ? 5 : Math.abs(y2 - y1) + 5}
-                      stroke="var(--primary)"
-                      strokeWidth="2"
-                      strokeDasharray="4,4"
-                    />
-                  </svg>
+                    d={pathD}
+                    stroke={strokeColor}
+                    strokeWidth={strokeWidth}
+                    fill="none"
+                    strokeDasharray={conn.isRequirement ? '4,6' : 'none'}
+                    className={`herb-connection-line ${isActive ? 'active' : ''} ${conn.isRequirement ? 'requirement' : ''}`}
+                    opacity={isActive ? 1 : (hoveredNode ? 0.3 : 0.6)}
+                  />
                 )
-              })
-            }
+              })}
+            </svg>
 
-            {/* Render Potions (Radial Layer) */}
+            {/* Render Herbs (Outer Radial Layer) */}
+            {herbToPotionTree.herbs.map(herb => {
+              if (!herb.position) return null
+
+              const scale = 50
+              const centerOffset = 1800
+              const xPos = herb.position.x * scale + centerOffset
+              const yPos = herb.position.y * scale + centerOffset
+
+              // Check if this herb is connected to hovered node
+              let isConnected = !hoveredNode || hoveredNode === herb.id
+
+              if (hoveredNode && hoveredNode !== herb.id) {
+                // If hovering a potion, check if this herb is an ingredient
+                const hoveredPotion = herbToPotionTree.potions.find(p => p.id === hoveredNode)
+                if (hoveredPotion) {
+                  isConnected = hoveredPotion.ingredients.some(ing => ing.id === herb.id)
+                } else {
+                  // If hovering another herb, check if they share a potion
+                  const sharedPotions = herbToPotionTree.connections.filter(conn =>
+                    conn.herbId === herb.id || conn.herbId === hoveredNode
+                  )
+                  isConnected = sharedPotions.some(conn =>
+                    conn.herbId === herb.id || conn.herbId === hoveredNode
+                  )
+                }
+              }
+
+              return (
+                <div
+                  key={`herb-${herb.id}`}
+                  className={`herb-node radial ${!isConnected ? 'faded' : ''}`}
+                  style={{
+                    position: 'absolute',
+                    left: `${xPos}px`,
+                    top: `${yPos}px`,
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: hoveredNode === herb.id ? 100 : 10,
+                    opacity: isConnected ? 1 : 0.15,
+                    transition: 'opacity 0.3s ease'
+                  }}
+                  onMouseEnter={() => setHoveredNode(herb.id)}
+                  onMouseLeave={() => setHoveredNode(null)}
+                  title={`${herb.name} (${herb.rarity})`}
+                >
+                  <div className="herb-icon">{herb.icon}</div>
+                  <div className="herb-name">{herb.name}</div>
+                </div>
+              )
+            })}
+
+            {/* Render Potions (Inner Radial Layer) */}
             {herbToPotionTree.potions.map(potion => {
               if (!potion.position) return null
 
@@ -306,23 +394,46 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
               const available = canUnlock(potion)
 
               const scale = 50
-              const centerOffset = 1200
+              const centerOffset = 1800
               const xPos = potion.position.x * scale + centerOffset
               const yPos = potion.position.y * scale + centerOffset
 
               // Highlight center potion
               const isCenter = potion.id === 'healing-potion'
 
+              // Check if this potion is connected to hovered node
+              let isConnected = !hoveredNode || hoveredNode === potion.id
+
+              if (hoveredNode && hoveredNode !== potion.id) {
+                // If hovering a herb, check if this potion uses that herb
+                const hoveredHerb = herbToPotionTree.herbs.find(h => h.id === hoveredNode)
+                if (hoveredHerb) {
+                  isConnected = potion.ingredients.some(ing => ing.id === hoveredNode)
+                } else {
+                  // If hovering another potion, check if this is a requirement or dependent
+                  const hoveredPotion = herbToPotionTree.potions.find(p => p.id === hoveredNode)
+                  if (hoveredPotion) {
+                    // Check if current potion is required by hovered potion
+                    const isRequirement = hoveredPotion.requires?.includes(potion.id)
+                    // Check if current potion requires hovered potion
+                    const requiresHovered = potion.requires?.includes(hoveredNode)
+                    isConnected = isRequirement || requiresHovered
+                  }
+                }
+              }
+
               return (
                 <div
                   key={`potion-${potion.id}`}
-                  className={`recipe-node wallpaper radial ${isCenter ? 'center' : ''} ${unlocked ? 'unlocked' : ''} ${available ? 'available' : 'locked'}`}
+                  className={`recipe-node wallpaper radial ${isCenter ? 'center' : ''} ${unlocked ? 'unlocked' : ''} ${available ? 'available' : 'locked'} ${!isConnected ? 'faded' : ''}`}
                   style={{
                     position: 'absolute',
                     left: `${xPos}px`,
                     top: `${yPos}px`,
                     transform: 'translate(-50%, -50%)',
-                    zIndex: hoveredNode === potion.id ? 100 : 15
+                    zIndex: hoveredNode === potion.id ? 100 : 15,
+                    opacity: isConnected ? 1 : 0.15,
+                    transition: 'opacity 0.3s ease'
                   }}
                   onClick={() => setSelectedRecipe(potion)}
                   onMouseEnter={() => setHoveredNode(potion.id)}
@@ -377,7 +488,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                 <p className={`detail-rarity rarity-${selectedRecipe.rarity.toLowerCase().replace(' ', '-')}`}>
                   {selectedRecipe.rarity}
                 </p>
-                <p className="detail-category">Kategorie: {selectedRecipe.category}</p>
+                <p className="detail-category">Category: {selectedRecipe.category}</p>
                 <p className="detail-source">{selectedRecipe.dndSource}</p>
               </div>
             </div>
@@ -487,10 +598,10 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
             ) : (
               <button disabled className="unlock-button">
                 {skillPoints < selectedRecipe.cost
-                  ? 'Nicht genug Skill Points'
+                  ? 'Not enough Skill Points'
                   : manaLevel < selectedRecipe.manaLevelRequired
-                  ? `Benötigt Mana Level ${selectedRecipe.manaLevelRequired}`
-                  : 'Anforderungen nicht erfüllt'}
+                  ? `Requires Mana Level ${selectedRecipe.manaLevelRequired}`
+                  : 'Requirements not met'}
               </button>
             )}
           </div>

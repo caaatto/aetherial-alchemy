@@ -109,24 +109,24 @@ function Inventory({ ingredients, inventory, setInventory }) {
       </div>
 
       <div className="inventory-sections">
-        {/* Zutaten Sektion */}
+        {/* Ingredients Section */}
         <div className="inventory-section">
           <div className="section-header">
-            <h3>🌿 Zutaten ({ingredientsList.length})</h3>
+            <h3>🌿 Ingredients ({ingredientsList.length})</h3>
             <button onClick={() => setShowAddIngredient(!showAddIngredient)}>
-              {showAddIngredient ? '❌ Abbrechen' : '➕ Zutat hinzufügen'}
+              {showAddIngredient ? '❌ Cancel' : '➕ Add Ingredient'}
             </button>
           </div>
 
           {showAddIngredient && (
             <div className="card add-ingredient-form">
               <div className="form-group">
-                <label>Zutat auswählen</label>
+                <label>Select Ingredient</label>
                 <select
                   value={selectedIngredient}
                   onChange={(e) => setSelectedIngredient(e.target.value)}
                 >
-                  <option value="">-- Zutat wählen --</option>
+                  <option value="">-- Select Ingredient --</option>
                   {ingredients.map(ing => (
                     <option key={ing.id} value={ing.id}>{ing.name}</option>
                   ))}
@@ -134,7 +134,7 @@ function Inventory({ ingredients, inventory, setInventory }) {
               </div>
 
               <div className="form-group">
-                <label>Menge</label>
+                <label>Amount</label>
                 <input
                   type="number"
                   value={amount}
@@ -144,14 +144,14 @@ function Inventory({ ingredients, inventory, setInventory }) {
               </div>
 
               <button onClick={handleAddIngredient} disabled={!selectedIngredient}>
-                Hinzufügen
+                Add
               </button>
             </div>
           )}
 
           {ingredientsList.length === 0 ? (
             <div className="card empty-state">
-              <p>Keine Zutaten im Inventar</p>
+              <p>No ingredients in inventory</p>
             </div>
           ) : (
             <div className="ingredients-inventory grid grid-3">
@@ -215,7 +215,7 @@ function Inventory({ ingredients, inventory, setInventory }) {
                   </div>
 
                   <p className="potion-effect">
-                    <strong>Effekt:</strong> {potion.effect}
+                    <strong>Effect:</strong> {potion.effect}
                     {potion.effectMultiplier > 1 && (
                       <span className="multiplier"> (×{potion.effectMultiplier})</span>
                     )}

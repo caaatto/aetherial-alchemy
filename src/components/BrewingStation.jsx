@@ -85,10 +85,10 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
       effectMultiplier = 1.25
     }
 
-    // Zutaten verbrauchen
+    // Consume ingredients
     const newIngredients = consumeIngredients(selectedRecipe)
 
-    // Bei Erfolg: Trank hinzufügen
+    // On success: Add potion
     let newPotions = [...inventory.potions]
     if (success || critSuccess) {
       const potion = {
@@ -162,11 +162,11 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                       <span>⏱️ {recipe.brewTime}</span>
                     </div>
                     {recipe.effect && (
-                      <p className="recipe-effect"><strong>Effekt:</strong> {recipe.effect}</p>
+                      <p className="recipe-effect"><strong>Effect:</strong> {recipe.effect}</p>
                     )}
                     {!check.available && (
                       <div className="missing-ingredients">
-                        <strong>⚠️ Fehlende Zutaten:</strong>
+                        <strong>⚠️ Missing Ingredients:</strong>
                         <ul>
                           {check.missing.map((miss, idx) => (
                             <li key={idx}>
@@ -247,38 +247,38 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                       <strong>{result.modifier >= 0 ? '+' : ''}{result.modifier}</strong>
                     </div>
                     <div className="roll-detail total">
-                      <span>= Gesamt:</span>
+                      <span>= Total:</span>
                       <strong>{result.total}</strong>
                     </div>
                     <div className="roll-detail">
-                      <span>🎯 Benötigt:</span>
+                      <span>🎯 Required:</span>
                       <strong>{result.dc}</strong>
                     </div>
                   </div>
 
                   <div className="quality-badge">
-                    Qualität: <strong>{result.quality}</strong>
+                    Quality: <strong>{result.quality}</strong>
                   </div>
 
                   {result.success ? (
                     <p className="result-message">
-                      Der Trank wurde erfolgreich gebraut und deinem Inventar hinzugefügt!
+                      The potion was successfully brewed and added to your inventory!
                     </p>
                   ) : (
                     <p className="result-message">
-                      Die Zutaten wurden verbraucht, aber das Brauen ist fehlgeschlagen.
+                      The ingredients were consumed, but the brewing failed.
                     </p>
                   )}
 
                   <div className="result-actions">
-                    <button onClick={resetBrewing}>Weiteres Rezept brauen</button>
+                    <button onClick={resetBrewing}>Brew Another Recipe</button>
                   </div>
                 </div>
               )}
 
               {availability && availability.available && selectedRecipe.requiredIngredients.length > 0 && (
                 <div className="ingredients-used">
-                  <h4>Verbrauchte Zutaten:</h4>
+                  <h4>Consumed Ingredients:</h4>
                   <ul>
                     {selectedRecipe.requiredIngredients.map((reqIng, idx) => (
                       <li key={idx}>

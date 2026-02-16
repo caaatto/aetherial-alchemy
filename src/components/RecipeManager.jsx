@@ -23,7 +23,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
       rarity: 'Common',
       effect: '',
       dc: 10,
-      brewTime: '1 Stunde',
+      brewTime: '1 Hour',
       requiredIngredients: []
     })
     setEditingId(null)
@@ -55,7 +55,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
   }
 
   const handleDelete = (id) => {
-    if (confirm('Dieses Rezept wirklich löschen?')) {
+    if (confirm('Really delete this recipe?')) {
       setRecipes(recipes.filter(rec => rec.id !== id))
     }
   }
@@ -84,25 +84,25 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
   }
 
   const getIngredientName = (ingredientId) => {
-    return ingredients.find(ing => ing.id === ingredientId)?.name || 'Unbekannt'
+    return ingredients.find(ing => ing.id === ingredientId)?.name || 'Unknown'
   }
 
   return (
     <div className="recipe-manager">
       <div className="library-header">
-        <h2>Rezept-Verwaltung</h2>
+        <h2>Recipe Management</h2>
         <button onClick={() => setShowForm(!showForm)}>
-          {showForm ? '❌ Abbrechen' : '➕ Neues Rezept'}
+          {showForm ? '❌ Cancel' : '➕ New Recipe'}
         </button>
       </div>
 
       {showForm && (
         <div className="card">
-          <h3>{editingId ? 'Rezept bearbeiten' : 'Neues Rezept erstellen'}</h3>
+          <h3>{editingId ? 'Edit Recipe' : 'Create New Recipe'}</h3>
           <form onSubmit={handleSubmit} className="recipe-form">
             <div className="form-row">
               <div className="form-group">
-                <label>Trank-Name *</label>
+                <label>Potion Name *</label>
                 <input
                   type="text"
                   value={formData.name}
@@ -112,7 +112,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
               </div>
 
               <div className="form-group">
-                <label>Seltenheit</label>
+                <label>Rarity</label>
                 <select
                   value={formData.rarity}
                   onChange={(e) => setFormData({...formData, rarity: e.target.value})}
@@ -126,7 +126,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
 
             <div className="form-row">
               <div className="form-group">
-                <label>DC (Schwierigkeit)</label>
+                <label>DC (Difficulty)</label>
                 <input
                   type="number"
                   value={formData.dc}
@@ -137,46 +137,46 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
               </div>
 
               <div className="form-group">
-                <label>Brauzeit</label>
+                <label>Brewing Time</label>
                 <input
                   type="text"
                   value={formData.brewTime}
                   onChange={(e) => setFormData({...formData, brewTime: e.target.value})}
-                  placeholder="z.B. 1 Stunde, 1 Tag..."
+                  placeholder="e.g. 1 Hour, 1 Day..."
                 />
               </div>
             </div>
 
             <div className="form-group">
-              <label>Effekt</label>
+              <label>Effect</label>
               <input
                 type="text"
                 value={formData.effect}
                 onChange={(e) => setFormData({...formData, effect: e.target.value})}
-                placeholder="z.B. Heilt 2d4+2 TP, Unsichtbarkeit für 1 Stunde..."
+                placeholder="e.g. Heals 2d4+2 HP, Invisibility for 1 Hour..."
               />
             </div>
 
             <div className="form-group">
-              <label>Beschreibung</label>
+              <label>Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 rows="3"
-                placeholder="Beschreibung des Tranks..."
+                placeholder="Description of the potion..."
               />
             </div>
 
             <div className="form-group">
               <div className="ingredients-header">
-                <label>Benötigte Zutaten</label>
+                <label>Required Ingredients</label>
                 <button type="button" onClick={addIngredient} disabled={ingredients.length === 0}>
-                  ➕ Zutat hinzufügen
+                  ➕ Add Ingredient
                 </button>
               </div>
 
               {ingredients.length === 0 ? (
-                <p className="warning-text">⚠️ Erstelle zuerst Zutaten in der Zutaten-Bibliothek!</p>
+                <p className="warning-text">⚠️ Create ingredients in the Ingredients Library first!</p>
               ) : (
                 <div className="required-ingredients">
                   {formData.requiredIngredients.map((reqIng, index) => (
@@ -186,7 +186,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
                         onChange={(e) => updateIngredient(index, 'ingredientId', e.target.value)}
                         required
                       >
-                        <option value="">-- Zutat wählen --</option>
+                        <option value="">-- Select Ingredient --</option>
                         {ingredients.map(ing => (
                           <option key={ing.id} value={ing.id}>{ing.name}</option>
                         ))}
@@ -197,7 +197,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
                         value={reqIng.amount}
                         onChange={(e) => updateIngredient(index, 'amount', parseInt(e.target.value))}
                         min="1"
-                        placeholder="Menge"
+                        placeholder="Amount"
                       />
 
                       <button type="button" onClick={() => removeIngredient(index)} className="btn-danger">
@@ -207,7 +207,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
                   ))}
 
                   {formData.requiredIngredients.length === 0 && (
-                    <p className="info-text">Noch keine Zutaten hinzugefügt</p>
+                    <p className="info-text">No ingredients added yet</p>
                   )}
                 </div>
               )}
@@ -215,10 +215,10 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
 
             <div className="form-actions">
               <button type="submit">
-                {editingId ? '💾 Speichern' : '➕ Rezept erstellen'}
+                {editingId ? '💾 Save' : '➕ Create Recipe'}
               </button>
               <button type="button" onClick={resetForm}>
-                Abbrechen
+                Cancel
               </button>
             </div>
           </form>
@@ -228,7 +228,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
       <div className="recipes-grid grid grid-2">
         {recipes.length === 0 ? (
           <div className="card empty-state">
-            <p>Noch keine Rezepte vorhanden. Erstelle dein erstes Rezept!</p>
+            <p>No recipes yet. Create your first recipe!</p>
           </div>
         ) : (
           recipes.map(recipe => (
@@ -246,7 +246,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
               </div>
 
               {recipe.effect && (
-                <p className="recipe-effect"><strong>Effekt:</strong> {recipe.effect}</p>
+                <p className="recipe-effect"><strong>Effect:</strong> {recipe.effect}</p>
               )}
 
               {recipe.description && (
@@ -255,7 +255,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
 
               {recipe.requiredIngredients.length > 0 && (
                 <div className="recipe-ingredients">
-                  <strong>Zutaten:</strong>
+                  <strong>Ingredients:</strong>
                   <ul>
                     {recipe.requiredIngredients.map((reqIng, idx) => (
                       <li key={idx}>
@@ -267,9 +267,9 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
               )}
 
               <div className="recipe-actions">
-                <button onClick={() => handleEdit(recipe)}>✏️ Bearbeiten</button>
+                <button onClick={() => handleEdit(recipe)}>✏️ Edit</button>
                 <button onClick={() => handleDelete(recipe.id)} className="btn-danger">
-                  🗑️ Löschen
+                  🗑️ Delete
                 </button>
               </div>
             </div>

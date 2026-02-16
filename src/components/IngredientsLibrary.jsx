@@ -51,7 +51,7 @@ function IngredientsLibrary({ ingredients, setIngredients }) {
   }
 
   const handleDelete = (id) => {
-    if (confirm('Diese Zutat wirklich löschen?')) {
+    if (confirm('Really delete this ingredient?')) {
       setIngredients(ingredients.filter(ing => ing.id !== id))
     }
   }
@@ -59,15 +59,15 @@ function IngredientsLibrary({ ingredients, setIngredients }) {
   return (
     <div className="ingredients-library">
       <div className="library-header">
-        <h2>Zutaten-Bibliothek</h2>
+        <h2>Ingredients Library</h2>
         <button onClick={() => setShowForm(!showForm)}>
-          {showForm ? '❌ Abbrechen' : '➕ Neue Zutat'}
+          {showForm ? '❌ Cancel' : '➕ New Ingredient'}
         </button>
       </div>
 
       {showForm && (
         <div className="card">
-          <h3>{editingId ? 'Zutat bearbeiten' : 'Neue Zutat hinzufügen'}</h3>
+          <h3>{editingId ? 'Edit Ingredient' : 'Add New Ingredient'}</h3>
           <form onSubmit={handleSubmit} className="ingredient-form">
             <div className="form-group">
               <label>Name *</label>
@@ -80,7 +80,7 @@ function IngredientsLibrary({ ingredients, setIngredients }) {
             </div>
 
             <div className="form-group">
-              <label>Seltenheit</label>
+              <label>Rarity</label>
               <select
                 value={formData.rarity}
                 onChange={(e) => setFormData({...formData, rarity: e.target.value})}
@@ -92,41 +92,41 @@ function IngredientsLibrary({ ingredients, setIngredients }) {
             </div>
 
             <div className="form-group">
-              <label>Effekt</label>
+              <label>Effect</label>
               <input
                 type="text"
                 value={formData.effect}
                 onChange={(e) => setFormData({...formData, effect: e.target.value})}
-                placeholder="z.B. Heilung, Gift, Unsichtbarkeit..."
+                placeholder="e.g. Healing, Poison, Invisibility..."
               />
             </div>
 
             <div className="form-group">
-              <label>Fundort</label>
+              <label>Location</label>
               <input
                 type="text"
                 value={formData.location}
                 onChange={(e) => setFormData({...formData, location: e.target.value})}
-                placeholder="z.B. Wald, Höhle, Sumpf..."
+                placeholder="e.g. Forest, Cave, Swamp..."
               />
             </div>
 
             <div className="form-group">
-              <label>Beschreibung</label>
+              <label>Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 rows="3"
-                placeholder="Beschreibung der Zutat..."
+                placeholder="Description of the ingredient..."
               />
             </div>
 
             <div className="form-actions">
               <button type="submit">
-                {editingId ? '💾 Speichern' : '➕ Hinzufügen'}
+                {editingId ? '💾 Save' : '➕ Add'}
               </button>
               <button type="button" onClick={resetForm}>
-                Abbrechen
+                Cancel
               </button>
             </div>
           </form>
@@ -136,7 +136,7 @@ function IngredientsLibrary({ ingredients, setIngredients }) {
       <div className="ingredients-grid grid grid-3">
         {ingredients.length === 0 ? (
           <div className="card empty-state">
-            <p>Noch keine Zutaten vorhanden. Füge deine erste Zutat hinzu!</p>
+            <p>No ingredients yet. Add your first ingredient!</p>
           </div>
         ) : (
           ingredients.map(ingredient => (
@@ -149,11 +149,11 @@ function IngredientsLibrary({ ingredients, setIngredients }) {
               </div>
 
               {ingredient.effect && (
-                <p className="ingredient-effect"><strong>Effekt:</strong> {ingredient.effect}</p>
+                <p className="ingredient-effect"><strong>Effect:</strong> {ingredient.effect}</p>
               )}
 
               {ingredient.location && (
-                <p className="ingredient-location"><strong>Fundort:</strong> {ingredient.location}</p>
+                <p className="ingredient-location"><strong>Location:</strong> {ingredient.location}</p>
               )}
 
               {ingredient.description && (
@@ -161,9 +161,9 @@ function IngredientsLibrary({ ingredients, setIngredients }) {
               )}
 
               <div className="ingredient-actions">
-                <button onClick={() => handleEdit(ingredient)}>✏️ Bearbeiten</button>
+                <button onClick={() => handleEdit(ingredient)}>✏️ Edit</button>
                 <button onClick={() => handleDelete(ingredient.id)} className="btn-danger">
-                  🗑️ Löschen
+                  🗑️ Delete
                 </button>
               </div>
             </div>
