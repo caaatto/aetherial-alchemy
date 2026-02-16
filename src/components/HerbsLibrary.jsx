@@ -28,8 +28,8 @@ function HerbsLibrary() {
     <div className="herbs-library-container">
       <div className="herbs-header">
         <div>
-          <h2>🌿 Aetherial Herbs Compendium</h2>
-          <p>Complete database of all 40 herbs from the Aetherial world</p>
+          <h2> Aetherial Herbs Compendium</h2>
+          <p>Complete database of all 53 herbs from the Aetherial world</p>
         </div>
         <div className="herbs-stats">
           <div className="stat-badge">
@@ -112,7 +112,7 @@ function HerbsLibrary() {
                       <h4>{herb.name}</h4>
                       {herb.manaContent > 0 && (
                         <div className="herb-mana-badge">
-                          💙 {herb.manaContent}
+                           {herb.manaContent}
                         </div>
                       )}
                       {herb.manaLevelRequired && (
@@ -138,7 +138,7 @@ function HerbsLibrary() {
 
                     {herb.location && (
                       <div className="herb-location">
-                        📍 {herb.location}
+                         {herb.location}
                       </div>
                     )}
                   </div>
@@ -180,7 +180,7 @@ function HerbsLibrary() {
               {selectedHerb.location && (
                 <div className="herb-detail-section">
                   <strong>Location:</strong>
-                  <p>📍 {selectedHerb.location}</p>
+                  <p> {selectedHerb.location}</p>
                 </div>
               )}
 
@@ -199,7 +199,7 @@ function HerbsLibrary() {
                 <div className="herb-detail-section mana-section">
                   <strong>Mana Content:</strong>
                   <div className="mana-value">
-                    💙 {selectedHerb.manaContent} Mana
+                     {selectedHerb.manaContent} Mana
                   </div>
                   <p className="mana-note">
                     This herb contains magical energy that enhances potion potency.

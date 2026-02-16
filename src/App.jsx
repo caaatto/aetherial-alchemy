@@ -26,12 +26,12 @@ function App() {
   }, [ingredients, recipes, inventory])
 
   const tabs = [
-    { id: 'recipe-tree', label: '🌳 Recipe Tree', component: RecipeTree },
-    { id: 'herbs', label: '📖 Kräuter-Kompendium', component: HerbsLibrary },
-    { id: 'brewing', label: '🧪 Brauen', component: BrewingStation },
-    { id: 'inventory', label: '📦 Inventar', component: Inventory },
-    { id: 'recipes', label: '📜 Rezepte', component: RecipeManager },
-    { id: 'ingredients', label: '🌿 Zutaten', component: IngredientsLibrary },
+    { id: 'recipe-tree', label: 'Recipe Tree', component: RecipeTree },
+    { id: 'herbs', label: 'Herbs Compendium', component: HerbsLibrary },
+    { id: 'brewing', label: 'Brewing', component: BrewingStation },
+    { id: 'inventory', label: 'Inventory', component: Inventory },
+    { id: 'recipes', label: 'Recipes', component: RecipeManager },
+    { id: 'ingredients', label: 'Ingredients', component: IngredientsLibrary },
   ]
 
   const ActiveComponent = tabs.find(t => t.id === activeTab)?.component
@@ -39,8 +39,8 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>⚗️ D&D 5e Alchemy Table</h1>
-        <p>Homebrew Trank-Herstellung</p>
+        <h1>D&D 5e Alchemy Table</h1>
+        <p>Homebrew Potion Crafting</p>
       </header>
 
       <nav className="tabs">

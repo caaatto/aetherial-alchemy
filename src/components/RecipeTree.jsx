@@ -95,16 +95,16 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
   }
 
   const categories = [
-    { id: 'all', label: 'Alle', icon: '📚' },
-    { id: 'healing', label: 'Heilung', icon: '💚' },
-    { id: 'mana', label: 'Mana', icon: '💙' },
-    { id: 'resistance', label: 'Widerstand', icon: '🛡️' },
-    { id: 'combat', label: 'Kampf', icon: '⚔️' },
-    { id: 'stealth', label: 'Stealth', icon: '👻' },
-    { id: 'transformation', label: 'Transformation', icon: '🐲' },
-    { id: 'utility', label: 'Utility', icon: '🔧' },
-    { id: 'protection', label: 'Schutz', icon: '🛡️' },
-    { id: 'hybrid', label: 'Hybrid', icon: '🌟' }
+    { id: 'all', label: 'All', icon: '' },
+    { id: 'healing', label: 'Healing', icon: '' },
+    { id: 'mana', label: 'Mana', icon: '' },
+    { id: 'resistance', label: 'Resistance', icon: '' },
+    { id: 'combat', label: 'Combat', icon: '' },
+    { id: 'stealth', label: 'Stealth', icon: '' },
+    { id: 'transformation', label: 'Transformation', icon: '' },
+    { id: 'utility', label: 'Utility', icon: '' },
+    { id: 'protection', label: 'Protection', icon: '' },
+    { id: 'hybrid', label: 'Hybrid', icon: '' }
   ]
 
   const filteredRecipes = filter === 'all'
@@ -118,7 +118,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
       {/* Header */}
       <div className="tree-header">
         <div className="tree-title">
-          <h2>⚗️ Aetherial Recipe Crafting Tree</h2>
+          <h2>️ Aetherial Recipe Crafting Tree</h2>
           <p>D&D 5e Potions + Aetherial Herbs System</p>
         </div>
         <div className="stats-display">
@@ -143,19 +143,19 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
           className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
           onClick={() => setViewMode('list')}
         >
-          📋 Listen-Ansicht
+           List View
         </button>
         <button
           className={`view-btn ${viewMode === 'wallpaper' ? 'active' : ''}`}
           onClick={() => setViewMode('wallpaper')}
         >
-          🖼️ Wallpaper-Tree
+          ️ Wallpaper Tree
         </button>
       </div>
 
       {/* Category Filter */}
       <div className="category-filter card">
-        <div className="filter-label">Kategorie:</div>
+        <div className="filter-label">Category:</div>
         <div className="filter-buttons">
           {categories.map(cat => (
             <button
@@ -198,7 +198,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                             <div className="recipe-cost">{recipe.cost} SP</div>
                           )}
                           {unlocked && (
-                            <div className="recipe-unlocked">✓</div>
+                            <div className="recipe-unlocked"></div>
                           )}
                         </div>
 
@@ -210,7 +210,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
 
                         {recipe.manaCost > 0 && (
                           <div className="recipe-mana-cost">
-                            💙 {recipe.manaCost} Mana
+                             {recipe.manaCost} Mana
                           </div>
                         )}
 
@@ -301,7 +301,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                         <div className="recipe-cost">{recipe.cost} SP</div>
                       )}
                       {unlocked && (
-                        <div className="recipe-unlocked">✓</div>
+                        <div className="recipe-unlocked"></div>
                       )}
                     </div>
 
@@ -313,7 +313,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
 
                     {recipe.manaCost > 0 && (
                       <div className="recipe-mana-cost">
-                        💙 {recipe.manaCost}
+                         {recipe.manaCost}
                       </div>
                     )}
 
@@ -352,26 +352,26 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
             </div>
 
             <div className="detail-effect">
-              <strong>Effekt:</strong> {selectedRecipe.effect}
+              <strong>Effect:</strong> {selectedRecipe.effect}
             </div>
 
             <div className="detail-meta">
               <div className="meta-item">
-                <span>🎲 DC:</span> <strong>{selectedRecipe.dc}</strong>
+                <span> DC:</span> <strong>{selectedRecipe.dc}</strong>
               </div>
               <div className="meta-item">
-                <span>⏱️ Brauzeit:</span> <strong>{selectedRecipe.brewTime}</strong>
+                <span>⏱️ Brew Time:</span> <strong>{selectedRecipe.brewTime}</strong>
               </div>
               <div className="meta-item">
-                <span>💰 SP Kosten:</span>
-                <strong>{selectedRecipe.cost === 0 ? 'Gratis' : `${selectedRecipe.cost} SP`}</strong>
+                <span> SP Cost:</span>
+                <strong>{selectedRecipe.cost === 0 ? 'Free' : `${selectedRecipe.cost} SP`}</strong>
               </div>
               <div className="meta-item">
-                <span>💙 Mana:</span>
-                <strong>{selectedRecipe.manaCost === 0 ? 'Kein Mana' : `${selectedRecipe.manaCost} Mana`}</strong>
+                <span> Mana:</span>
+                <strong>{selectedRecipe.manaCost === 0 ? 'No Mana' : `${selectedRecipe.manaCost} Mana`}</strong>
               </div>
               <div className="meta-item">
-                <span>📊 Level:</span>
+                <span> Level:</span>
                 <strong>Mana Level {selectedRecipe.manaLevelRequired}</strong>
               </div>
             </div>
@@ -379,14 +379,14 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
             {/* Requirements */}
             {selectedRecipe.requires && selectedRecipe.requires.length > 0 && (
               <div className="detail-requirements">
-                <strong>Benötigt:</strong>
+                <strong>Requires:</strong>
                 <ul>
                   {selectedRecipe.requires.map(reqId => {
                     const reqRecipe = getRecipeById(reqId)
                     const reqUnlocked = isUnlocked(reqId)
                     return (
                       <li key={reqId} className={reqUnlocked ? 'completed' : 'incomplete'}>
-                        {reqUnlocked ? '✓' : '✗'} {reqRecipe?.name || reqId}
+                        {reqUnlocked ? '' : ''} {reqRecipe?.name || reqId}
                       </li>
                     )
                   })}
@@ -396,7 +396,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
 
             {/* Ingredients with detailed herb info */}
             <div className="detail-ingredients">
-              <strong>Zutaten:</strong>
+              <strong>Ingredients:</strong>
               <ul>
                 {selectedRecipe.ingredients.map((ing, idx) => {
                   const herbData = getHerbById(ing.id)
@@ -412,7 +412,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                           {herbData.categories.join(', ')}
                         </span>
                         {herbData.manaContent > 0 && (
-                          <span className="ingredient-mana">💙 {herbData.manaContent} Mana</span>
+                          <span className="ingredient-mana"> {herbData.manaContent} Mana</span>
                         )}
                       </div>
                     </li>
@@ -424,7 +424,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
             {/* Unlocks */}
             {selectedRecipe.unlocks && selectedRecipe.unlocks.length > 0 && (
               <div className="detail-unlocks">
-                <strong>Schaltet frei:</strong>
+                <strong>Unlocks:</strong>
                 <ul>
                   {selectedRecipe.unlocks.map(unlockId => {
                     const unlockRecipe = getRecipeById(unlockId)
@@ -441,7 +441,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
             {/* Unlock Button */}
             {isUnlocked(selectedRecipe.id) ? (
               <button disabled className="unlock-button">
-                ✓ Bereits Freigeschaltet
+                 Already Unlocked
               </button>
             ) : canUnlock(selectedRecipe) ? (
               <button
@@ -451,7 +451,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                   setSelectedRecipe(null)
                 }}
               >
-                Freischalten für {selectedRecipe.cost} SP
+                Unlock für {selectedRecipe.cost} SP
               </button>
             ) : (
               <button disabled className="unlock-button">
@@ -468,36 +468,36 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
 
       {/* Legend */}
       <div className="tree-legend card">
-        <h3>Legende & Mana-System</h3>
+        <h3>Legend & Mana System</h3>
         <div className="legend-grid">
           <div className="legend-item">
             <div className="recipe-node mini unlocked">
-              <div className="recipe-icon">✓</div>
+              <div className="recipe-icon"></div>
             </div>
-            <span>Freigeschaltet</span>
+            <span>Unlocked</span>
           </div>
           <div className="legend-item">
             <div className="recipe-node mini available">
               <div className="recipe-icon">○</div>
             </div>
-            <span>Verfügbar</span>
+            <span>Available</span>
           </div>
           <div className="legend-item">
             <div className="recipe-node mini locked">
-              <div className="recipe-icon">✗</div>
+              <div className="recipe-icon"></div>
             </div>
-            <span>Gesperrt</span>
+            <span>Locked</span>
           </div>
         </div>
         <div className="legend-info">
-          <p><strong>💙 Mana-System:</strong></p>
+          <p><strong> Mana-System:</strong></p>
           <ul>
-            <li>Manche Tränke kosten Mana beim Brauen</li>
-            <li>Mana-Tränke regenerieren dein Mana</li>
-            <li>Mana Level 1-4 schaltet mächtigere Rezepte frei</li>
-            <li>Kräuter mit Mana-Content erhöhen die Potenz</li>
+            <li>Some potions cost Mana to brew</li>
+            <li>Mana potions restore your Mana</li>
+            <li>Mana Level 1-4 unlocks more powerful recipes</li>
+            <li>Herbs with Mana content increase potency</li>
           </ul>
-          <p><strong>🌿 Kräuter-Kategorien:</strong> Medicinal, Culinary, Magical, Ritual/Cultural, Brewing/Crafting</p>
+          <p><strong> Herb Categories:</strong> Medicinal, Culinary, Magical, Ritual/Cultural, Brewing/Crafting</p>
         </div>
       </div>
     </div>

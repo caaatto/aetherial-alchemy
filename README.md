@@ -1,4 +1,4 @@
-# 🧪 Aetherial Alchemy - D&D 5e Potion Crafting System
+# Aetherial Alchemy - D&D 5e Potion Crafting System
 
 A web-based alchemy crafting system for D&D 5e campaigns set in the Aetherial world. Features a complete potion brewing system with RPG-style skill trees, 100+ recipes, and 40+ magical herbs.
 
@@ -7,9 +7,9 @@ A web-based alchemy crafting system for D&D 5e campaigns set in the Aetherial wo
 ![React](https://img.shields.io/badge/react-18.2-blue?style=for-the-badge&logo=react)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 
-## ✨ Features
+## Features
 
-### 🌳 Recipe Skill Tree
+###  Recipe Skill Tree
 - **100+ Potions** based on D&D 5e DMG rules
 - **Dual View Modes**: List view (tier-based) and Wallpaper view (horizontal flowchart with SVG connection lines)
 - **Unlock System**: Spend skill points to unlock recipes with prerequisites
@@ -17,42 +17,42 @@ A web-based alchemy crafting system for D&D 5e campaigns set in the Aetherial wo
 - **Visual Progression**: See upgrade paths from Basic → Greater → Superior → Supreme → Divine
 - **Interactive Tree**: Click recipes to view details, requirements, and unlock paths
 
-### 📖 Aetherial Herbs Compendium
+###  Aetherial Herbs Compendium
 - **53 Magical Herbs** from the Aetherial world
 - **Searchable Database** with filters by rarity and category
 - **Detailed Information**: Properties, mana content, locations, required mana level
 - **5 Rarity Tiers**: Common, Uncommon, Rare, Very Rare, Legendary
 - **Categories**: Medicinal, Culinary, Magical, Ritual/Cultural, Brewing/Crafting
 
-### 💙 Mana System Integration
+###  Mana System Integration
 - **4 Mana Levels**: Character progression system (Level 1-4)
 - **Mana Costs**: Powerful potions consume mana to brew (0-120 mana)
 - **Mana Potions**: Restore mana reserves (10-200+ mana)
 - **Herb Mana Content**: Some herbs contain magical energy
 - **Level Gates**: Legendary potions require Mana Level 3-4
 
-### 🎲 D&D 5e Brewing Mechanics
+###  D&D 5e Brewing Mechanics
 - **d20 + Bonus vs DC**: Classic D&D skill check system (DC 10-26)
 - **Critical Success/Failure**: Natural 20s double output, Natural 1s fail
 - **Brew Time System**: From 1 hour to 24 hours per potion
 - **Recipe Sources**: All potions reference DMG pages or homebrew extensions
 - **Difficulty Scaling**: DC increases with potion rarity and power
 
-### 🎨 Retro Pixel Art Design
+###  Retro Pixel Art Design
 - **8-bit Aesthetic**: Press Start 2P font, pixelated borders, box-shadow 3D effects
 - **Dark Fantasy Theme**: Atmospheric color palette with rarity-based color coding
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
 - **Animated Elements**: Pulsing unlockable recipes, smooth transitions, hover effects
 - **Accessibility**: High contrast, clear typography, keyboard navigation
 
-### 📦 Additional Features
+###  Additional Features
 - **Inventory System**: Track crafted potions and collected herbs with quantities
 - **LocalStorage Persistence**: Progress automatically saved in browser
 - **Import/Export**: Share your inventory and progress with your party
 - **Custom Recipes**: Add your own homebrew potions
 - **Custom Ingredients**: Extend the herb database with your own creations
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Node.js 16+ and npm
@@ -80,7 +80,7 @@ npm run build
 npm run preview
 ```
 
-## 📚 How to Use
+##  How to Use
 
 ### 1. Recipe Tree
 - Start with **15 Skill Points** and **Mana Level 1**
@@ -138,38 +138,38 @@ npm run preview
   - Define properties and effects
   - Assign mana content
 
-## 🎮 Potion Categories
+##  Potion Categories
 
-### 💚 Healing (15+ recipes)
+###  Healing (15+ recipes)
 From basic HP restoration to divine resurrection
-- **Heiltrank** → **Greater** → **Superior** → **Supreme** → **Divine Healing**
+- **Healing Potion** → **Greater** → **Superior** → **Supreme** → **Divine Healing**
 - **Regeneration** potions for HP over time
 - **Vitality** and **Elixir of Health** for condition removal
 - **Longevity** to reduce biological age
 
-### 💙 Mana (10+ recipes)
+###  Mana (10+ recipes)
 Restore and boost magical energy
 - **Minor Mana Potion** (10 mana) → **Greater** (40) → **Superior** (100) → **Supreme** (200) → **Mana Overflow**
 - **Mana-Sight** to see magical auras
 - **Astral Vision** to perceive the astral plane
 
-### 🔥 Resistance & Immunity (20+ recipes)
+###  Resistance & Immunity (20+ recipes)
 Protection from elemental and physical damage
 - **Fire/Cold/Lightning/Poison** Resistance → Immunity
 - **Elemental Ward** (all 4 elements) → **Elemental Mastery** (Legendary)
 - **Stoneskin** → **Invulnerability** (immunity to all damage!)
 
-### 💪 Strength (7 recipes)
+###  Strength (7 recipes)
 Giant Strength progression
 - **Hill Giant** (STR 21) → **Stone** (23) → **Frost** (23) → **Fire** (25) → **Cloud** (27) → **Storm Giant** (STR 29, Legendary!)
 
-### ⚔️ Combat (20+ recipes)
+### Combat (20+ recipes)
 Battle enhancement and tactical advantages
 - **Speed** (like Haste spell)
 - **Heroism** → **Battle Fury** (enhanced version)
 - **Magic Weapon** (+1) → **Enhanced** (+2) → **Oil of Sharpness** (+3) → **Vorpal Edge** (Legendary decapitation!)
 
-### 👻 Stealth & Illusion (15+ recipes)
+###  Stealth & Illusion (15+ recipes)
 Invisibility and deception
 - **Invisibility** → **Greater Invisibility**
 - **Shadow Step** (teleport through shadows)
@@ -177,7 +177,7 @@ Invisibility and deception
 - **Mirror Image** → **Greater Mirror Image**
 - **Blur** → **Displacement**
 
-### 🦅 Utility & Transformation (25+ recipes)
+###  Utility & Transformation (25+ recipes)
 Exploration, mobility, and shapeshifting
 - **Flying**, **Levitation**, **Water Breathing** → **Aquatic Mastery**
 - **Animal Friendship** → **Beast Speech** → **Animal Shape** → **Polymorph**
@@ -186,14 +186,14 @@ Exploration, mobility, and shapeshifting
 - **Darkvision** → **Truesight**
 - **Clairvoyance** → **Scrying**
 
-### 💬 Social & Mind (10+ recipes)
+###  Social & Mind (10+ recipes)
 Influence and communication
 - **Comprehend Languages** → **Tongues**
 - **Charm** → **Dominate Mind**
 - **Mind Reading**
 - **Bless** → **Divine Favor**
 
-### ⏰ Special & Legendary (10+ recipes)
+### Special & Legendary (10+ recipes)
 Reality-bending and ultimate power
 - **Time Slow** → **Time Stop** (Legendary)
 - **Dragon Transformation** (become a dragon!)
@@ -201,30 +201,30 @@ Reality-bending and ultimate power
 - **Fortune's Favor** (advantage on all rolls)
 - **Luck** (roll 2 dice, choose result)
 
-## 🌿 Sample Recipes
+##  Sample Recipes
 
 ### Basic Tier (Common/Uncommon)
-**Heiltrank** (Potion of Healing)
+**Potion of Healing**
 - Effect: Restores 2d4+2 HP
 - DC: 10 | Brew Time: 1 hour | Mana: 0
 - Ingredients: Wolfsfarn (2), Eisenkraut (1)
 - Source: DMG p.187
 
-**Feuerwiderstand** (Fire Resistance)
+**Fire Resistance**
 - Effect: Resistance to fire damage for 1 hour
 - DC: 13 | Brew Time: 3 hours | Mana: 0
 - Ingredients: Feuerblüte (3), Glutwurz (2)
 - Source: DMG p.188
 
 ### Advanced Tier (Rare)
-**Unsichtbarkeit** (Invisibility)
+**Invisibility**
 - Effect: Invisibility for 1 hour
 - DC: 16 | Brew Time: 6 hours | Mana: 25
 - Ingredients: Schattenkraut (4), Todeswurz (2), Hexenholz (1)
 - Requires: Mana Level 2
 - Source: DMG p.188
 
-**Riesenstärke (Feuer)** (Fire Giant Strength)
+**Fire Giant Strength**
 - Effect: Strength becomes 25 for 1 hour
 - DC: 17 | Brew Time: 8 hours | Mana: 25
 - Ingredients: Eisenkraut (6), Feuerblüte (5), Drachenmelisse (3)
@@ -232,21 +232,21 @@ Reality-bending and ultimate power
 - Source: DMG p.187
 
 ### Legendary Tier (Legendary)
-**Zeitstopp** (Time Stop)
+**Time Stop**
 - Effect: Stop time for 1d4+1 rounds (only you can act)
 - DC: 26 | Brew Time: 24 hours | Mana: 120
 - Ingredients: Runenwurz (10), Mondfarn (8), Götterbalsam (5), Phönixfederkraut (4)
 - Requires: Mana Level 4, Time Slow unlocked
 - Source: DMG p.189
 
-**Göttliche Heilung** (Divine Healing)
+**Divine Healing**
 - Effect: Full HP restoration + remove all conditions + resurrection if dead < 1 min
 - DC: 25 | Brew Time: 20 hours | Mana: 90
 - Ingredients: Phönixfederkraut (5), Götterbalsam (3), Ewiggrün (4), Runenwurz (2)
 - Requires: Mana Level 4, Supreme Healing unlocked
 - Source: Homebrew
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **React 18.2**: Modern component-based UI with hooks
 - **Vite 5.0**: Lightning-fast build tool and dev server with HMR
@@ -255,7 +255,7 @@ Reality-bending and ultimate power
 - **Pure CSS**: Custom pixel art design system, no framework dependencies
 - **SVG**: Dynamic connection lines in Wallpaper tree view
 
-## 🗺️ Aetherial World
+## Aetherial World
 
 This system is designed for campaigns in the **Aetherial world**, featuring:
 - **Unique magical herbs** with mana properties and elemental affinities
@@ -273,28 +273,28 @@ This system is designed for campaigns in the **Aetherial world**, featuring:
 
 Based on the [Aetherial Wiki](https://aetherial.fandom.com/wiki/Aetherial_Wiki)
 
-## 📝 License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Credits
+##  Credits
 
 - **D&D 5e Rules**: Based on Dungeon Master's Guide (DMG) potion rules
 - **Aetherial Herbs**: Inspired by the Aetherial campaign setting
 - **Pixel Art Font**: Press Start 2P by CodeMan38
 - **Open Source**: Built for the D&D community
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Feel free to:
-- ⭐ Star the repository
-- 🐛 Report bugs via Issues
-- 💡 Suggest new features or potions
-- 🌿 Add new herbs to the database
-- 🎨 Improve UI/UX design
-- 📖 Improve documentation
-- 🌍 Translate to other languages
-- 🔀 Submit Pull Requests
+- Star the repository
+- Report bugs via Issues
+- Suggest new features or potions
+- Add new herbs to the database
+- Improve UI/UX design
+- Improve documentation
+- Translate to other languages
+- Submit Pull Requests
 
 ### Development Setup
 1. Fork the repository
@@ -305,7 +305,7 @@ Contributions are welcome! Feel free to:
 6. Push to your fork (`git push origin feature/amazing-potion`)
 7. Open a Pull Request
 
-## 🎯 Roadmap
+##  Roadmap
 
 - [ ] Multiplayer/party inventory sharing via WebSockets
 - [ ] DM mode with advanced campaign management
@@ -318,13 +318,13 @@ Contributions are welcome! Feel free to:
 - [ ] Roll20/Foundry VTT plugins
 - [ ] AI-powered custom recipe generator
 
-## 📞 Support
+##  Support
 
 - **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/YOUR_USERNAME/aetherial-alchemy/issues)
 - **Discussions**: Share ideas in [GitHub Discussions](https://github.com/YOUR_USERNAME/aetherial-alchemy/discussions)
 - **Wiki**: Check the project wiki for guides and tips
 
-## 📊 Project Stats
+##  Project Stats
 
 - **100+ Recipes**: Complete D&D 5e potion collection + homebrew
 - **53 Herbs**: Full Aetherial herb database
@@ -334,6 +334,6 @@ Contributions are welcome! Feel free to:
 
 ---
 
-**Made with ⚗️ for D&D 5e players and Dungeon Masters**
+**Made with for D&D 5e players and Dungeon Masters**
 
-*Happy Brewing!* 🧪✨
+*Happy Brewing!* 
