@@ -247,24 +247,26 @@
   gap: 6px;
 }
 
-.ae-add-herb-row select {
-  flex: 1;
+.ae-add-herb-row select,
+.ae-add-herb-row input[type="number"] {
+  height: 30px;
+  box-sizing: border-box;
   background: #0f0f1e;
   border: 1px solid #2a2a4a;
   border-radius: 6px;
   color: #ccc;
-  padding: 5px 6px;
+  padding: 0 6px;
   font-size: 12px;
+}
+
+.ae-add-herb-row select {
+  flex: 1;
   min-width: 0;
 }
 
 .ae-add-herb-row input[type="number"] {
   width: 48px;
-  background: #0f0f1e;
-  border: 1px solid #2a2a4a;
-  border-radius: 6px;
   color: #fff;
-  padding: 5px 6px;
   font-size: 13px;
   font-weight: bold;
   text-align: center;

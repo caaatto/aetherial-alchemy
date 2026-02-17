@@ -84,10 +84,13 @@ const [herbs, recipes] = await Promise.all([
 // Storage key: ae_inv_<characterId>  →  { ingredients: { herbId: count, ... } }
 
 async function getInventory(charId) {
-  if (!charId) return { ingredients: {} }
+  if (!charId) return { ingredients: {}, potions: {} }
   const key = `ae_inv_${charId}`
   const result = await chrome.storage.local.get(key)
-  return result[key] || { ingredients: {} }
+  const inv = result[key] || {}
+  if (!inv.ingredients) inv.ingredients = {}
+  if (!inv.potions)     inv.potions     = {}
+  return inv
 }
 
 async function saveInventory(charId, inv) {
@@ -252,7 +255,7 @@ function renderInventory() {
       </div>
     </div>`
 
-  // ── Current inventory ─────────────────────────────────────────────────────
+  // ── Current herbs ─────────────────────────────────────────────────────────
   if (entries.length === 0) {
     html += '<p class="ae-empty" style="margin-top:12px">Keine Kräuter im Inventar.</p>'
   } else {
@@ -272,11 +275,28 @@ function renderInventory() {
         html += `
           <div class="ae-herb-row">
             <span class="ae-herb-name">${herb?.name || id}</span>
-            <button class="ae-btn-sm" data-action="sub" data-id="${id}">−</button>
+            <button class="ae-btn-sm" data-action="sub-herb" data-id="${id}">−</button>
             <span class="ae-herb-count">${count}</span>
-            <button class="ae-btn-sm" data-action="add" data-id="${id}">+</button>
+            <button class="ae-btn-sm" data-action="add-herb" data-id="${id}">+</button>
           </div>`
       })
+    })
+  }
+
+  // ── Brewed potions ────────────────────────────────────────────────────────
+  const potionEntries = Object.entries(state.inventory.potions || {}).filter(([, c]) => c > 0)
+  if (potionEntries.length > 0) {
+    html += '<div class="ae-section-title">Tränke</div>'
+    potionEntries.forEach(([recipeId, count]) => {
+      const recipe = recipes.find(r => r.id === recipeId)
+      if (!recipe) return
+      html += `
+        <div class="ae-herb-row">
+          <span class="ae-herb-name">${recipeIcon(recipe)} ${recipe.name}</span>
+          <button class="ae-btn-sm" data-action="sub-potion" data-id="${recipeId}">−</button>
+          <span class="ae-herb-count">${count}</span>
+          <button class="ae-btn-sm" data-action="add-potion" data-id="${recipeId}">+</button>
+        </div>`
     })
   }
 
@@ -296,22 +316,35 @@ function renderInventory() {
     renderBrew()
   })
 
-  // +/− buttons on existing entries
+  // +/− buttons
   el.querySelectorAll('[data-action]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const id     = btn.dataset.id
       const action = btn.dataset.action
       const inv    = state.inventory
-      const cur    = inv.ingredients[id] || 0
-      if (action === 'add') {
-        inv.ingredients[id] = cur + 1
-      } else {
-        if (cur <= 1) delete inv.ingredients[id]
-        else inv.ingredients[id] = cur - 1
+
+      if (action === 'add-herb' || action === 'sub-herb') {
+        const cur = inv.ingredients[id] || 0
+        if (action === 'add-herb') {
+          inv.ingredients[id] = cur + 1
+        } else {
+          if (cur <= 1) delete inv.ingredients[id]
+          else inv.ingredients[id] = cur - 1
+        }
+        renderBrew()
+      } else if (action === 'add-potion' || action === 'sub-potion') {
+        if (!inv.potions) inv.potions = {}
+        const cur = inv.potions[id] || 0
+        if (action === 'add-potion') {
+          inv.potions[id] = cur + 1
+        } else {
+          if (cur <= 1) delete inv.potions[id]
+          else inv.potions[id] = cur - 1
+        }
       }
+
       await saveInventory(state.charId, inv)
       renderInventory()
-      renderBrew()
     })
   })
 }
@@ -459,15 +492,23 @@ async function doBrew() {
   else if (critSuccess)         quality = 'Masterwork'
   else if (total >= dc + 5)     quality = 'Superior'
 
-  // Consume ingredients
+  // Consume ingredients + optionally add brewed potion — one save
+  const inv = state.inventory
+  if (!inv.potions) inv.potions = {}
+
   if (recipe.ingredients?.length) {
-    const inv = state.inventory
     for (const req of recipe.ingredients) {
       inv.ingredients[req.id] = (inv.ingredients[req.id] || 0) - req.amount
       if (inv.ingredients[req.id] <= 0) delete inv.ingredients[req.id]
     }
-    await saveInventory(state.charId, inv)
   }
+
+  const brewSuccess = quality !== 'Failure' && quality !== 'Critical Failure'
+  if (brewSuccess) {
+    inv.potions[recipe.id] = (inv.potions[recipe.id] || 0) + 1
+  }
+
+  await saveInventory(state.charId, inv)
 
   state.brewResult = { roll, modifier: state.modifier, total, dc, success: success || critSuccess, quality, critSuccess, critFail }
 
