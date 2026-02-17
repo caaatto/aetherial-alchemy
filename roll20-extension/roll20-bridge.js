@@ -222,42 +222,81 @@ function renderInventory() {
   const el = document.getElementById('ae-panel-inventory')
   if (!el) return
 
-  const ings = state.inventory.ingredients || {}
-  const entries = Object.entries(ings)
-
-  if (entries.length === 0) {
-    el.innerHTML = '<p class="ae-empty">Keine Kräuter im Inventar.</p>'
+  if (!state.charId) {
+    el.innerHTML = '<p class="ae-empty">Zuerst einen Character auswählen.</p>'
     return
   }
 
-  // Group by rarity
+  const ings    = state.inventory.ingredients || {}
+  const entries = Object.entries(ings)
+
+  // ── Add-herb form ─────────────────────────────────────────────────────────
   const rarityOrder = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary']
-  const byRarity = {}
-  entries.forEach(([id, count]) => {
-    const herb = herbs.find(h => h.id === id)
-    const rarity = herb?.rarity || 'Common'
-    if (!byRarity[rarity]) byRarity[rarity] = []
-    byRarity[rarity].push({ id, count, herb })
+
+  // Build herb options grouped by rarity
+  let optHtml = '<option value="">— Kraut wählen —</option>'
+  rarityOrder.forEach(rarity => {
+    const group = herbs.filter(h => h.rarity === rarity)
+    if (!group.length) return
+    optHtml += `<optgroup label="${rarity}">`
+    group.forEach(h => { optHtml += `<option value="${h.id}">${h.name}</option>` })
+    optHtml += '</optgroup>'
   })
 
-  let html = ''
-  rarityOrder.forEach(rarity => {
-    if (!byRarity[rarity]) return
-    const slug = rarity.toLowerCase().replace(' ', '-')
-    html += `<div class="ae-section-title"><span class="ae-rarity ae-rarity-${slug}">${rarity}</span></div>`
-    byRarity[rarity].forEach(({ id, count, herb }) => {
-      html += `
-        <div class="ae-herb-row">
-          <span class="ae-herb-name">${herb?.name || id}</span>
-          <button class="ae-btn-sm" data-action="sub" data-id="${id}">−</button>
-          <span class="ae-herb-count">${count}</span>
-          <button class="ae-btn-sm" data-action="add" data-id="${id}">+</button>
-        </div>`
+  let html = `
+    <div class="ae-add-herb-form">
+      <div class="ae-add-herb-row">
+        <select id="ae-herb-pick">${optHtml}</select>
+        <input id="ae-herb-amt" type="number" value="1" min="1" max="99">
+        <button id="ae-herb-add-btn">+</button>
+      </div>
+    </div>`
+
+  // ── Current inventory ─────────────────────────────────────────────────────
+  if (entries.length === 0) {
+    html += '<p class="ae-empty" style="margin-top:12px">Keine Kräuter im Inventar.</p>'
+  } else {
+    const byRarity = {}
+    entries.forEach(([id, count]) => {
+      const herb   = herbs.find(h => h.id === id)
+      const rarity = herb?.rarity || 'Common'
+      if (!byRarity[rarity]) byRarity[rarity] = []
+      byRarity[rarity].push({ id, count, herb })
     })
-  })
+
+    rarityOrder.forEach(rarity => {
+      if (!byRarity[rarity]) return
+      const slug = rarity.toLowerCase().replace(' ', '-')
+      html += `<div class="ae-section-title"><span class="ae-rarity ae-rarity-${slug}">${rarity}</span></div>`
+      byRarity[rarity].forEach(({ id, count, herb }) => {
+        html += `
+          <div class="ae-herb-row">
+            <span class="ae-herb-name">${herb?.name || id}</span>
+            <button class="ae-btn-sm" data-action="sub" data-id="${id}">−</button>
+            <span class="ae-herb-count">${count}</span>
+            <button class="ae-btn-sm" data-action="add" data-id="${id}">+</button>
+          </div>`
+      })
+    })
+  }
 
   el.innerHTML = html
 
+  // Add herb button
+  document.getElementById('ae-herb-add-btn')?.addEventListener('click', async () => {
+    const pick = document.getElementById('ae-herb-pick')
+    const amt  = parseInt(document.getElementById('ae-herb-amt')?.value) || 1
+    const id   = pick?.value
+    if (!id) return
+    const inv = state.inventory
+    inv.ingredients[id] = (inv.ingredients[id] || 0) + amt
+    await saveInventory(state.charId, inv)
+    pick.value = ''
+    renderInventory()
+    renderBrew()
+  })
+
+  // +/− buttons on existing entries
   el.querySelectorAll('[data-action]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const id     = btn.dataset.id
@@ -272,7 +311,7 @@ function renderInventory() {
       }
       await saveInventory(state.charId, inv)
       renderInventory()
-      renderBrew() // availability may change
+      renderBrew()
     })
   })
 }

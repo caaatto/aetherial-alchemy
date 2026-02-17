@@ -231,6 +231,64 @@
   font-size: 13px;
 }
 
+/* ── Add-herb form (DM herb picker) ─────────────────── */
+
+.ae-add-herb-form {
+  background: #1a1a2e;
+  border: 1px solid #3a3a6a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.ae-add-herb-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ae-add-herb-row select {
+  flex: 1;
+  background: #0f0f1e;
+  border: 1px solid #2a2a4a;
+  border-radius: 6px;
+  color: #ccc;
+  padding: 5px 6px;
+  font-size: 12px;
+  min-width: 0;
+}
+
+.ae-add-herb-row input[type="number"] {
+  width: 48px;
+  background: #0f0f1e;
+  border: 1px solid #2a2a4a;
+  border-radius: 6px;
+  color: #fff;
+  padding: 5px 6px;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.ae-add-herb-row button {
+  background: #e94560;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+.ae-add-herb-row button:hover { opacity: 0.8; }
+
 /* ── Brew tab ───────────────────────────────────────── */
 
 .ae-recipe-card {
