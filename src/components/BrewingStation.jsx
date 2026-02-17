@@ -11,12 +11,17 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
   const [extensionActive, setExtensionActive] = useState(false)
 
   useEffect(() => {
-    // Check if the Aetherial Roll20 Extension is installed
-    if (window.__aetherialExtensionActive) {
-      setExtensionActive(true)
-    } else {
-      window.addEventListener('aetherial-extension-ready', () => setExtensionActive(true), { once: true })
+    // Detect the extension via postMessage (content scripts use an isolated world;
+    // postMessage is the only reliable cross-boundary channel)
+    const handler = (e) => {
+      if (e.data?.__aetherial_from_ext && e.data.type === 'EXTENSION_READY') {
+        setExtensionActive(true)
+      }
     }
+    window.addEventListener('message', handler)
+    // Ping — handles the case where the content script loaded before this component mounted
+    window.postMessage({ __aetherial_from_page: true, type: 'PING' }, '*')
+    return () => window.removeEventListener('message', handler)
   }, [])
 
   const getIngredientName = (ingredientId) => {
@@ -132,15 +137,17 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
 
     setResult(brewResult)
 
-    // Fire event for the Roll20 Chrome Extension (if installed)
-    window.dispatchEvent(new CustomEvent('aetherial-brew', {
-      detail: {
+    // Send brew event to the Roll20 Chrome Extension (if installed)
+    window.postMessage({
+      __aetherial_from_page: true,
+      type: 'BREW_POTION',
+      payload: {
         name: selectedRecipe.name,
         effect: selectedRecipe.effect,
         brewTime: selectedRecipe.brewTime,
         ...brewResult,
       }
-    }))
+    }, '*')
 
     setBrewing(false)
   }

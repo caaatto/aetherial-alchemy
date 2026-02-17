@@ -1,84 +1,51 @@
 // Content script injected into the Alchemy App (localhost:5173 and catto.at)
 //
-// Chrome extensions run content scripts in an "isolated world" — a separate JS
-// context from the page. window.foo set here is NOT visible to the React app,
-// and window.dispatchEvent() here does NOT reach the page's event listeners.
+// Content scripts run in an "isolated world" — a separate JS context from the page.
+// window.foo set here is NOT visible to React, and window.dispatchEvent() here
+// does NOT reach the page's listeners. Script injection can be blocked by CSP.
 //
-// Solution:
-//   • Inject inline <script> tags to run code in the PAGE's JS context.
-//   • Use window.postMessage to relay events from page → content script.
-//   • Inject scripts to dispatch CustomEvents from content script → page.
+// The ONLY reliable cross-boundary channel: window.postMessage().
+// Both directions (page→ext, ext→page) use postMessage.
 
-// ── Run code in the page's JS context ────────────────────────────────────────
-function injectScript(code) {
-  const s = document.createElement('script')
-  s.textContent = code
-  document.documentElement.appendChild(s)
-  s.remove()
-}
+const FROM_EXT  = '__aetherial_from_ext'   // messages from extension → page
+const FROM_PAGE = '__aetherial_from_page'  // messages from page → extension
 
-// ── Fire a CustomEvent in the page context ────────────────────────────────────
-function fireInPage(eventName, detail) {
-  injectScript(
-    `window.dispatchEvent(new CustomEvent(${JSON.stringify(eventName)}, ` +
-    `{ detail: ${JSON.stringify(detail)} }))`
-  )
-}
+// ── 1. Signal readiness; also respond to pings from the page ─────────────────
+// Fire immediately so the page catches it if already listening.
+// Also respond to PING so components that mounted before the content script
+// loaded can discover the extension by sending a ping.
+window.postMessage({ [FROM_EXT]: true, type: 'EXTENSION_READY' }, '*')
 
-// ── 1. Signal extension presence + set up page→content relay ─────────────────
-// Runs in the PAGE's context: sets the flag React checks, fires the ready event,
-// and installs listeners that relay page CustomEvents to postMessage so the
-// content script world can receive them.
-injectScript(`
-  window.__aetherialExtensionActive = true;
-  window.dispatchEvent(new CustomEvent('aetherial-extension-ready'));
-
-  const __relay = (type) => window.addEventListener(type, (e) => {
-    window.postMessage({ __aetherial: true, type, detail: e.detail ?? null }, '*');
-  });
-
-  __relay('aetherial-brew');
-  __relay('aetherial-request-characters');
-  __relay('aetherial-request-inventory');
-  __relay('aetherial-push-item');
-`)
-
-// ── 2. Page → Content Script (via postMessage) ────────────────────────────────
+// ── 2. Page → Content Script ──────────────────────────────────────────────────
 window.addEventListener('message', (e) => {
-  if (!e.data?.__aetherial) return
-  const { type, detail } = e.data
+  if (!e.data?.[FROM_PAGE]) return
+  const { type, payload } = e.data
 
-  if (type === 'aetherial-brew') {
-    chrome.runtime.sendMessage({ type: 'BREW_POTION', potion: detail })
+  if (type === 'PING') {
+    // Respond to late-arriving components
+    window.postMessage({ [FROM_EXT]: true, type: 'EXTENSION_READY' }, '*')
+    return
   }
-  if (type === 'aetherial-request-characters') {
+  if (type === 'BREW_POTION') {
+    chrome.runtime.sendMessage({ type: 'BREW_POTION', potion: payload })
+    return
+  }
+  if (type === 'REQUEST_CHARACTERS') {
     chrome.runtime.sendMessage({ type: 'REQUEST_CHARACTERS' })
+    return
   }
-  if (type === 'aetherial-request-inventory') {
-    chrome.runtime.sendMessage({
-      type:          'REQUEST_INVENTORY',
-      characterId:   detail.characterId,
-      characterName: detail.characterName
-    })
+  if (type === 'REQUEST_INVENTORY') {
+    chrome.runtime.sendMessage({ type: 'REQUEST_INVENTORY', ...payload })
+    return
   }
-  if (type === 'aetherial-push-item') {
-    chrome.runtime.sendMessage({
-      type:        'PUSH_ITEM',
-      characterId: detail.characterId,
-      item:        detail.item
-    })
+  if (type === 'PUSH_ITEM') {
+    chrome.runtime.sendMessage({ type: 'PUSH_ITEM', ...payload })
+    return
   }
 })
 
-// ── 3. Background → Page (inject CustomEvents into page context) ──────────────
+// ── 3. Background → Content Script → Page ────────────────────────────────────
 chrome.runtime.onMessage.addListener((msg) => {
-  if (msg.type === 'CHARACTERS_RESULT') {
-    fireInPage('aetherial-characters-result', msg)
-  }
-  if (msg.type === 'INVENTORY_RESULT') {
-    fireInPage('aetherial-inventory-result', msg)
-  }
-  if (msg.type === 'PUSH_ITEM_RESULT') {
-    fireInPage('aetherial-push-item-result', msg)
-  }
+  // Forward every message from the background to the page via postMessage
+  window.postMessage({ [FROM_EXT]: true, ...msg }, '*')
 })

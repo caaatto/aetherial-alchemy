@@ -1,77 +1,87 @@
 import { useState, useEffect } from 'react'
 import './Roll20Sync.css'
 
-function Roll20Sync({ inventory, onPushItem }) {
-  const [extensionActive, setExtensionActive] = useState(false)
-  const [characters, setCharacters]           = useState([])
-  const [selectedChar, setSelectedChar]       = useState(null)
-  const [loading, setLoading]                 = useState(false)
-  const [loadingInventory, setLoadingInventory] = useState(false)
-  const [roll20Items, setRoll20Items]         = useState(null)   // null = not loaded yet
-  const [error, setError]                     = useState(null)
-  const [pushStatus, setPushStatus]           = useState({})     // itemId → 'pushing'|'done'|'error'
+// postMessage tags — must match alchemy-bridge.js
+const FROM_EXT  = '__aetherial_from_ext'
+const FROM_PAGE = '__aetherial_from_page'
 
-  // ── Detect extension ─────────────────────────────────────────────────────
-  useEffect(() => {
-    if (window.__aetherialExtensionActive) {
-      setExtensionActive(true)
-    } else {
-      window.addEventListener('aetherial-extension-ready', () => setExtensionActive(true), { once: true })
-    }
-  }, [])
+// Send a message to the extension content script
+function toExt(type, payload) {
+  window.postMessage({ [FROM_PAGE]: true, type, payload: payload ?? null }, '*')
+}
 
-  // ── Listen for character list response ────────────────────────────────────
+function Roll20Sync({ inventory }) {
+  const [extensionActive, setExtensionActive]       = useState(false)
+  const [characters, setCharacters]                 = useState([])
+  const [selectedChar, setSelectedChar]             = useState(null)
+  const [loading, setLoading]                       = useState(false)
+  const [loadingInventory, setLoadingInventory]     = useState(false)
+  const [roll20Items, setRoll20Items]               = useState(null)
+  const [error, setError]                           = useState(null)
+  const [pushStatus, setPushStatus]                 = useState({})
+
+  // ── Listen for all messages from the extension ────────────────────────────
   useEffect(() => {
-    const handler = (event) => {
-      setLoading(false)
-      const { characters: chars, error: err } = event.detail
-      if (err === 'no-roll20-tab') {
-        setError('No Roll20 tab found. Open your Roll20 game first.')
+    const handler = (e) => {
+      if (!e.data?.[FROM_EXT]) return
+      const msg = e.data
+
+      // Extension detected
+      if (msg.type === 'EXTENSION_READY') {
+        setExtensionActive(true)
         return
       }
-      if (err) {
-        setError(`Could not read characters: ${err}`)
-        return
-      }
-      setError(null)
-      setCharacters(chars || [])
-      if (chars?.length > 0 && !selectedChar) {
-        setSelectedChar(chars[0])
-      }
-    }
-    window.addEventListener('aetherial-characters-result', handler)
-    return () => window.removeEventListener('aetherial-characters-result', handler)
-  }, [selectedChar])
 
-  // ── Listen for Roll20 inventory response ──────────────────────────────────
-  useEffect(() => {
-    const handler = (event) => {
-      setLoadingInventory(false)
-      const { items, error: err } = event.detail
-      if (err === 'timeout') {
-        setError('Roll20 did not respond. Make sure the AetherialSync Mod Script is running.')
+      // Character list received
+      if (msg.type === 'CHARACTERS_RESULT') {
+        setLoading(false)
+        if (msg.error === 'no-roll20-tab') {
+          setError('No Roll20 tab found. Open your Roll20 game first.')
+          return
+        }
+        if (msg.error) {
+          setError(`Could not read characters: ${msg.error}`)
+          return
+        }
+        setError(null)
+        const chars = msg.characters || []
+        setCharacters(chars)
+        if (chars.length > 0) setSelectedChar(prev => prev ?? chars[0])
         return
       }
-      if (err) {
-        setError(`Could not read inventory: ${err}`)
-        return
-      }
-      setError(null)
-      setRoll20Items(items || [])
-    }
-    window.addEventListener('aetherial-inventory-result', handler)
-    return () => window.removeEventListener('aetherial-inventory-result', handler)
-  }, [])
 
-  // ── Listen for push confirmations ─────────────────────────────────────────
-  useEffect(() => {
-    const handler = (event) => {
-      const { success, item, error: err } = event.detail
-      if (!item?.id) return
-      setPushStatus(prev => ({ ...prev, [item.id]: success ? 'done' : 'error' }))
+      // Inventory data received
+      if (msg.type === 'INVENTORY_RESULT') {
+        setLoadingInventory(false)
+        if (msg.error === 'timeout') {
+          setError('Roll20 did not respond. Make sure the AetherialSync Mod Script is running.')
+          return
+        }
+        if (msg.error) {
+          setError(`Could not read inventory: ${msg.error}`)
+          return
+        }
+        setError(null)
+        setRoll20Items(msg.items || [])
+        return
+      }
+
+      // Push confirmation
+      if (msg.type === 'PUSH_ITEM_RESULT') {
+        const item = msg.item
+        if (item?.id) {
+          setPushStatus(prev => ({ ...prev, [item.id]: msg.success ? 'done' : 'error' }))
+        }
+        return
+      }
     }
-    window.addEventListener('aetherial-push-item-result', handler)
-    return () => window.removeEventListener('aetherial-push-item-result', handler)
+
+    window.addEventListener('message', handler)
+
+    // Ping — if the content script loaded before this component mounted it will respond
+    toExt('PING')
+
+    return () => window.removeEventListener('message', handler)
   }, [])
 
   // ── Actions ───────────────────────────────────────────────────────────────
@@ -81,7 +91,7 @@ function Roll20Sync({ inventory, onPushItem }) {
     setCharacters([])
     setSelectedChar(null)
     setRoll20Items(null)
-    window.dispatchEvent(new CustomEvent('aetherial-request-characters'))
+    toExt('REQUEST_CHARACTERS')
   }
 
   const handleLoadInventory = () => {
@@ -89,19 +99,14 @@ function Roll20Sync({ inventory, onPushItem }) {
     setError(null)
     setLoadingInventory(true)
     setRoll20Items(null)
-    window.dispatchEvent(new CustomEvent('aetherial-request-inventory', {
-      detail: { characterId: selectedChar.id, characterName: selectedChar.name }
-    }))
+    toExt('REQUEST_INVENTORY', { characterId: selectedChar.id, characterName: selectedChar.name })
   }
 
   const handlePushItem = (item) => {
     if (!selectedChar) return
     const itemWithId = { ...item, id: item.id || `${item.name}-${Date.now()}` }
     setPushStatus(prev => ({ ...prev, [itemWithId.id]: 'pushing' }))
-    if (onPushItem) onPushItem(selectedChar.id, itemWithId)
-    window.dispatchEvent(new CustomEvent('aetherial-push-item', {
-      detail: { characterId: selectedChar.id, item: itemWithId }
-    }))
+    toExt('PUSH_ITEM', { characterId: selectedChar.id, item: itemWithId })
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -137,35 +142,31 @@ function Roll20Sync({ inventory, onPushItem }) {
         </button>
 
         {characters.length > 0 && (
-          <>
-            <div className="char-select-row">
-              <select
-                value={selectedChar?.id || ''}
-                onChange={(e) => {
-                  const c = characters.find(c => c.id === e.target.value)
-                  setSelectedChar(c || null)
-                  setRoll20Items(null)
-                }}
-              >
-                {characters.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-              <button
-                onClick={handleLoadInventory}
-                disabled={loadingInventory || !selectedChar}
-                className="load-inv-btn"
-              >
-                {loadingInventory ? 'Loading…' : 'Load Roll20 Inventory'}
-              </button>
-            </div>
-          </>
+          <div className="char-select-row">
+            <select
+              value={selectedChar?.id || ''}
+              onChange={(e) => {
+                const c = characters.find(c => c.id === e.target.value)
+                setSelectedChar(c || null)
+                setRoll20Items(null)
+              }}
+            >
+              {characters.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <button
+              onClick={handleLoadInventory}
+              disabled={loadingInventory || !selectedChar}
+              className="load-inv-btn"
+            >
+              {loadingInventory ? 'Loading…' : 'Load Roll20 Inventory'}
+            </button>
+          </div>
         )}
       </div>
 
-      {error && (
-        <p className="sync-error">{error}</p>
-      )}
+      {error && <p className="sync-error">{error}</p>}
 
       {roll20Items !== null && (
         <div className="roll20-inventory">
@@ -194,9 +195,8 @@ function Roll20Sync({ inventory, onPushItem }) {
       {selectedChar && inventory && (
         <div className="push-section">
           <h4>Push to {selectedChar.name}'s Roll20 Sheet</h4>
-          <p className="push-hint">Select items from your inventory below to add them to the Roll20 character sheet.</p>
+          <p className="push-hint">Add items from your inventory to the Roll20 character sheet.</p>
 
-          {/* Potions to push */}
           {inventory.potions?.length > 0 && (
             <div className="push-group">
               <h5>Potions</h5>
@@ -224,23 +224,18 @@ function Roll20Sync({ inventory, onPushItem }) {
             </div>
           )}
 
-          {/* Herbs to push */}
           {Object.keys(inventory.ingredients || {}).length > 0 && (
             <div className="push-group">
               <h5>Herbs / Ingredients</h5>
-              {Object.entries(inventory.ingredients).map(([herbId, count]) => {
-                const pushId = `herb-${herbId}`
+              {Object.entries(inventory.ingredients).map(([herbName, count]) => {
+                const pushId = `herb-${herbName}`
                 const status = pushStatus[pushId]
                 return (
-                  <div key={herbId} className="push-item-row">
-                    <span className="push-item-name">{herbId}</span>
+                  <div key={herbName} className="push-item-row">
+                    <span className="push-item-name">{herbName}</span>
                     <span className="push-item-meta">×{count}</span>
                     <button
-                      onClick={() => handlePushItem({
-                        id:       pushId,
-                        name:     herbId,
-                        quantity: count
-                      })}
+                      onClick={() => handlePushItem({ id: pushId, name: herbName, quantity: count })}
                       disabled={status === 'pushing' || status === 'done'}
                       className={`push-btn ${status === 'done' ? 'push-done' : status === 'error' ? 'push-error' : ''}`}
                     >
