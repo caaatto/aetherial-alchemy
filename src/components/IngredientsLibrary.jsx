@@ -120,7 +120,7 @@ function IngredientsLibrary({ ingredients, setIngredients }) {
                   value={selectedHerb}
                   onChange={(e) => setSelectedHerb(e.target.value)}
                 >
-                  <option value="">-- Herb auswählen --</option>
+                  <option value="">-- Select Herb --</option>
                   {Object.entries(herbsByRarity).map(([rarity, herbs]) => (
                     <optgroup key={rarity} label={rarity}>
                       {herbs.map(herb => (

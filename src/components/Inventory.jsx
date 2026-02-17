@@ -68,7 +68,7 @@ function Inventory({ inventory, setInventory }) {
   }
 
   const handleDeletePotion = (potionId) => {
-    if (confirm('Diesen Trank wirklich löschen?')) {
+    if (confirm('Really delete this potion?')) {
       setInventory({
         ...inventory,
         potions: inventory.potions.filter(p => p.id !== potionId)
@@ -136,7 +136,7 @@ function Inventory({ inventory, setInventory }) {
                   value={selectedIngredient}
                   onChange={(e) => setSelectedIngredient(e.target.value)}
                 >
-                  <option value="">-- Herb auswählen --</option>
+                  <option value="">-- Select Herb --</option>
                   {Object.entries(herbsByRarity).map(([rarity, herbs]) => (
                     <optgroup key={rarity} label={rarity}>
                       {herbs.map(herb => (
@@ -207,15 +207,15 @@ function Inventory({ inventory, setInventory }) {
           )}
         </div>
 
-        {/* Tränke Sektion */}
+        {/* Potions Section */}
         <div className="inventory-section">
           <div className="section-header">
-            <h3>⚗️ Tränke ({potionsList.length})</h3>
+            <h3>⚗️ Potions ({potionsList.length})</h3>
           </div>
 
           {potionsList.length === 0 ? (
             <div className="card empty-state">
-              <p>Keine Tränke im Inventar. Braue deinen ersten Trank!</p>
+              <p>No potions in inventory. Brew your first potion!</p>
             </div>
           ) : (
             <div className="potions-inventory grid grid-2">

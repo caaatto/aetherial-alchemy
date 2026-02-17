@@ -434,7 +434,16 @@ function RecipeTree({ inventory }) {
                     const related = getRecipeById(unlockId)
                     return (
                       <li key={unlockId}>
-                        {related?.icon} {related?.name || unlockId}
+                        {related?.icon?.startsWith('/assets') ? (
+                          <img
+                            src={related.icon}
+                            alt={related.name}
+                            style={{ width: 16, height: 16, verticalAlign: 'middle', marginRight: 4, filter: getHerbColorFilter(getMainHerbId(related)) }}
+                          />
+                        ) : (
+                          related?.icon
+                        )}{' '}
+                        {related?.name || unlockId}
                       </li>
                     )
                   })}

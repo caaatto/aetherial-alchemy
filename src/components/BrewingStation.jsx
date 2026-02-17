@@ -57,7 +57,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
     setBrewing(true)
     setResult(null)
 
-    // Würfel-Animation
+    // Dice animation
     await new Promise(resolve => setTimeout(resolve, 500))
     const roll = rollDice()
     setDiceRoll(roll)

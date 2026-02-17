@@ -133,18 +133,18 @@
   color: white;
 }
 
-.quality-überragend {
+.quality-superior {
   background: var(--uncommon);
   color: white;
 }
 
-.quality-meisterwerk {
+.quality-masterwork {
   background: linear-gradient(135deg, var(--rare) 0%, var(--very-rare) 100%);
   color: white;
 }
 
-.quality-fehlschlag,
-.quality-fehlschlag-kritisch {
+.quality-failure,
+.quality-critical-failure {
   background: #d32f2f;
   color: white;
 }
