@@ -23,6 +23,12 @@
     },
     {
       "matches": ["https://app.roll20.net/editor/*"],
+      "js": ["roll20-page.js"],
+      "world": "MAIN",
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://app.roll20.net/editor/*"],
       "js": ["roll20-bridge.js"],
       "css": ["sidebar.css"],
       "run_at": "document_idle"

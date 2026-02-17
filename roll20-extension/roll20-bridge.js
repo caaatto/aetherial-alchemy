@@ -38,7 +38,7 @@ function getPotionIcon(category, tier, name = '') {
   }
   const map  = POTION_ICONS[key] || FALLBACK_ICONS
   const file = map[tier] || map[1] || FALLBACK_ICONS[1]
-  return POTION_BASE + file
+  return POTION_BASE + encodeURIComponent(file)
 }
 
 const HERB_COLORS = {
@@ -177,15 +177,21 @@ async function onCharChange(e) {
   render()
 }
 
-// ── Read characters from Roll20 ───────────────────────────────────────────────
-function loadCharacters() {
-  try {
-    const models = window.Campaign?.characters?.models || []
-    state.characters = models.map(c => ({ id: c.id, name: c.get('name') || '(Unnamed)' }))
-  } catch (e) {
-    state.characters = []
-  }
+// ── Read characters from Roll20 (via roll20-page.js in MAIN world) ────────────
+// window.Campaign lives in the page's JS context — not visible from here.
+// roll20-page.js reads it and posts it back via postMessage.
+function requestCharacters() {
+  window.postMessage({ __ae_to_page: true, type: 'GET_CHARACTERS' }, '*')
+}
 
+window.addEventListener('message', (e) => {
+  if (!e.data?.__ae_from_page || e.data.type !== 'CHARACTERS') return
+  state.characters = e.data.characters || []
+  populateCharSelect()
+  render()
+})
+
+function populateCharSelect() {
   const sel = document.getElementById('ae-char-select')
   if (!sel) return
   sel.innerHTML = '<option value="">— Select Character —</option>'
@@ -195,6 +201,10 @@ function loadCharacters() {
     opt.textContent = c.name
     sel.appendChild(opt)
   })
+}
+
+function loadCharacters() {
+  requestCharacters()
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
@@ -550,17 +560,10 @@ function postBrewCard(recipe, result) {
 // Init
 // ─────────────────────────────────────────────────────────────────────────────
 buildSidebar()
+render()
 
-// Load characters — Roll20 may not be fully initialised yet, retry a few times
-let attempts = 0
-const charPoll = setInterval(() => {
-  attempts++
-  const models = window.Campaign?.characters?.models
-  if (models?.length || attempts >= 20) {
-    clearInterval(charPoll)
-    loadCharacters()
-    render()
-  }
-}, 500)
+// Request character list from roll20-page.js (MAIN world).
+// roll20-page.js also polls and pushes automatically — this is just an early nudge.
+setTimeout(loadCharacters, 1000)
 
 })()
