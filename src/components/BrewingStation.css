@@ -229,6 +229,31 @@
   line-height: 1.5;
 }
 
+.roll20-sync-row {
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.roll20-badge {
+  font-size: 10px;
+  padding: 4px 10px;
+  border: 2px solid var(--border);
+  display: inline-block;
+}
+
+.roll20-badge.active {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.roll20-badge.inactive {
+  color: var(--text-secondary);
+}
+
+.roll20-badge.inactive a {
+  color: var(--accent);
+}
+
 .result-actions button {
   width: 100%;
   padding: 12px;

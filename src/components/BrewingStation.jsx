@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './BrewingStation.css'
 import D20 from './D20'
 
@@ -8,6 +8,16 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
   const [brewing, setBrewing] = useState(false)
   const [result, setResult] = useState(null)
   const [diceRoll, setDiceRoll] = useState(null)
+  const [extensionActive, setExtensionActive] = useState(false)
+
+  useEffect(() => {
+    // Check if the Aetherial Roll20 Extension is installed
+    if (window.__aetherialExtensionActive) {
+      setExtensionActive(true)
+    } else {
+      window.addEventListener('aetherial-extension-ready', () => setExtensionActive(true), { once: true })
+    }
+  }, [])
 
   const getIngredientName = (ingredientId) => {
     return ingredients.find(ing => ing.id === ingredientId)?.name || 'Unknown'
@@ -109,7 +119,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
       potions: newPotions
     })
 
-    setResult({
+    const brewResult = {
       roll,
       modifier,
       total,
@@ -118,7 +128,19 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
       quality,
       critSuccess,
       critFail
-    })
+    }
+
+    setResult(brewResult)
+
+    // Fire event for the Roll20 Chrome Extension (if installed)
+    window.dispatchEvent(new CustomEvent('aetherial-brew', {
+      detail: {
+        name: selectedRecipe.name,
+        effect: selectedRecipe.effect,
+        brewTime: selectedRecipe.brewTime,
+        ...brewResult,
+      }
+    }))
 
     setBrewing(false)
   }
@@ -292,6 +314,17 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                       The ingredients were consumed, but the brewing failed.
                     </p>
                   )}
+
+                  <div className="roll20-sync-row">
+                    {extensionActive
+                      ? <span className="roll20-badge active">📡 Sent to Roll20</span>
+                      : <span className="roll20-badge inactive">
+                          <a href="https://github.com/caaatto/aetherial-alchemy/tree/master/roll20-extension" target="_blank" rel="noreferrer">
+                            Install extension
+                          </a> to sync to Roll20
+                        </span>
+                    }
+                  </div>
 
                   <div className="result-actions">
                     <button onClick={resetBrewing}>Brew Another Recipe</button>
