@@ -41,11 +41,13 @@ function postBrewCard(potion) {
 function postBrewSync(potion) {
   if (!potion.success) return // Only sync successful brews to inventory
 
+  // Use ~ as delimiter — Roll20 converts straight quotes to smart quotes,
+  // which breaks regex matching in the Mod Script.
   const cmd = [
     `!brew-sync`,
-    `--name "${potion.name}"`,
-    `--effect "${potion.effect}"`,
-    `--quality "${potion.quality}"`,
+    `--name~${potion.name}~`,
+    `--effect~${potion.effect}~`,
+    `--quality~${potion.quality}~`,
     `--qty 1`,
   ].join(' ')
 

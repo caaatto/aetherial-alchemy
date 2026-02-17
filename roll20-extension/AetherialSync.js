@@ -15,10 +15,12 @@
 const SCRIPT_NAME = 'AetherialSync'
 
 // ── Argument parser ────────────────────────────────────────────────────────
+// Values are wrapped in ~ (e.g. --name~Minor Healing Potion~) because
+// Roll20 converts straight quotes to smart quotes, breaking regex matching.
 function parseArgs(content) {
   const get = (flag) => {
-    const match = content.match(new RegExp(`--${flag}\\s+"([^"]*)"|(--${flag}\\s+(\\S+))`))
-    return match ? (match[1] ?? match[3]) : null
+    const match = content.match(new RegExp(`--${flag}~([^~]*)~`))
+    return match ? match[1] : null
   }
   return {
     name:    get('name'),
