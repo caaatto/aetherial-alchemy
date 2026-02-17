@@ -1,15 +1,31 @@
 // Content script injected into Roll20 (app.roll20.net/editor/*)
-// Receives brew events from the background worker and posts them to Roll20 chat.
+// Receives brew/sync events from the background worker and acts on them.
 
+// ── Background → Roll20 message handler ──────────────────────────────────────
 chrome.runtime.onMessage.addListener((msg) => {
-  if (msg.type !== 'BREW_POTION') return
-  postBrewCard(msg.potion)
+
+  if (msg.type === 'BREW_POTION') {
+    postBrewCard(msg.potion)
+    return
+  }
+
+  if (msg.type === 'READ_CHARACTERS') {
+    readCharacters()
+    return
+  }
+
+  if (msg.type === 'READ_INVENTORY') {
+    readInventory(msg.characterId, msg.characterName)
+    return
+  }
+
+  if (msg.type === 'PUSH_ITEM') {
+    pushItemToRoll20(msg.characterId, msg.item)
+    return
+  }
 })
 
-// ── Chat card ──────────────────────────────────────────────────────────────
-// Data for the Mod Script is embedded as hidden {{aetherial-*=value}} fields.
-// These appear as extra rows in the default template, which the Mod Script reads.
-// This avoids a separate !brew-sync message whose arguments Roll20 strips.
+// ── Brew Card ────────────────────────────────────────────────────────────────
 function postBrewCard(potion) {
   const qualityEmoji =
     potion.quality === 'Masterwork'       ? '⭐' :
@@ -43,11 +59,107 @@ function postBrewCard(potion) {
   postToChat(lines.join(' '))
 }
 
-// ── Chat injection ────────────────────────────────────────────────────────
+// ── Read character list from Roll20 Campaign ─────────────────────────────────
+function readCharacters() {
+  try {
+    const models = window.Campaign?.characters?.models
+    if (!models || models.length === 0) {
+      chrome.runtime.sendMessage({ type: 'CHARACTERS_RESULT', characters: [], error: 'no-characters' })
+      return
+    }
+
+    const characters = models.map((c) => ({
+      id:   c.id,
+      name: c.get('name') || '(Unnamed)'
+    }))
+
+    chrome.runtime.sendMessage({ type: 'CHARACTERS_RESULT', characters })
+  } catch (err) {
+    console.error('[Aetherial] readCharacters error:', err)
+    chrome.runtime.sendMessage({ type: 'CHARACTERS_RESULT', characters: [], error: String(err) })
+  }
+}
+
+// ── Push one item to Roll20 via !brew-push chat command ──────────────────────
+// AetherialSync Mod Script reads {{aetherial-push=1}} fields and writes to sheet
+function pushItemToRoll20(characterId, item) {
+  try {
+    const lines = [
+      `&{template:default}`,
+      `{{name=Aetherial Push}}`,
+      `{{Item=${item.name}}}`,
+      `{{aetherial-push-name=${item.name}}}`,
+      `{{aetherial-push-desc=${item.description || ''}}}`,
+      `{{aetherial-push-qty=${item.quantity || 1}}}`,
+      `{{aetherial-push-charid=${characterId}}}`,
+      `{{aetherial-push=1}}`,
+    ]
+    postToChat(lines.join(' '))
+
+    // Optimistic response — the mod script will write to sheet
+    chrome.runtime.sendMessage({
+      type:   'PUSH_ITEM_RESULT',
+      success: true,
+      item
+    })
+  } catch (err) {
+    chrome.runtime.sendMessage({ type: 'PUSH_ITEM_RESULT', success: false, error: String(err), item })
+  }
+}
+
+// ── Read inventory via !brew-read + whisper interceptor ──────────────────────
+// The Mod Script whispers back a JSON blob prefixed with AETHERIAL-INVENTORY:
+function readInventory(characterId, characterName) {
+  // Set up MutationObserver to intercept the whispered response
+  const chatLog = document.querySelector('#textchat-input')?.closest('.content')?.querySelector('.message-list')
+              ?? document.querySelector('#chat-container .messages')
+
+  let observer = null
+  let timeout  = null
+
+  const cleanup = () => {
+    if (observer) { observer.disconnect(); observer = null }
+    if (timeout)  { clearTimeout(timeout); timeout = null }
+  }
+
+  if (chatLog) {
+    observer = new MutationObserver(() => {
+      // Look for the latest whisper from AetherialSync containing the JSON blob
+      const whispers = chatLog.querySelectorAll('.message.whisper, .message.fromgm')
+      for (let i = whispers.length - 1; i >= 0; i--) {
+        const text = whispers[i].textContent || ''
+        const markerIdx = text.indexOf('AETHERIAL-INVENTORY:')
+        if (markerIdx !== -1) {
+          cleanup()
+          try {
+            const json = text.slice(markerIdx + 'AETHERIAL-INVENTORY:'.length).trim()
+            const data = JSON.parse(json)
+            chrome.runtime.sendMessage({ type: 'INVENTORY_RESULT', characterId, items: data })
+          } catch (e) {
+            chrome.runtime.sendMessage({ type: 'INVENTORY_RESULT', characterId, items: [], error: 'parse-error' })
+          }
+          return
+        }
+      }
+    })
+    observer.observe(chatLog, { childList: true, subtree: true })
+
+    // Timeout after 8 seconds if no response
+    timeout = setTimeout(() => {
+      cleanup()
+      chrome.runtime.sendMessage({ type: 'INVENTORY_RESULT', characterId, items: [], error: 'timeout' })
+    }, 8000)
+  }
+
+  // Post the !brew-read command (no args — character determined by Mod Script from player)
+  postToChat(`!brew-read`)
+}
+
+// ── Chat injection ────────────────────────────────────────────────────────────
 function postToChat(msg) {
   const input = document.querySelector('#textchat-input textarea')
   const btn   = document.querySelector('#textchat-input button[type="submit"]')
-               ?? document.querySelector('#textchat-input .btn')
+             ?? document.querySelector('#textchat-input .btn')
 
   if (!input || !btn) {
     console.warn('[Aetherial] Could not find Roll20 chat input.')

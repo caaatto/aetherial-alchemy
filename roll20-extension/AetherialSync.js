@@ -66,7 +66,6 @@ on('chat:message', async (msg) => {
 
   try {
     // D&D 2024 Beacon sheet — requires Experimental API Server
-    // Run !brew-attrs on a selected token if you get "No attribute found" errors.
     await setSheetItem(charId, `repeating_equipment_${rowId}_name`,       name)
     await setSheetItem(charId, `repeating_equipment_${rowId}_description`, desc)
     await setSheetItem(charId, `repeating_equipment_${rowId}_quantity`,    1)
@@ -82,6 +81,85 @@ on('chat:message', async (msg) => {
     )
     log(`[${SCRIPT_NAME}] setSheetItem error: ${err}`)
   }
+})
+
+// ── Push handler: push arbitrary item from Alchemy site ───────────────────
+// The extension embeds {{aetherial-push=1}} with item fields and a charId.
+on('chat:message', async (msg) => {
+  if (!msg.content.includes('aetherial-push=1')) return
+
+  const name   = getField(msg.content, 'aetherial-push-name')
+  const desc   = getField(msg.content, 'aetherial-push-desc') || ''
+  const qty    = parseInt(getField(msg.content, 'aetherial-push-qty') || '1', 10)
+  const charId = getField(msg.content, 'aetherial-push-charid')
+
+  if (!name || !charId) {
+    sendChat(SCRIPT_NAME, `/w ${msg.who} ⚠️ Push failed: missing name or character ID.`)
+    return
+  }
+
+  const char = getObj('character', charId)
+  if (!char) {
+    sendChat(SCRIPT_NAME, `/w ${msg.who} ⚠️ Character not found: ${charId}`)
+    return
+  }
+
+  const rowId = makeRowId()
+
+  try {
+    await setSheetItem(charId, `repeating_equipment_${rowId}_name`,        name)
+    await setSheetItem(charId, `repeating_equipment_${rowId}_description`,  desc)
+    await setSheetItem(charId, `repeating_equipment_${rowId}_quantity`,      qty)
+
+    sendChat(SCRIPT_NAME,
+      `/w ${msg.who} ✅ Added **${name}** (x${qty}) to ${char.get('name')}'s inventory.`
+    )
+  } catch (err) {
+    sendChat(SCRIPT_NAME, `/w ${msg.who} ❌ Push failed. Error: ${err}`)
+    log(`[${SCRIPT_NAME}] push setSheetItem error: ${err}`)
+  }
+})
+
+// ── Read handler: return character's equipment as JSON whisper ─────────────
+// Usage: type  !brew-read  in Roll20 chat.
+// The extension intercepts the whispered response (prefixed AETHERIAL-INVENTORY:)
+// and forwards it back to the Alchemy site.
+on('chat:message', (msg) => {
+  if (!msg.content.startsWith('!brew-read')) return
+
+  const char = findCharacterForPlayer(msg.playerid)
+  if (!char) {
+    sendChat(SCRIPT_NAME,
+      `/w ${msg.who} ⚠️ No character found for your player.`
+    )
+    return
+  }
+
+  const charId = char.id
+  const attrs  = findObjs({ _type: 'attribute', _characterid: charId })
+
+  // Collect repeating_equipment rows
+  const rows = {}
+  attrs.forEach((a) => {
+    const m = a.get('name').match(/^repeating_equipment_([^_]+)_(.+)$/)
+    if (!m) return
+    const [, rowId, field] = m
+    if (!rows[rowId]) rows[rowId] = {}
+    rows[rowId][field] = a.get('current')
+  })
+
+  const items = Object.values(rows)
+    .filter(r => r.name)
+    .map(r => ({
+      name:        r.name        || '',
+      description: r.description || '',
+      quantity:    r.quantity    || 1,
+    }))
+
+  // Whisper back the JSON blob with a recognizable prefix
+  sendChat(SCRIPT_NAME,
+    `/w ${msg.who} AETHERIAL-INVENTORY:${JSON.stringify(items)}`
+  )
 })
 
 // ── Debug: list inventory/equipment attribute names on a selected token ────

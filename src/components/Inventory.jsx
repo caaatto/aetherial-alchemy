@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import './Inventory.css'
 import { exportData, importData } from '../utils/storage'
 import { getAllHerbs, rarityOrder } from '../data/herbsDatabase'
+import Roll20Sync from './Roll20Sync'
 
 const allHerbs = getAllHerbs()
 
@@ -99,6 +100,11 @@ function Inventory({ inventory, setInventory }) {
   const ingredientsList = Object.entries(inventory.ingredients || {})
   const potionsList = inventory.potions || []
 
+  // Build a resolved inventory for Roll20Sync (herb names instead of IDs)
+  const resolvedIngredients = Object.fromEntries(
+    ingredientsList.map(([id, count]) => [getIngredientName(id), count])
+  )
+
   return (
     <div className="inventory">
       <div className="inventory-header">
@@ -117,6 +123,10 @@ function Inventory({ inventory, setInventory }) {
           />
         </div>
       </div>
+
+      <Roll20Sync
+        inventory={{ potions: potionsList, ingredients: resolvedIngredients }}
+      />
 
       <div className="inventory-sections">
         {/* Ingredients Section */}
