@@ -1,113 +1,37 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './RecipeTree.css'
 import { aetherialRecipeTree, getRecipeById } from '../data/aetherialRecipeTree'
-import { herbsDatabase, getHerbById } from '../data/herbsDatabase'
+import { getHerbById } from '../data/herbsDatabase'
 import { herbToPotionTree, createCurvedPath } from '../data/herbToPotionTree'
 import { getHerbColorFilter, getMainHerbId } from '../data/herbColorMapping'
 
-function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
-  const [unlockedRecipes, setUnlockedRecipes] = useState([])
-  const [skillPoints, setSkillPoints] = useState(15)
-  const [manaLevel, setManaLevel] = useState(1)
-  const [currentMana, setCurrentMana] = useState(50)
+function RecipeTree({ inventory }) {
   const [selectedRecipe, setSelectedRecipe] = useState(null)
   const [filter, setFilter] = useState('all')
-  const [viewMode, setViewMode] = useState('list') // 'list' or 'wallpaper'
-  const [hoveredNode, setHoveredNode] = useState(null) // For connection highlighting
+  const [viewMode, setViewMode] = useState('list')
+  const [hoveredNode, setHoveredNode] = useState(null)
 
-  // Load progress
-  useEffect(() => {
-    const saved = localStorage.getItem('recipe-tree-progress')
-    if (saved) {
-      const data = JSON.parse(saved)
-      setUnlockedRecipes(data.unlocked || [])
-      setSkillPoints(data.points || 15)
-      setManaLevel(data.manaLevel || 1)
-      setCurrentMana(data.currentMana || 50)
-    }
-  }, [])
-
-  // Save progress
-  useEffect(() => {
-    localStorage.setItem('recipe-tree-progress', JSON.stringify({
-      unlocked: unlockedRecipes,
-      points: skillPoints,
-      manaLevel,
-      currentMana
-    }))
-  }, [unlockedRecipes, skillPoints, manaLevel, currentMana])
-
-  const isUnlocked = (recipeId) => unlockedRecipes.includes(recipeId)
-
-  const canUnlock = (recipe) => {
-    if (isUnlocked(recipe.id)) return false
-    if (skillPoints < recipe.cost) return false
-    if (manaLevel < recipe.manaLevelRequired) return false
-
-    // Check requirements
-    if (recipe.requires && recipe.requires.length > 0) {
-      return recipe.requires.every(reqId => isUnlocked(reqId))
-    }
-
-    return true
-  }
-
-  const unlockRecipe = (recipe) => {
-    if (!canUnlock(recipe)) return
-
-    setSkillPoints(prev => prev - recipe.cost)
-    setUnlockedRecipes(prev => [...prev, recipe.id])
-
-    // Add recipe to main recipes
-    const newRecipe = {
-      id: `tree-${recipe.id}`,
-      name: recipe.name,
-      rarity: recipe.rarity,
-      effect: recipe.effect,
-      dc: recipe.dc,
-      brewTime: recipe.brewTime,
-      description: `${recipe.dndSource}\n\nMana Cost: ${recipe.manaCost}, Required Level: ${recipe.manaLevelRequired}`,
-      requiredIngredients: recipe.ingredients.map(ing => ({
-        ingredientId: ing.id,
-        amount: ing.amount
-      }))
-    }
-
-    setRecipes(prev => [...prev, newRecipe])
-
-    // Add missing ingredients to library
-    const newIngredients = []
-    recipe.ingredients.forEach(ing => {
-      const herbData = getHerbById(ing.id)
-      const exists = ingredients.find(i => i.name === herbData.name)
-      if (!exists) {
-        newIngredients.push({
-          id: `tree-${ing.id}`,
-          name: herbData.name,
-          rarity: herbData.rarity,
-          effect: herbData.categories.join(', '),
-          description: `${herbData.description}\n\nMana Content: ${herbData.manaContent}\nProperties: ${JSON.stringify(herbData.properties)}`,
-          location: herbData.location
-        })
-      }
+  const isCraftable = (recipe) => {
+    if (!inventory?.ingredients) return false
+    return recipe.ingredients.every(ing => {
+      const qty =
+        (inventory.ingredients[`tree-${ing.id}`] || 0) +
+        (inventory.ingredients[ing.id] || 0)
+      return qty >= ing.amount
     })
-
-    if (newIngredients.length > 0) {
-      setIngredients(prev => [...prev, ...newIngredients])
-    }
   }
 
   const categories = [
-    { id: 'all', label: 'All', icon: '' },
-    { id: 'healing', label: 'Healing', icon: '' },
-    { id: 'mana', label: 'Mana', icon: '' },
-    { id: 'resistance', label: 'Resistance', icon: '' },
-    { id: 'combat', label: 'Combat', icon: '' },
-    { id: 'stealth', label: 'Stealth', icon: '' },
-    { id: 'transformation', label: 'Transformation', icon: '' },
-    { id: 'utility', label: 'Utility', icon: '' },
-    { id: 'protection', label: 'Protection', icon: '' },
-    { id: 'hybrid', label: 'Hybrid', icon: '' }
+    { id: 'all', label: 'All' },
+    { id: 'healing', label: 'Healing' },
+    { id: 'mana', label: 'Mana' },
+    { id: 'resistance', label: 'Resistance' },
+    { id: 'combat', label: 'Combat' },
+    { id: 'stealth', label: 'Stealth' },
+    { id: 'transformation', label: 'Transformation' },
+    { id: 'utility', label: 'Utility' },
+    { id: 'protection', label: 'Protection' },
+    { id: 'hybrid', label: 'Hybrid' }
   ]
 
   const filteredRecipes = filter === 'all'
@@ -121,22 +45,8 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
       {/* Header */}
       <div className="tree-header">
         <div className="tree-title">
-          <h2>️ Aetherial Recipe Crafting Tree</h2>
+          <h2>Aetherial Potion Compendium</h2>
           <p>D&D 5e Potions + Aetherial Herbs System</p>
-        </div>
-        <div className="stats-display">
-          <div className="stat-box">
-            <div className="stat-label">Skill Points</div>
-            <div className="stat-value">{skillPoints}</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-label">Mana Level</div>
-            <div className="stat-value">{manaLevel}/4</div>
-          </div>
-          <div className="stat-box">
-            <div className="stat-label">Current Mana</div>
-            <div className="stat-value">{currentMana}</div>
-          </div>
         </div>
       </div>
 
@@ -146,13 +56,13 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
           className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
           onClick={() => setViewMode('list')}
         >
-           List View
+          List View
         </button>
         <button
           className={`view-btn ${viewMode === 'wallpaper' ? 'active' : ''}`}
           onClick={() => setViewMode('wallpaper')}
         >
-          ️ Wallpaper Tree
+          Herb Map
         </button>
       </div>
 
@@ -166,7 +76,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
               className={`filter-btn ${filter === cat.id ? 'active' : ''}`}
               onClick={() => setFilter(cat.id)}
             >
-              {cat.icon} {cat.label}
+              {cat.label}
             </button>
           ))}
         </div>
@@ -186,13 +96,12 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
 
                 <div className="tier-recipes-simple">
                   {tierRecipes.map(recipe => {
-                    const unlocked = isUnlocked(recipe.id)
-                    const available = canUnlock(recipe)
+                    const craftable = isCraftable(recipe)
 
                     return (
                       <div
                         key={recipe.id}
-                        className={`recipe-node ${unlocked ? 'unlocked' : ''} ${available ? 'available' : 'locked'}`}
+                        className={`recipe-node available ${craftable ? 'craftable' : ''}`}
                         onClick={() => setSelectedRecipe(recipe)}
                       >
                         <div className="recipe-node-header">
@@ -209,11 +118,8 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                               recipe.icon
                             )}
                           </div>
-                          {recipe.cost > 0 && !unlocked && (
-                            <div className="recipe-cost">{recipe.cost} SP</div>
-                          )}
-                          {unlocked && (
-                            <div className="recipe-unlocked"></div>
+                          {craftable && (
+                            <div className="recipe-craftable" title="Craftable with current inventory">✓</div>
                           )}
                         </div>
 
@@ -222,18 +128,6 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                         <div className={`recipe-rarity rarity-${recipe.rarity.toLowerCase().replace(' ', '-')}`}>
                           {recipe.rarity}
                         </div>
-
-                        {recipe.manaCost > 0 && (
-                          <div className="recipe-mana-cost">
-                             {recipe.manaCost} Mana
-                          </div>
-                        )}
-
-                        {recipe.manaLevelRequired > 1 && (
-                          <div className="recipe-level-req">
-                            Lvl {recipe.manaLevelRequired}
-                          </div>
-                        )}
 
                         <div className="recipe-ingredients-count">
                           {recipe.ingredients.length} Ingredients
@@ -248,7 +142,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
         </div>
       )}
 
-      {/* Wallpaper View - Radial Skill Tree */}
+      {/* Wallpaper View - Radial Herb Map */}
       {viewMode === 'wallpaper' && (
         <div className="wallpaper-tree-container">
           <div className="wallpaper-tree herb-to-potion radial">
@@ -280,8 +174,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                 let strokeWidth = 1.5
 
                 if (conn.herbId && conn.potionId) {
-                  // Herb to Potion connection
-                  if (!conn.herbPos || !conn.potionPos) return null // Skip invalid connections
+                  if (!conn.herbPos || !conn.potionPos) return null
 
                   x1 = conn.herbPos.x * scale + centerOffset
                   y1 = conn.herbPos.y * scale + centerOffset
@@ -292,8 +185,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                   strokeColor = isActive ? 'var(--primary)' : 'rgba(78, 204, 163, 0.2)'
                   strokeWidth = isActive ? 3 : 1
                 } else if (conn.isRequirement) {
-                  // Potion to Potion requirement
-                  if (!conn.fromPos || !conn.toPos) return null // Skip invalid connections
+                  if (!conn.fromPos || !conn.toPos) return null
 
                   x1 = conn.fromPos.x * scale + centerOffset
                   y1 = conn.fromPos.y * scale + centerOffset
@@ -304,14 +196,10 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
                   strokeColor = isActive ? 'var(--legendary)' : 'rgba(255, 193, 7, 0.3)'
                   strokeWidth = isActive ? 3 : 1.5
                 } else {
-                  return null // Skip unknown connection types
-                }
-
-                // Validate coordinates
-                if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
-                  console.warn('Invalid connection coordinates:', { x1, y1, x2, y2, conn })
                   return null
                 }
+
+                if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) return null
 
                 const pathD = createCurvedPath(
                   { x: x1, y: y1 },
@@ -344,16 +232,13 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
               const xPos = herb.position.x * scale + centerOffset
               const yPos = herb.position.y * scale + centerOffset
 
-              // Check if this herb is connected to hovered node
               let isConnected = !hoveredNode || hoveredNode === herb.id
 
               if (hoveredNode && hoveredNode !== herb.id) {
-                // If hovering a potion, check if this herb is an ingredient
                 const hoveredPotion = herbToPotionTree.potions.find(p => p.id === hoveredNode)
                 if (hoveredPotion) {
                   isConnected = hoveredPotion.ingredients.some(ing => ing.id === herb.id)
                 } else {
-                  // If hovering another herb, check if they share a potion
                   const sharedPotions = herbToPotionTree.connections.filter(conn =>
                     conn.herbId === herb.id || conn.herbId === hoveredNode
                   )
@@ -390,32 +275,25 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
             {herbToPotionTree.potions.map(potion => {
               if (!potion.position) return null
 
-              const unlocked = isUnlocked(potion.id)
-              const available = canUnlock(potion)
+              const craftable = isCraftable(potion)
 
               const scale = 50
               const centerOffset = 1800
               const xPos = potion.position.x * scale + centerOffset
               const yPos = potion.position.y * scale + centerOffset
 
-              // Highlight center potion
               const isCenter = potion.id === 'healing-potion'
 
-              // Check if this potion is connected to hovered node
               let isConnected = !hoveredNode || hoveredNode === potion.id
 
               if (hoveredNode && hoveredNode !== potion.id) {
-                // If hovering a herb, check if this potion uses that herb
                 const hoveredHerb = herbToPotionTree.herbs.find(h => h.id === hoveredNode)
                 if (hoveredHerb) {
                   isConnected = potion.ingredients.some(ing => ing.id === hoveredNode)
                 } else {
-                  // If hovering another potion, check if this is a requirement or dependent
                   const hoveredPotion = herbToPotionTree.potions.find(p => p.id === hoveredNode)
                   if (hoveredPotion) {
-                    // Check if current potion is required by hovered potion
                     const isRequirement = hoveredPotion.requires?.includes(potion.id)
-                    // Check if current potion requires hovered potion
                     const requiresHovered = potion.requires?.includes(hoveredNode)
                     isConnected = isRequirement || requiresHovered
                   }
@@ -425,7 +303,7 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
               return (
                 <div
                   key={`potion-${potion.id}`}
-                  className={`recipe-node wallpaper radial ${isCenter ? 'center' : ''} ${unlocked ? 'unlocked' : ''} ${available ? 'available' : 'locked'} ${!isConnected ? 'faded' : ''}`}
+                  className={`recipe-node wallpaper radial ${isCenter ? 'center' : ''} available ${craftable ? 'craftable' : ''} ${!isConnected ? 'faded' : ''}`}
                   style={{
                     position: 'absolute',
                     left: `${xPos}px`,
@@ -499,42 +377,17 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
 
             <div className="detail-meta">
               <div className="meta-item">
-                <span> DC:</span> <strong>{selectedRecipe.dc}</strong>
+                <span>DC:</span> <strong>{selectedRecipe.dc}</strong>
               </div>
               <div className="meta-item">
-                <span>⏱️ Brew Time:</span> <strong>{selectedRecipe.brewTime}</strong>
+                <span>Brew Time:</span> <strong>{selectedRecipe.brewTime}</strong>
               </div>
-              <div className="meta-item">
-                <span> SP Cost:</span>
-                <strong>{selectedRecipe.cost === 0 ? 'Free' : `${selectedRecipe.cost} SP`}</strong>
-              </div>
-              <div className="meta-item">
-                <span> Mana:</span>
-                <strong>{selectedRecipe.manaCost === 0 ? 'No Mana' : `${selectedRecipe.manaCost} Mana`}</strong>
-              </div>
-              <div className="meta-item">
-                <span> Level:</span>
-                <strong>Mana Level {selectedRecipe.manaLevelRequired}</strong>
-              </div>
+              {selectedRecipe.manaCost > 0 && (
+                <div className="meta-item">
+                  <span>Mana Cost:</span> <strong>{selectedRecipe.manaCost}</strong>
+                </div>
+              )}
             </div>
-
-            {/* Requirements */}
-            {selectedRecipe.requires && selectedRecipe.requires.length > 0 && (
-              <div className="detail-requirements">
-                <strong>Requires:</strong>
-                <ul>
-                  {selectedRecipe.requires.map(reqId => {
-                    const reqRecipe = getRecipeById(reqId)
-                    const reqUnlocked = isUnlocked(reqId)
-                    return (
-                      <li key={reqId} className={reqUnlocked ? 'completed' : 'incomplete'}>
-                        {reqUnlocked ? '' : ''} {reqRecipe?.name || reqId}
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            )}
 
             {/* Ingredients with detailed herb info */}
             <div className="detail-ingredients">
@@ -542,19 +395,28 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
               <ul>
                 {selectedRecipe.ingredients.map((ing, idx) => {
                   const herbData = getHerbById(ing.id)
+                  const inStock =
+                    (inventory?.ingredients?.[`tree-${ing.id}`] || 0) +
+                    (inventory?.ingredients?.[ing.id] || 0)
+                  const hasEnough = inStock >= ing.amount
                   return (
                     <li key={idx} className={`rarity-${herbData.rarity.toLowerCase()}`}>
                       <div className="ingredient-row">
-                        <span className="ingredient-amount">{ing.amount}x</span>
+                        <span className={`ingredient-amount ${hasEnough ? 'in-stock' : ''}`}>
+                          {ing.amount}x
+                        </span>
                         <span className="ingredient-name">{herbData.name}</span>
                         <span className="ingredient-rarity">({herbData.rarity})</span>
+                        {inStock > 0 && (
+                          <span className="ingredient-stock">{inStock} in stock</span>
+                        )}
                       </div>
                       <div className="ingredient-details">
                         <span className="ingredient-categories">
                           {herbData.categories.join(', ')}
                         </span>
                         {herbData.manaContent > 0 && (
-                          <span className="ingredient-mana"> {herbData.manaContent} Mana</span>
+                          <span className="ingredient-mana">{herbData.manaContent} Mana</span>
                         )}
                       </div>
                     </li>
@@ -563,16 +425,16 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
               </ul>
             </div>
 
-            {/* Unlocks */}
+            {/* Related Recipes */}
             {selectedRecipe.unlocks && selectedRecipe.unlocks.length > 0 && (
               <div className="detail-unlocks">
-                <strong>Unlocks:</strong>
+                <strong>Related Recipes:</strong>
                 <ul>
                   {selectedRecipe.unlocks.map(unlockId => {
-                    const unlockRecipe = getRecipeById(unlockId)
+                    const related = getRecipeById(unlockId)
                     return (
                       <li key={unlockId}>
-                        {unlockRecipe?.icon} {unlockRecipe?.name || unlockId}
+                        {related?.icon} {related?.name || unlockId}
                       </li>
                     )
                   })}
@@ -580,29 +442,10 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
               </div>
             )}
 
-            {/* Unlock Button */}
-            {isUnlocked(selectedRecipe.id) ? (
-              <button disabled className="unlock-button">
-                 Already Unlocked
-              </button>
-            ) : canUnlock(selectedRecipe) ? (
-              <button
-                className="unlock-button"
-                onClick={() => {
-                  unlockRecipe(selectedRecipe)
-                  setSelectedRecipe(null)
-                }}
-              >
-                Unlock für {selectedRecipe.cost} SP
-              </button>
-            ) : (
-              <button disabled className="unlock-button">
-                {skillPoints < selectedRecipe.cost
-                  ? 'Not enough Skill Points'
-                  : manaLevel < selectedRecipe.manaLevelRequired
-                  ? `Requires Mana Level ${selectedRecipe.manaLevelRequired}`
-                  : 'Requirements not met'}
-              </button>
+            {isCraftable(selectedRecipe) && (
+              <div className="craftable-banner">
+                ✓ You have all ingredients to brew this!
+              </div>
             )}
           </div>
         </div>
@@ -610,36 +453,22 @@ function RecipeTree({ recipes, setRecipes, ingredients, setIngredients }) {
 
       {/* Legend */}
       <div className="tree-legend card">
-        <h3>Legend & Mana System</h3>
         <div className="legend-grid">
           <div className="legend-item">
-            <div className="recipe-node mini unlocked">
-              <div className="recipe-icon"></div>
+            <div className="recipe-node mini craftable available">
+              <div className="recipe-icon">✓</div>
             </div>
-            <span>Unlocked</span>
+            <span>Craftable (enough herbs in inventory)</span>
           </div>
           <div className="legend-item">
             <div className="recipe-node mini available">
               <div className="recipe-icon">○</div>
             </div>
-            <span>Available</span>
-          </div>
-          <div className="legend-item">
-            <div className="recipe-node mini locked">
-              <div className="recipe-icon"></div>
-            </div>
-            <span>Locked</span>
+            <span>Missing ingredients</span>
           </div>
         </div>
         <div className="legend-info">
-          <p><strong> Mana-System:</strong></p>
-          <ul>
-            <li>Some potions cost Mana to brew</li>
-            <li>Mana potions restore your Mana</li>
-            <li>Mana Level 1-4 unlocks more powerful recipes</li>
-            <li>Herbs with Mana content increase potency</li>
-          </ul>
-          <p><strong> Herb Categories:</strong> Medicinal, Culinary, Magical, Ritual/Cultural, Brewing/Crafting</p>
+          <p><strong>Herb Categories:</strong> Medicinal, Culinary, Magical, Ritual/Cultural, Brewing/Crafting</p>
         </div>
       </div>
     </div>

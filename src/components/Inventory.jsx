@@ -1,20 +1,30 @@
 import { useState, useRef } from 'react'
 import './Inventory.css'
 import { exportData, importData } from '../utils/storage'
+import { getAllHerbs, rarityOrder } from '../data/herbsDatabase'
 
-function Inventory({ ingredients, inventory, setInventory }) {
+const allHerbs = getAllHerbs()
+
+function Inventory({ inventory, setInventory }) {
   const [showAddIngredient, setShowAddIngredient] = useState(false)
   const [selectedIngredient, setSelectedIngredient] = useState('')
   const [amount, setAmount] = useState(1)
   const fileInputRef = useRef(null)
 
   const getIngredientName = (ingredientId) => {
-    return ingredients.find(ing => ing.id === ingredientId)?.name || 'Unbekannt'
+    return allHerbs.find(h => h.id === ingredientId)?.name || ingredientId
   }
 
   const getIngredientDetails = (ingredientId) => {
-    return ingredients.find(ing => ing.id === ingredientId)
+    return allHerbs.find(h => h.id === ingredientId)
   }
+
+  // Group herbs by rarity for the dropdown
+  const herbsByRarity = rarityOrder.reduce((acc, rarity) => {
+    const herbs = allHerbs.filter(h => h.rarity === rarity)
+    if (herbs.length > 0) acc[rarity] = herbs
+    return acc
+  }, {})
 
   const handleAddIngredient = () => {
     if (!selectedIngredient || amount <= 0) return
@@ -126,9 +136,13 @@ function Inventory({ ingredients, inventory, setInventory }) {
                   value={selectedIngredient}
                   onChange={(e) => setSelectedIngredient(e.target.value)}
                 >
-                  <option value="">-- Select Ingredient --</option>
-                  {ingredients.map(ing => (
-                    <option key={ing.id} value={ing.id}>{ing.name}</option>
+                  <option value="">-- Herb auswählen --</option>
+                  {Object.entries(herbsByRarity).map(([rarity, herbs]) => (
+                    <optgroup key={rarity} label={rarity}>
+                      {herbs.map(herb => (
+                        <option key={herb.id} value={herb.id}>{herb.name}</option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               </div>
@@ -169,8 +183,8 @@ function Inventory({ ingredients, inventory, setInventory }) {
                         <span className={`rarity-badge rarity-${ingredient.rarity.toLowerCase().replace(' ', '-')}`}>
                           {ingredient.rarity}
                         </span>
-                        {ingredient.effect && (
-                          <p className="item-detail">{ingredient.effect}</p>
+                        {ingredient.categories && (
+                          <p className="item-detail">{ingredient.categories.join(', ')}</p>
                         )}
                       </>
                     )}

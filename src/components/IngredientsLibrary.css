@@ -12,6 +12,45 @@
   gap: 10px;
 }
 
+.add-mode-toggle {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.mode-btn {
+  padding: 6px 16px;
+  background: transparent;
+  border: 2px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.mode-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #000;
+  font-weight: bold;
+}
+
+.aetherial-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.herb-preview {
+  background: var(--bg-secondary) !important;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
 .ingredient-form {
   display: flex;
   flex-direction: column;

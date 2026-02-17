@@ -9,7 +9,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
   const [diceRoll, setDiceRoll] = useState(null)
 
   const getIngredientName = (ingredientId) => {
-    return ingredients.find(ing => ing.id === ingredientId)?.name || 'Unbekannt'
+    return ingredients.find(ing => ing.id === ingredientId)?.name || 'Unknown'
   }
 
   const checkIngredientAvailability = (recipe) => {
@@ -74,14 +74,14 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
     let effectMultiplier = 1
 
     if (critSuccess) {
-      quality = 'Meisterwerk'
+      quality = 'Masterwork'
       effectMultiplier = 1.5
     } else if (critFail) {
-      quality = 'Fehlschlag (Kritisch)'
+      quality = 'Critical Failure'
     } else if (!success) {
-      quality = 'Fehlschlag'
+      quality = 'Failure'
     } else if (total >= dc + 5) {
-      quality = 'Überragend'
+      quality = 'Superior'
       effectMultiplier = 1.25
     }
 
@@ -132,14 +132,14 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
 
   return (
     <div className="brewing-station">
-      <h2>🧪 Brau-Station</h2>
+      <h2>🧪 Brewing Station</h2>
 
       {!selectedRecipe ? (
         <div className="recipe-selection">
-          <h3>Wähle ein Rezept</h3>
+          <h3>Select a Recipe</h3>
           {recipes.length === 0 ? (
             <div className="card empty-state">
-              <p>Keine Rezepte vorhanden. Erstelle erst Rezepte in der Rezept-Verwaltung!</p>
+              <p>No recipes available. Create recipes in Custom Recipes first!</p>
             </div>
           ) : (
             <div className="recipes-list grid grid-2">
@@ -177,7 +177,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                       </div>
                     )}
                     {check.available && (
-                      <button className="brew-button">Dieses Rezept brauen</button>
+                      <button className="brew-button">Brew this Recipe</button>
                     )}
                   </div>
                 )
@@ -191,16 +191,16 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
             <div className="brewing-header">
               <div>
                 <h3>{selectedRecipe.name}</h3>
-                <p className="brewing-dc">Schwierigkeit: DC {selectedRecipe.dc}</p>
+                <p className="brewing-dc">Difficulty: DC {selectedRecipe.dc}</p>
               </div>
               <button onClick={resetBrewing} className="btn-secondary">
-                ← Zurück
+                ← Back
               </button>
             </div>
 
             <div className="brewing-content">
               <div className="modifier-section">
-                <label>Dein Alchemie-Bonus (Proficiency + Ability Modifier)</label>
+                <label>Your Alchemy Bonus (Proficiency + Ability Modifier)</label>
                 <input
                   type="number"
                   value={modifier}
@@ -216,7 +216,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                   {diceRoll !== null && brewing ? (
                     <div className="dice-rolling">
                       <div className="dice-animation">🎲</div>
-                      <p>Würfel rollt: {diceRoll}</p>
+                      <p>Rolling: {diceRoll}</p>
                     </div>
                   ) : (
                     <button
@@ -224,7 +224,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                       disabled={brewing || !availability?.available}
                       className="brew-action-button"
                     >
-                      {brewing ? '⏳ Braue...' : '🎲 Würfeln und Brauen!'}
+                      {brewing ? '⏳ Brewing...' : '🎲 Roll and Brew!'}
                     </button>
                   )}
                 </div>
@@ -232,14 +232,14 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
 
               {result && (
                 <div className={`brew-result ${result.success ? 'success' : 'failure'}`}>
-                  <h3>{result.success ? '✅ Erfolg!' : '❌ Fehlgeschlagen!'}</h3>
+                  <h3>{result.success ? '✅ Success!' : '❌ Failed!'}</h3>
 
                   <div className="roll-breakdown">
                     <div className="roll-detail">
-                      <span>🎲 Würfel:</span>
+                      <span>🎲 Roll:</span>
                       <strong className={result.critSuccess ? 'crit-success' : result.critFail ? 'crit-fail' : ''}>
-                        {result.roll} {result.critSuccess && '(Kritischer Erfolg!)'}
-                        {result.critFail && '(Kritischer Fehlschlag!)'}
+                        {result.roll} {result.critSuccess && '(Critical Success!)'}
+                        {result.critFail && '(Critical Failure!)'}
                       </strong>
                     </div>
                     <div className="roll-detail">

@@ -26,11 +26,11 @@ function App() {
   }, [ingredients, recipes, inventory])
 
   const tabs = [
-    { id: 'recipe-tree', label: 'Recipe Tree', component: RecipeTree },
+    { id: 'recipe-tree', label: 'Potion Compendium', component: RecipeTree },
     { id: 'herbs', label: 'Herbs Compendium', component: HerbsLibrary },
     { id: 'brewing', label: 'Brewing', component: BrewingStation },
     { id: 'inventory', label: 'Inventory', component: Inventory },
-    { id: 'recipes', label: 'Recipes', component: RecipeManager },
+    { id: 'recipes', label: 'Custom Recipes', component: RecipeManager },
     { id: 'ingredients', label: 'Ingredients', component: IngredientsLibrary },
   ]
 

@@ -60,7 +60,6 @@ h1 {
   text-shadow:
     3px 3px 0 rgba(0,0,0,0.5),
     -1px -1px 0 rgba(255,255,255,0.1);
-  letter-spacing: 2px;
 }
 
 h2 {
@@ -68,7 +67,6 @@ h2 {
   margin-bottom: 12px;
   color: var(--text-primary);
   text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
-  letter-spacing: 1px;
 }
 
 h3 {
@@ -99,8 +97,6 @@ button {
   padding: 12px 16px;
   cursor: pointer;
   position: relative;
-  text-transform: uppercase;
-  letter-spacing: 1px;
 
   /* Pixel border effect */
   box-shadow:

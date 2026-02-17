@@ -5,6 +5,10 @@ const INITIALIZED_KEY = 'dnd-alchemy-initialized'
 
 export const loadData = () => {
   try {
+    // Clean up obsolete skill/level system keys
+    localStorage.removeItem('recipe-tree-progress')
+    localStorage.removeItem('aetherial-progress')
+
     const data = localStorage.getItem(STORAGE_KEY)
     const isInitialized = localStorage.getItem(INITIALIZED_KEY)
 
