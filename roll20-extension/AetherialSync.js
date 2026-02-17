@@ -46,9 +46,18 @@ function makeRowId() {
   return id
 }
 
+// ── Debug echo: shows the raw message content Roll20 receives ─────────────
+on('chat:message', (msg) => {
+  if (!msg.content.startsWith('!brew-echo')) return
+  sendChat(SCRIPT_NAME, `/w ${msg.who} RAW: ${JSON.stringify(msg.content)}`)
+})
+
 // ── Main sync handler ──────────────────────────────────────────────────────
 on('chat:message', async (msg) => {
   if (!msg.content.startsWith('!brew-sync')) return
+
+  // Debug: always echo raw content so we can see what Roll20 received
+  sendChat(SCRIPT_NAME, `/w ${msg.who} DEBUG raw: ${JSON.stringify(msg.content)}`)
 
   const args = parseArgs(msg.content)
   if (!args.name) {
