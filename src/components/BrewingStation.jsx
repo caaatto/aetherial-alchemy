@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './BrewingStation.css'
+import D20 from './D20'
 
 function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
   const [selectedRecipe, setSelectedRecipe] = useState(null)
@@ -213,10 +214,23 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
 
               {!result && (
                 <div className="dice-section">
-                  {diceRoll !== null && brewing ? (
+                  {brewing ? (
                     <div className="dice-rolling">
-                      <div className="dice-animation">🎲</div>
-                      <p>Rolling: {diceRoll}</p>
+                      <D20
+                        rolling={diceRoll === null}
+                        value={diceRoll}
+                        isCrit={diceRoll === 20}
+                        isFail={diceRoll === 1}
+                      />
+                      {diceRoll !== null && (
+                        <p className="roll-announce">
+                          {diceRoll === 20
+                            ? '⭐ Natural 20!'
+                            : diceRoll === 1
+                            ? '💀 Natural 1!'
+                            : `You rolled a ${diceRoll}!`}
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <button
@@ -224,7 +238,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                       disabled={brewing || !availability?.available}
                       className="brew-action-button"
                     >
-                      {brewing ? '⏳ Brewing...' : '🎲 Roll and Brew!'}
+                      🎲 Roll and Brew!
                     </button>
                   )}
                 </div>
@@ -234,9 +248,18 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                 <div className={`brew-result ${result.success ? 'success' : 'failure'}`}>
                   <h3>{result.success ? '✅ Success!' : '❌ Failed!'}</h3>
 
+                  <div className="result-d20-row">
+                    <D20
+                      rolling={false}
+                      value={result.roll}
+                      isCrit={result.critSuccess}
+                      isFail={result.critFail}
+                    />
+                  </div>
+
                   <div className="roll-breakdown">
                     <div className="roll-detail">
-                      <span>🎲 Roll:</span>
+                      <span>Roll:</span>
                       <strong className={result.critSuccess ? 'crit-success' : result.critFail ? 'crit-fail' : ''}>
                         {result.roll} {result.critSuccess && '(Critical Success!)'}
                         {result.critFail && '(Critical Failure!)'}
