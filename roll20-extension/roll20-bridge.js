@@ -6,6 +6,74 @@
 
 ;(async () => {
 
+// ── Potion icon + herb colour helpers (mirrors website logic) ─────────────────
+const POTION_BASE = 'https://catto.at/alchemy/assets/potions/'
+
+const POTION_ICONS = {
+  healing:             { 1:'Small Vial - RED - 0000.png',        2:'Round Potion - RED - 0000.png',        3:'Big Vial - RED - 0000.png',           4:'Large Bottle - RED - 0000.png',    5:'Glowing Potion - RED - 0000.png' },
+  mana:                { 1:'Small Vial - BLUE - 0000.png',       2:'Round Potion - BLUE - 0000.png',       3:'Big Vial - BLUE - 0000.png',          4:'Large Bottle - BLUE - 0000.png',   5:'Glowing Potion - CYAN - 0000.png' },
+  combat:              { 1:'Small Bottle - PURPLE - 0000.png',   2:'Round Potion - PURPLE - 0000.png',     3:'Big Vial - PURPLE - 0000.png',        4:'Large Bottle - PURPLE - 0000.png', 5:'Glowing Potion - PURPLE - 0000.png' },
+  stealth:             { 1:'Small Elixir - PURPLE -0000.png',    2:'Encased Potion - BROWN_PURPLE - 0000.png', 3:'Bubbly Brew Bottle - BLACK - 0000.png', 4:'Glowing Potion - BLACK - 0000.png' },
+  transformation:      { 1:'Small Vial - PINK - 0000.png',      2:'Round Potion - MAGENTA - 0000.png',    3:'Bubbly Brew Bottle Rising - PINK - 0000.png', 4:'Large Bottle - PINK - 0000.png', 5:'Glowing Potion - PINK - 0000.png' },
+  utility:             { 1:'Small Vial - LIME - 0000.png',       2:'Round Potion - LIME - 0000.png',       3:'Big Vial - LIME - 0000.png',          4:'Large Bottle - LIME - 0000.png',   5:'Glowing Potion - LIME - 0000.png' },
+  protection:          { 1:'Small Bottle - GOLD - 0000.png',     2:'Classic Jar - GOLD - 0000.png',        3:'Large Jar - GOLD - 0000.png',         4:'Encased Potion - GOLD - 0000.png', 5:'Glowing Potion - GOLD - 0000.png' },
+  hybrid:              { 1:'Small Bottle - PURPLE_LIME - 0000.png', 2:'Encased Potion - LIME_PURPLE - 0000.png', 3:'Classic Jar - BLUE_GOLD - 0000.png', 4:'Large Jar - TURQUOISE_GOLD - 0000.png', 5:'Bubbly Brew Bottle Rising - GOLD - 0000.png' },
+  social:              { 1:'Small Elixir - PINK - 0000.png',     2:'Round Potion - MAGENTA - 0000.png',    3:'Encased Potion - GOLD_PURPLE - 0000.png', 4:'Large Bottle - PINK - 0000.png', 5:'Glowing Potion - PINK - 0000.png' },
+  resistance_fire:     { 1:'Small Vial - ORANGE - 0000.png',    2:'Round Potion - ORANGE - 0000.png',     3:'Large Tonic - ORANGE - 0000.png',     4:'Glowing Potion - GOLD - 0000.png' },
+  resistance_cold:     { 1:'Small Vial - TURQUOISE - 0000.png', 2:'Round Potion - TURQUOISE - 0000.png',  3:'Large Tonic - TURQUOISE - 0000.png',  4:'Glowing Potion - CYAN - 0000.png' },
+  resistance_lightning:{ 1:'Small Vial - YELLOW - 0000.png',    2:'Round Potion - YELLOW - 0000.png',     3:'Large Tonic - YELLOW - 0000.png' },
+  resistance_poison:   { 1:'Small Vial - GREEN - 0000.png',     2:'Round Potion - GREEN - 0000.png',      3:'Large Tonic - GREEN - 0000.png',      4:'Glowing Potion - GREEN - 0000.png' },
+  resistance:          { 1:'Small Bottle - TEAL - 0000.png',    2:'Classic Jar - TEAL - 0000.png',        3:'Large Jar - TEAL - 0000.png' },
+}
+const FALLBACK_ICONS = { 1:'Small Vial - GOLD - 0000.png', 2:'Round Potion - GOLD - 0000.png', 3:'Big Vial - GOLD - 0000.png', 4:'Large Bottle - GOLD - 0000.png', 5:'Glowing Potion - GOLD - 0000.png' }
+
+function getPotionIcon(category, tier, name = '') {
+  let key = category
+  if (category === 'resistance') {
+    const n = name.toLowerCase()
+    if (n.includes('fire') || n.includes('feuer') || n.includes('drachen'))       key = 'resistance_fire'
+    else if (n.includes('cold') || n.includes('eis') || n.includes('frost'))      key = 'resistance_cold'
+    else if (n.includes('lightning') || n.includes('blitz') || n.includes('sturm')) key = 'resistance_lightning'
+    else if (n.includes('poison') || n.includes('gift'))                           key = 'resistance_poison'
+  }
+  const map  = POTION_ICONS[key] || FALLBACK_ICONS
+  const file = map[tier] || map[1] || FALLBACK_ICONS[1]
+  return POTION_BASE + file
+}
+
+const HERB_COLORS = {
+  wolfsfarn:{hue:10,saturation:1.3},       eisenkraut:{hue:0,saturation:1.1,brightness:1.1},
+  feuerblute:{hue:30,saturation:1.5},      glutwurz:{hue:35,saturation:1.6},
+  sonnenlaub:{hue:50,saturation:1.4},      wiesensalbei:{hue:55,saturation:1.2},
+  blitzgras:{hue:60,saturation:1.6,brightness:1.2}, sturmklee:{hue:65,saturation:1.4},
+  waldfarn:{hue:110,saturation:1.3},       wanderkraut:{hue:100,saturation:1.2},
+  todeswurz:{hue:130,saturation:1.2,brightness:0.8}, bitterlaub:{hue:125,saturation:1.1,brightness:0.9},
+  alraunenkraut:{hue:145,saturation:1.4},  ewiggrün:{hue:150,saturation:1.5,brightness:1.1},
+  eisblume:{hue:180,saturation:1.4},       frostfarn:{hue:185,saturation:1.3},
+  elfenhaar:{hue:190,saturation:0.9},      mondkresse:{hue:210,saturation:1.4},
+  mondfarn:{hue:220,saturation:1.4},       schattenkraut:{hue:270,saturation:1.3,brightness:0.8},
+  schattenmondblute:{hue:275,saturation:1.4,brightness:0.7}, nachtflieder:{hue:280,saturation:1.3},
+  dammerungslilie:{hue:285,saturation:1.2}, bergveilchen:{hue:280,saturation:1.1},
+  orgain:{hue:30,saturation:0.8},          manndrache:{hue:30,saturation:0.9,brightness:0.9},
+  phonixfederkraut:{hue:15,saturation:2.0,brightness:1.3}, gotterbalsam:{hue:50,saturation:1.8,brightness:1.4},
+  drachenauge:{hue:10,saturation:1.8,brightness:1.4}, runenwurz:{hue:280,saturation:1.5,brightness:1.2},
+  drachenmelisse:{hue:20,saturation:1.6,brightness:1.2}, silberspross:{hue:0,saturation:0.3,brightness:1.3},
+  silberweide:{hue:0,saturation:0.2,brightness:1.4}, hexenholz:{hue:275,saturation:0.9,brightness:0.6},
+  sternenfeuerkraut:{hue:220,saturation:1.5,brightness:1.5}, geisterzunge:{hue:270,saturation:0.7,brightness:1.3},
+}
+
+function getHerbColorFilter(herbId) {
+  const c = HERB_COLORS[herbId]
+  if (!c) return ''
+  return `hue-rotate(${c.hue}deg) saturate(${c.saturation}) brightness(${c.brightness || 1})`
+}
+
+function recipeIcon(recipe) {
+  const src    = getPotionIcon(recipe.category, recipe.tier, recipe.name)
+  const filter = getHerbColorFilter(recipe.ingredients?.[0]?.id)
+  return `<img class="ae-potion-img" src="${src}" alt="" style="filter:${filter}">`
+}
+
 // ── Load data from extension bundle ──────────────────────────────────────────
 const [herbs, recipes] = await Promise.all([
   fetch(chrome.runtime.getURL('herbs.json')).then(r => r.json()),
@@ -243,7 +311,7 @@ function renderBrew() {
     html += `
       <div class="ae-recipe-card ${available ? '' : 'unavailable'}" data-id="${recipe.id}">
         <div class="ae-recipe-header">
-          <span class="ae-recipe-name">${recipe.icon || '⚗'} ${recipe.name}</span>
+          <span class="ae-recipe-name">${recipeIcon(recipe)} ${recipe.name}</span>
           <span class="ae-rarity ae-rarity-${slug}">${recipe.rarity}</span>
         </div>
         <div class="ae-recipe-meta">DC ${recipe.dc} · ${recipe.brewTime}</div>
@@ -269,7 +337,7 @@ function renderBrewAction(el) {
   el.innerHTML = `
     <div id="ae-brew-area">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <h4>${recipe.icon || '⚗'} ${recipe.name}</h4>
+        <h4>${recipeIcon(recipe)} ${recipe.name}</h4>
         <button class="ae-btn-back" id="ae-brew-back">← Zurück</button>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:10px;font-size:12px;color:#888">
@@ -304,6 +372,7 @@ function renderBrewResult(el) {
 
   el.innerHTML = `
     <div id="ae-brew-result" class="${r.success ? 'success' : 'failure'}">
+      ${r.success ? `<div style="text-align:center;margin-bottom:10px">${recipeIcon(recipe)}</div>` : ''}
       <h4>${r.success ? '✅ Erfolg!' : '❌ Fehlgeschlagen!'}</h4>
       <div class="ae-result-roll">
         Würfel: <strong class="${critClass}">${r.roll}${r.critSuccess ? ' (Nat 20!)' : r.critFail ? ' (Nat 1!)' : ''}</strong>
@@ -382,7 +451,7 @@ function renderRecipes() {
       html += `
         <div class="ae-recipe-detail-card">
           <div class="ae-recipe-detail-header">
-            <span class="ae-recipe-name">${recipe.icon || '⚗'} ${recipe.name}</span>
+            <span class="ae-recipe-name">${recipeIcon(recipe)} ${recipe.name}</span>
             <span class="ae-rarity ae-rarity-${slug}">${recipe.rarity}</span>
           </div>
           <div class="ae-recipe-meta">DC ${recipe.dc} · ${recipe.brewTime}</div>

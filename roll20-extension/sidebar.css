@@ -384,3 +384,19 @@
 
 .ae-herb-card-name { font-weight: 600; }
 .ae-herb-desc { font-size: 11px; color: #777; line-height: 1.4; }
+
+/* ── Potion pixel art images ─────────────────────────────────────────────── */
+
+.ae-potion-img {
+  width: 28px;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  vertical-align: middle;
+  margin-right: 2px;
+  transition: filter 0.2s;
+}
+
+#ae-brew-result .ae-potion-img {
+  width: 56px;
+}
