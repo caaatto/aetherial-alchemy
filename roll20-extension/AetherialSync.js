@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // AetherialSync — Roll20 Mod Script
-// Receives !brew-sync commands from the Aetherial Alchemy Chrome Extension
-// and writes brewed potions directly into the D&D 2024 character sheet inventory.
+// Listens for brew cards posted by the Aetherial Alchemy Chrome Extension
+// and writes brewed potions into the D&D 2024 character sheet inventory.
 //
 // ⚠️  REQUIREMENTS:
 //   - Roll20 Pro (Mod Scripts require Pro)
@@ -14,20 +14,10 @@
 
 const SCRIPT_NAME = 'AetherialSync'
 
-// ── Argument parser ────────────────────────────────────────────────────────
-// Values are wrapped in ~ (e.g. --name~Minor Healing Potion~) because
-// Roll20 converts straight quotes to smart quotes, breaking regex matching.
-function parseArgs(content) {
-  const get = (flag) => {
-    const match = content.match(new RegExp(`--${flag}~([^~]*)~`))
-    return match ? match[1] : null
-  }
-  return {
-    name:    get('name'),
-    effect:  get('effect'),
-    quality: get('quality'),
-    qty:     parseInt(content.match(/--qty\s+(\d+)/)?.[1]) || 1,
-  }
+// ── Extract a {{field=value}} field from a Roll20 template message ─────────
+function getField(content, field) {
+  const match = content.match(new RegExp('\\{\\{' + field + '=([^}]*)\\}\\}'))
+  return match ? match[1].trim() : null
 }
 
 // ── Find character controlled by a player ─────────────────────────────────
@@ -46,45 +36,43 @@ function makeRowId() {
   return id
 }
 
-// ── Debug echo: shows the raw message content Roll20 receives ─────────────
-on('chat:message', (msg) => {
-  if (!msg.content.startsWith('!brew-echo')) return
-  sendChat(SCRIPT_NAME, `/w ${msg.who} RAW: ${JSON.stringify(msg.content)}`)
-})
-
-// ── Main sync handler ──────────────────────────────────────────────────────
+// ── Main handler: detect brew cards from the extension ────────────────────
+// The extension embeds {{aetherial-sync=1}} in the template when brew succeeds.
+// This avoids a separate !brew-sync message (Roll20 strips arguments from API commands).
 on('chat:message', async (msg) => {
-  if (!msg.content.startsWith('!brew-sync')) return
+  if (!msg.content.includes('aetherial-sync=1')) return
 
-  // Debug: always echo raw content so we can see what Roll20 received
-  sendChat(SCRIPT_NAME, `/w ${msg.who} DEBUG raw: ${JSON.stringify(msg.content)}`)
+  const name    = getField(msg.content, 'aetherial-name')
+  const effect  = getField(msg.content, 'aetherial-effect')
+  const quality = getField(msg.content, 'aetherial-quality')
 
-  const args = parseArgs(msg.content)
-  if (!args.name) {
-    sendChat(SCRIPT_NAME, `/w ${msg.who} ⚠️ Missing --name argument.`)
+  if (!name) {
+    sendChat(SCRIPT_NAME, `/w ${msg.who} ⚠️ Could not read potion name from brew card.`)
     return
   }
 
   const char = findCharacterForPlayer(msg.playerid)
   if (!char) {
-    sendChat(SCRIPT_NAME, `/w ${msg.who} ⚠️ No character found for your player. Make sure you control a character in this game.`)
+    sendChat(SCRIPT_NAME,
+      `/w ${msg.who} ⚠️ No character found for your player. ` +
+      `Make sure you control a character in this game.`
+    )
     return
   }
 
   const charId = char.id
   const rowId  = makeRowId()
-  const desc   = [args.effect, `Quality: ${args.quality}`].filter(Boolean).join(' | ')
+  const desc   = [effect, `Quality: ${quality}`].filter(Boolean).join(' | ')
 
   try {
     // D&D 2024 Beacon sheet — requires Experimental API Server
-    // If you get "No attribute found" errors, run !brew-attrs on a selected token
-    // to discover the exact attribute names your sheet uses.
-    await setSheetItem(charId, `repeating_equipment_${rowId}_name`,        args.name)
-    await setSheetItem(charId, `repeating_equipment_${rowId}_description`,  desc)
-    await setSheetItem(charId, `repeating_equipment_${rowId}_quantity`,      args.qty)
+    // Run !brew-attrs on a selected token if you get "No attribute found" errors.
+    await setSheetItem(charId, `repeating_equipment_${rowId}_name`,       name)
+    await setSheetItem(charId, `repeating_equipment_${rowId}_description`, desc)
+    await setSheetItem(charId, `repeating_equipment_${rowId}_quantity`,    1)
 
     sendChat(SCRIPT_NAME,
-      `/w ${msg.who} ✅ Added **${args.qty}x ${args.name}** (${args.quality}) to ${char.get('name')}'s inventory.`
+      `/w ${msg.who} ✅ Added **${name}** (${quality}) to ${char.get('name')}'s inventory.`
     )
   } catch (err) {
     sendChat(SCRIPT_NAME,
@@ -105,14 +93,14 @@ on('chat:message', (msg) => {
     return
   }
 
-  const token = getObj('graphic', msg.selected[0]._id)
+  const token  = getObj('graphic', msg.selected[0]._id)
   const charId = token?.get('represents')
   if (!charId) {
     sendChat(SCRIPT_NAME, `/w ${msg.who} The selected token has no linked character.`)
     return
   }
 
-  const attrs = findObjs({ _type: 'attribute', _characterid: charId })
+  const attrs    = findObjs({ _type: 'attribute', _characterid: charId })
   const relevant = attrs
     .filter(a => /equipment|inventory|item/i.test(a.get('name')))
     .slice(0, 40)
@@ -120,9 +108,9 @@ on('chat:message', (msg) => {
     .join('<br>')
 
   sendChat(SCRIPT_NAME,
-    `/w ${msg.who} <br><b>Inventory-related attributes on ${getObj('character', charId)?.get('name')}:</b><br>` +
-    (relevant || 'None found. Try running with a 2024 sheet character.')
+    `/w ${msg.who} <br><b>Inventory attrs on ${getObj('character', charId)?.get('name')}:</b><br>` +
+    (relevant || 'None found. The 2024 sheet may use a different attribute structure.')
   )
 })
 
-log(`[${SCRIPT_NAME}] Ready — listening for !brew-sync and !brew-attrs`)
+log(`[${SCRIPT_NAME}] Ready — listening for Aetherial brew cards`)

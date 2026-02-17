@@ -3,15 +3,13 @@
 
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type !== 'BREW_POTION') return
-  const { potion } = msg
-
-  postBrewCard(potion)
-
-  // Post the !brew-sync command 600ms later so the chat card appears first
-  setTimeout(() => postBrewSync(potion), 600)
+  postBrewCard(msg.potion)
 })
 
-// ── Chat card (visible to all players) ────────────────────────────────────
+// ── Chat card ──────────────────────────────────────────────────────────────
+// Data for the Mod Script is embedded as hidden {{aetherial-*=value}} fields.
+// These appear as extra rows in the default template, which the Mod Script reads.
+// This avoids a separate !brew-sync message whose arguments Roll20 strips.
 function postBrewCard(potion) {
   const qualityEmoji =
     potion.quality === 'Masterwork'       ? '⭐' :
@@ -26,7 +24,7 @@ function postBrewCard(potion) {
 
   const lines = [
     `&{template:default}`,
-    `{{name=🧪 Aetherial Brew}}`,
+    `{{name=Aetherial Brew}}`,
     `{{Potion=${potion.name}}}`,
     `{{Effect=${potion.effect}}}`,
     `{{Quality=${qualityEmoji} ${potion.quality}}}`,
@@ -34,42 +32,30 @@ function postBrewCard(potion) {
     `{{Brew Time=${potion.brewTime}}}`,
   ]
 
+  // Embed inventory data for AetherialSync Mod Script (only on success)
+  if (potion.success) {
+    lines.push(`{{aetherial-name=${potion.name}}}`)
+    lines.push(`{{aetherial-effect=${potion.effect}}}`)
+    lines.push(`{{aetherial-quality=${potion.quality}}}`)
+    lines.push(`{{aetherial-sync=1}}`)
+  }
+
   postToChat(lines.join(' '))
-}
-
-// ── Sync command for the Mod Script ───────────────────────────────────────
-function postBrewSync(potion) {
-  if (!potion.success) return // Only sync successful brews to inventory
-
-  // Use ~ as delimiter — Roll20 converts straight quotes to smart quotes,
-  // which breaks regex matching in the Mod Script.
-  const cmd = [
-    `!brew-sync`,
-    `--name~${potion.name}~`,
-    `--effect~${potion.effect}~`,
-    `--quality~${potion.quality}~`,
-    `--qty 1`,
-  ].join(' ')
-
-  postToChat(cmd)
 }
 
 // ── Chat injection ────────────────────────────────────────────────────────
 function postToChat(msg) {
-  // Roll20 wraps the textarea in a React component — we bypass its setter
   const input = document.querySelector('#textchat-input textarea')
   const btn   = document.querySelector('#textchat-input button[type="submit"]')
                ?? document.querySelector('#textchat-input .btn')
 
   if (!input || !btn) {
-    console.warn('[Aetherial] Could not find Roll20 chat input. Selectors may have changed.')
+    console.warn('[Aetherial] Could not find Roll20 chat input.')
     return
   }
 
-  // Trigger React's synthetic onChange by using the native value setter
   const nativeSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
   nativeSetter.call(input, msg)
   input.dispatchEvent(new Event('input', { bubbles: true }))
-
   setTimeout(() => btn.click(), 80)
 }
