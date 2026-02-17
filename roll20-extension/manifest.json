@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Aetherial Alchemy — Roll20 Sync",
-  "version": "1.0",
-  "description": "Syncs brewed potions from Aetherial Alchemy to Roll20 chat and inventory.",
+  "version": "2.0",
+  "description": "Alchemy sidebar directly inside Roll20 — inventory, brewing, and D&D sheet sync.",
 
   "permissions": ["storage"],
   "host_permissions": [
@@ -24,7 +24,15 @@
     {
       "matches": ["https://app.roll20.net/editor/*"],
       "js": ["roll20-bridge.js"],
+      "css": ["sidebar.css"],
       "run_at": "document_idle"
+    }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["herbs.json", "recipes.json"],
+      "matches": ["https://app.roll20.net/*"]
     }
   ]
 }
