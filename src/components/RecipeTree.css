@@ -74,6 +74,55 @@
   border-color: var(--success);
 }
 
+
+/* Search Bar */
+.compendium-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.search-input {
+  flex: 1;
+  background: var(--bg-secondary);
+  border: 3px solid var(--border);
+  color: var(--text-primary);
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 9px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--accent);
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.search-clear {
+  background: var(--bg-secondary);
+  border: 3px solid var(--border);
+  color: var(--text-secondary);
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  cursor: pointer;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.search-clear:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
 /* Category Filter */
 .category-filter {
   display: flex;

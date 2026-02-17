@@ -8,6 +8,7 @@ import { getHerbColorFilter, getMainHerbId } from '../data/herbColorMapping'
 function RecipeTree({ inventory }) {
   const [selectedRecipe, setSelectedRecipe] = useState(null)
   const [filter, setFilter] = useState('all')
+  const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState('list')
   const [hoveredNode, setHoveredNode] = useState(null)
 
@@ -34,9 +35,11 @@ function RecipeTree({ inventory }) {
     { id: 'hybrid', label: 'Hybrid' }
   ]
 
-  const filteredRecipes = filter === 'all'
-    ? aetherialRecipeTree.recipes
-    : aetherialRecipeTree.recipes.filter(r => r.category === filter)
+  const filteredRecipes = aetherialRecipeTree.recipes.filter(r => {
+    const matchesCategory = filter === 'all' || r.category === filter
+    const matchesSearch = !search || r.name.toLowerCase().includes(search.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
 
   const tiers = [...new Set(filteredRecipes.map(r => r.tier))].sort((a, b) => a - b)
 
@@ -64,6 +67,20 @@ function RecipeTree({ inventory }) {
         >
           Herb Map
         </button>
+      </div>
+
+      {/* Search */}
+      <div className="compendium-search card">
+        <input
+          type="text"
+          placeholder="Search potions..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="search-input"
+        />
+        {search && (
+          <button className="search-clear" onClick={() => setSearch('')}>✕</button>
+        )}
       </div>
 
       {/* Category Filter */}
