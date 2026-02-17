@@ -1,59 +1,84 @@
 // Content script injected into the Alchemy App (localhost:5173 and catto.at)
-// Listens for brew/sync events fired by the app and forwards them to the background worker.
-// Also receives responses from Roll20 (via background) and dispatches them back to the app.
+//
+// Chrome extensions run content scripts in an "isolated world" — a separate JS
+// context from the page. window.foo set here is NOT visible to the React app,
+// and window.dispatchEvent() here does NOT reach the page's event listeners.
+//
+// Solution:
+//   • Inject inline <script> tags to run code in the PAGE's JS context.
+//   • Use window.postMessage to relay events from page → content script.
+//   • Inject scripts to dispatch CustomEvents from content script → page.
 
-// Let the app know the extension is active
-window.__aetherialExtensionActive = true
-window.dispatchEvent(new CustomEvent('aetherial-extension-ready'))
+// ── Run code in the page's JS context ────────────────────────────────────────
+function injectScript(code) {
+  const s = document.createElement('script')
+  s.textContent = code
+  document.documentElement.appendChild(s)
+  s.remove()
+}
 
-// ── Alchemy App → Background ─────────────────────────────────────────────────
+// ── Fire a CustomEvent in the page context ────────────────────────────────────
+function fireInPage(eventName, detail) {
+  injectScript(
+    `window.dispatchEvent(new CustomEvent(${JSON.stringify(eventName)}, ` +
+    `{ detail: ${JSON.stringify(detail)} }))`
+  )
+}
 
-// Forward brew events to Roll20 via background
-window.addEventListener('aetherial-brew', (event) => {
-  chrome.runtime.sendMessage({ type: 'BREW_POTION', potion: event.detail })
+// ── 1. Signal extension presence + set up page→content relay ─────────────────
+// Runs in the PAGE's context: sets the flag React checks, fires the ready event,
+// and installs listeners that relay page CustomEvents to postMessage so the
+// content script world can receive them.
+injectScript(`
+  window.__aetherialExtensionActive = true;
+  window.dispatchEvent(new CustomEvent('aetherial-extension-ready'));
+
+  const __relay = (type) => window.addEventListener(type, (e) => {
+    window.postMessage({ __aetherial: true, type, detail: e.detail ?? null }, '*');
+  });
+
+  __relay('aetherial-brew');
+  __relay('aetherial-request-characters');
+  __relay('aetherial-request-inventory');
+  __relay('aetherial-push-item');
+`)
+
+// ── 2. Page → Content Script (via postMessage) ────────────────────────────────
+window.addEventListener('message', (e) => {
+  if (!e.data?.__aetherial) return
+  const { type, detail } = e.data
+
+  if (type === 'aetherial-brew') {
+    chrome.runtime.sendMessage({ type: 'BREW_POTION', potion: detail })
+  }
+  if (type === 'aetherial-request-characters') {
+    chrome.runtime.sendMessage({ type: 'REQUEST_CHARACTERS' })
+  }
+  if (type === 'aetherial-request-inventory') {
+    chrome.runtime.sendMessage({
+      type:          'REQUEST_INVENTORY',
+      characterId:   detail.characterId,
+      characterName: detail.characterName
+    })
+  }
+  if (type === 'aetherial-push-item') {
+    chrome.runtime.sendMessage({
+      type:        'PUSH_ITEM',
+      characterId: detail.characterId,
+      item:        detail.item
+    })
+  }
 })
 
-// Request character list from Roll20
-window.addEventListener('aetherial-request-characters', () => {
-  chrome.runtime.sendMessage({ type: 'REQUEST_CHARACTERS' })
-})
-
-// Request a character's Roll20 inventory
-window.addEventListener('aetherial-request-inventory', (event) => {
-  chrome.runtime.sendMessage({
-    type: 'REQUEST_INVENTORY',
-    characterId:   event.detail.characterId,
-    characterName: event.detail.characterName
-  })
-})
-
-// Push one item to a character's Roll20 inventory
-window.addEventListener('aetherial-push-item', (event) => {
-  chrome.runtime.sendMessage({
-    type:        'PUSH_ITEM',
-    characterId: event.detail.characterId,
-    item:        event.detail.item
-  })
-})
-
-// ── Background → Alchemy App ─────────────────────────────────────────────────
-
+// ── 3. Background → Page (inject CustomEvents into page context) ──────────────
 chrome.runtime.onMessage.addListener((msg) => {
-  // Character list received from Roll20
   if (msg.type === 'CHARACTERS_RESULT') {
-    window.dispatchEvent(new CustomEvent('aetherial-characters-result', { detail: msg }))
-    return
+    fireInPage('aetherial-characters-result', msg)
   }
-
-  // Inventory data received from Roll20
   if (msg.type === 'INVENTORY_RESULT') {
-    window.dispatchEvent(new CustomEvent('aetherial-inventory-result', { detail: msg }))
-    return
+    fireInPage('aetherial-inventory-result', msg)
   }
-
-  // Confirmation that an item was pushed to Roll20
   if (msg.type === 'PUSH_ITEM_RESULT') {
-    window.dispatchEvent(new CustomEvent('aetherial-push-item-result', { detail: msg }))
-    return
+    fireInPage('aetherial-push-item-result', msg)
   }
 })
