@@ -10,7 +10,7 @@ function toExt(type, payload) {
   window.postMessage({ [FROM_PAGE]: true, type, payload: payload ?? null }, '*')
 }
 
-function Roll20Sync({ inventory }) {
+function Roll20Sync({ inventory, ingredients }) {
   const [extensionActive, setExtensionActive]       = useState(false)
   const [characters, setCharacters]                 = useState([])
   const [selectedChar, setSelectedChar]             = useState(null)
@@ -227,11 +227,13 @@ function Roll20Sync({ inventory }) {
           {Object.keys(inventory.ingredients || {}).length > 0 && (
             <div className="push-group">
               <h5>Herbs / Ingredients</h5>
-              {Object.entries(inventory.ingredients).map(([herbName, count]) => {
-                const pushId = `herb-${herbName}`
+              {Object.entries(inventory.ingredients).map(([herbId, count]) => {
+                const herb = (ingredients || []).find(ing => ing.id === herbId)
+                const herbName = herb?.name || herbId
+                const pushId = `herb-${herbId}`
                 const status = pushStatus[pushId]
                 return (
-                  <div key={herbName} className="push-item-row">
+                  <div key={herbId} className="push-item-row">
                     <span className="push-item-name">{herbName}</span>
                     <span className="push-item-meta">×{count}</span>
                     <button

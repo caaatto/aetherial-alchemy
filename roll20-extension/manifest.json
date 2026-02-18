@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
   "name": "Aetherial Alchemy — Roll20 Sync",
-  "version": "2.0",
+  "version": "2.2",
   "description": "Alchemy sidebar directly inside Roll20 — inventory, brewing, and D&D sheet sync.",
 
-  "permissions": ["storage"],
+  "permissions": ["storage", "tabs"],
   "host_permissions": [
     "http://localhost:5173/*",
     "https://catto.at/*",
@@ -38,7 +38,8 @@
   "web_accessible_resources": [
     {
       "resources": ["herbs.json", "recipes.json"],
-      "matches": ["https://app.roll20.net/*"]
+      "matches": ["https://app.roll20.net/*"],
+      "_comment": "Offline fallback — primary source is https://catto.at/api/v1"
     }
   ]
 }

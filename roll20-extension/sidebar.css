@@ -224,6 +224,10 @@
 }
 .ae-btn-sm:hover { background: #e94560; color: #fff; border-color: #e94560; }
 
+.ae-btn-push { background: #1a6b3c; border-color: #2d9e5f; color: #7effc0; margin-left: 4px; }
+.ae-btn-push:hover { background: #2d9e5f; color: #fff; border-color: #7effc0; }
+.ae-btn-push:disabled { opacity: 0.3; cursor: not-allowed; }
+
 .ae-empty {
   color: #555;
   text-align: center;

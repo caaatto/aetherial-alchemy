@@ -1,0 +1,636 @@
+[
+  {
+    "id": "heal-small",
+    "name": "Minor Healing Potion",
+    "tier": 1,
+    "category": "healing",
+    "icon": "💚",
+    "rarity": "Common",
+    "effect": "Heals 2d4+2 HP",
+    "dc": 10,
+    "brewTime": "1 hour",
+    "cost": 0,
+    "position": {
+      "x": 1,
+      "y": 1
+    },
+    "requires": [],
+    "unlocks": [
+      "heal-medium",
+      "heal-regen"
+    ],
+    "ingredients": [
+      {
+        "id": "wolfsfarn",
+        "amount": 2
+      },
+      {
+        "id": "eisenkraut",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "heal-medium",
+    "name": "Moderate Healing Potion",
+    "tier": 2,
+    "category": "healing",
+    "icon": "💙",
+    "rarity": "Uncommon",
+    "effect": "Heals 4d4+4 HP",
+    "dc": 13,
+    "brewTime": "4 hours",
+    "cost": 1,
+    "position": {
+      "x": 1,
+      "y": 2
+    },
+    "requires": [
+      "heal-small"
+    ],
+    "unlocks": [
+      "heal-large",
+      "heal-fire",
+      "heal-frost"
+    ],
+    "ingredients": [
+      {
+        "id": "wolfsfarn",
+        "amount": 3
+      },
+      {
+        "id": "manndrache",
+        "amount": 2
+      },
+      {
+        "id": "eisenkraut",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "heal-regen",
+    "name": "Regeneration Elixir",
+    "tier": 2,
+    "category": "healing",
+    "icon": "💗",
+    "rarity": "Uncommon",
+    "effect": "Heals 1d4 HP per round for 10 rounds",
+    "dc": 12,
+    "brewTime": "3 hours",
+    "cost": 1,
+    "position": {
+      "x": 0.5,
+      "y": 2
+    },
+    "requires": [
+      "heal-small"
+    ],
+    "unlocks": [
+      "heal-super-regen"
+    ],
+    "ingredients": [
+      {
+        "id": "wolfsfarn",
+        "amount": 2
+      },
+      {
+        "id": "alraunenkraut",
+        "amount": 1
+      },
+      {
+        "id": "mondkresse",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "heal-large",
+    "name": "Greater Healing Potion",
+    "tier": 3,
+    "category": "healing",
+    "icon": "💜",
+    "rarity": "Rare",
+    "effect": "Heals 8d4+8 HP",
+    "dc": 15,
+    "brewTime": "8 hours",
+    "cost": 2,
+    "position": {
+      "x": 1,
+      "y": 3
+    },
+    "requires": [
+      "heal-medium"
+    ],
+    "unlocks": [
+      "heal-legendary",
+      "heal-divine"
+    ],
+    "ingredients": [
+      {
+        "id": "wolfsfarn",
+        "amount": 4
+      },
+      {
+        "id": "manndrache",
+        "amount": 3
+      },
+      {
+        "id": "silberweide",
+        "amount": 2
+      },
+      {
+        "id": "sternenfeuerkraut",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "heal-super-regen",
+    "name": "Eternal Regeneration",
+    "tier": 3,
+    "category": "healing",
+    "icon": "❤️",
+    "rarity": "Rare",
+    "effect": "Heals 2d4 HP per round for 1 minute",
+    "dc": 16,
+    "brewTime": "10 hours",
+    "cost": 2,
+    "position": {
+      "x": 0.5,
+      "y": 3
+    },
+    "requires": [
+      "heal-regen"
+    ],
+    "unlocks": [
+      "heal-legendary"
+    ],
+    "ingredients": [
+      {
+        "id": "alraunenkraut",
+        "amount": 3
+      },
+      {
+        "id": "silberweide",
+        "amount": 2
+      },
+      {
+        "id": "mondkresse",
+        "amount": 3
+      }
+    ]
+  },
+  {
+    "id": "heal-legendary",
+    "name": "Legendary Healing Potion",
+    "tier": 4,
+    "category": "healing",
+    "icon": "💛",
+    "rarity": "Legendary",
+    "effect": "Fully heals, removes all negative conditions",
+    "dc": 23,
+    "brewTime": "7 days",
+    "cost": 5,
+    "position": {
+      "x": 1,
+      "y": 4
+    },
+    "requires": [
+      "heal-large",
+      "heal-super-regen"
+    ],
+    "unlocks": [
+      "heal-divine"
+    ],
+    "ingredients": [
+      {
+        "id": "wolfsfarn",
+        "amount": 10
+      },
+      {
+        "id": "drachenmelisse",
+        "amount": 3
+      },
+      {
+        "id": "ewiggrün",
+        "amount": 2
+      },
+      {
+        "id": "drachenauge",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "heal-divine",
+    "name": "Divine Healing",
+    "tier": 5,
+    "category": "healing",
+    "icon": "✨",
+    "rarity": "Legendary",
+    "effect": "Full heal + Regenerates lost limbs + Rejuvenation",
+    "dc": 27,
+    "brewTime": "21 days",
+    "cost": 10,
+    "position": {
+      "x": 1,
+      "y": 5
+    },
+    "requires": [
+      "heal-legendary"
+    ],
+    "unlocks": [],
+    "ingredients": [
+      {
+        "id": "phönixfederkraut",
+        "amount": 5
+      },
+      {
+        "id": "ewiggrün",
+        "amount": 3
+      },
+      {
+        "id": "runenwurz",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "heal-fire",
+    "name": "Healing Fire",
+    "tier": 3,
+    "category": "hybrid",
+    "icon": "🔥",
+    "rarity": "Rare",
+    "effect": "Heals 4d4+4 HP + Fire Resistance 1 hour",
+    "dc": 16,
+    "brewTime": "8 hours",
+    "cost": 2,
+    "position": {
+      "x": 1.5,
+      "y": 3
+    },
+    "requires": [
+      "heal-medium",
+      "fire-resist"
+    ],
+    "unlocks": [],
+    "ingredients": [
+      {
+        "id": "wolfsfarn",
+        "amount": 3
+      },
+      {
+        "id": "feuerblute",
+        "amount": 4
+      },
+      {
+        "id": "glutwurz",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "heal-frost",
+    "name": "Healing Frost",
+    "tier": 3,
+    "category": "hybrid",
+    "icon": "❄️",
+    "rarity": "Rare",
+    "effect": "Heals 4d4+4 HP + Cold Resistance 1 hour",
+    "dc": 16,
+    "brewTime": "8 hours",
+    "cost": 2,
+    "position": {
+      "x": 0.5,
+      "y": 3.5
+    },
+    "requires": [
+      "heal-medium",
+      "frost-resist"
+    ],
+    "unlocks": [],
+    "ingredients": [
+      {
+        "id": "wolfsfarn",
+        "amount": 3
+      },
+      {
+        "id": "mondkresse",
+        "amount": 4
+      },
+      {
+        "id": "silberspross",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "fire-resist",
+    "name": "Fire Resistance",
+    "tier": 1,
+    "category": "resistance",
+    "icon": "🔥",
+    "rarity": "Uncommon",
+    "effect": "Resistance to fire damage for 1 hour",
+    "dc": 13,
+    "brewTime": "3 hours",
+    "cost": 1,
+    "position": {
+      "x": 3,
+      "y": 2
+    },
+    "requires": [],
+    "unlocks": [
+      "fire-immunity",
+      "dragon-breath"
+    ],
+    "ingredients": [
+      {
+        "id": "feuerblute",
+        "amount": 3
+      },
+      {
+        "id": "glutwurz",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "frost-resist",
+    "name": "Cold Resistance",
+    "tier": 1,
+    "category": "resistance",
+    "icon": "❄️",
+    "rarity": "Uncommon",
+    "effect": "Resistance to cold damage for 1 hour",
+    "dc": 13,
+    "brewTime": "3 hours",
+    "cost": 1,
+    "position": {
+      "x": 3.5,
+      "y": 2
+    },
+    "requires": [],
+    "unlocks": [
+      "frost-immunity"
+    ],
+    "ingredients": [
+      {
+        "id": "mondkresse",
+        "amount": 3
+      },
+      {
+        "id": "silberspross",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "fire-immunity",
+    "name": "Fire Immunity",
+    "tier": 2,
+    "category": "resistance",
+    "icon": "🔥",
+    "rarity": "Rare",
+    "effect": "Immunity to fire damage for 10 minutes",
+    "dc": 18,
+    "brewTime": "12 hours",
+    "cost": 3,
+    "position": {
+      "x": 3,
+      "y": 3
+    },
+    "requires": [
+      "fire-resist"
+    ],
+    "unlocks": [
+      "dragon-form"
+    ],
+    "ingredients": [
+      {
+        "id": "feuerblute",
+        "amount": 5
+      },
+      {
+        "id": "glutwurz",
+        "amount": 4
+      },
+      {
+        "id": "drachenmelisse",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "dragon-breath",
+    "name": "Dragon Breath",
+    "tier": 3,
+    "category": "combat",
+    "icon": "🐉",
+    "rarity": "Very Rare",
+    "effect": "Can use Dragon Breath 3x (8d6 fire damage)",
+    "dc": 20,
+    "brewTime": "24 hours",
+    "cost": 3,
+    "position": {
+      "x": 3.5,
+      "y": 3.5
+    },
+    "requires": [
+      "fire-resist"
+    ],
+    "unlocks": [
+      "dragon-form"
+    ],
+    "ingredients": [
+      {
+        "id": "glutwurz",
+        "amount": 5
+      },
+      {
+        "id": "drachenmelisse",
+        "amount": 3
+      },
+      {
+        "id": "feuerblute",
+        "amount": 4
+      }
+    ]
+  },
+  {
+    "id": "dragon-form",
+    "name": "Dragon Form",
+    "tier": 4,
+    "category": "transformation",
+    "icon": "🐲",
+    "rarity": "Legendary",
+    "effect": "Transforms into a dragon for 10 minutes",
+    "dc": 25,
+    "brewTime": "14 days",
+    "cost": 5,
+    "position": {
+      "x": 3.25,
+      "y": 4
+    },
+    "requires": [
+      "fire-immunity",
+      "dragon-breath"
+    ],
+    "unlocks": [],
+    "ingredients": [
+      {
+        "id": "drachenmelisse",
+        "amount": 10
+      },
+      {
+        "id": "drachenauge",
+        "amount": 3
+      },
+      {
+        "id": "glutwurz",
+        "amount": 8
+      }
+    ]
+  },
+  {
+    "id": "invisibility",
+    "name": "Invisibility",
+    "tier": 2,
+    "category": "stealth",
+    "icon": "👻",
+    "rarity": "Rare",
+    "effect": "Invisibility for 1 hour",
+    "dc": 15,
+    "brewTime": "8 hours",
+    "cost": 2,
+    "position": {
+      "x": 5,
+      "y": 2
+    },
+    "requires": [],
+    "unlocks": [
+      "greater-invisibility",
+      "shadow-walk"
+    ],
+    "ingredients": [
+      {
+        "id": "schattenkraut",
+        "amount": 4
+      },
+      {
+        "id": "todeswurz",
+        "amount": 2
+      },
+      {
+        "id": "hexenholz",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "shadow-walk",
+    "name": "Shadow Walk",
+    "tier": 3,
+    "category": "stealth",
+    "icon": "🌑",
+    "rarity": "Very Rare",
+    "effect": "Can teleport through shadows 3x (60ft)",
+    "dc": 18,
+    "brewTime": "16 hours",
+    "cost": 3,
+    "position": {
+      "x": 5,
+      "y": 3
+    },
+    "requires": [
+      "invisibility"
+    ],
+    "unlocks": [
+      "shadow-master"
+    ],
+    "ingredients": [
+      {
+        "id": "schattenkraut",
+        "amount": 6
+      },
+      {
+        "id": "schattenmondblute",
+        "amount": 3
+      },
+      {
+        "id": "todeswurz",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "greater-invisibility",
+    "name": "True Invisibility",
+    "tier": 4,
+    "category": "stealth",
+    "icon": "✨",
+    "rarity": "Legendary",
+    "effect": "Invisibility that cannot be broken, 1 hour",
+    "dc": 27,
+    "brewTime": "14 days",
+    "cost": 5,
+    "position": {
+      "x": 4.5,
+      "y": 4
+    },
+    "requires": [
+      "shadow-walk"
+    ],
+    "unlocks": [],
+    "ingredients": [
+      {
+        "id": "schattenmondblute",
+        "amount": 5
+      },
+      {
+        "id": "mondfarn",
+        "amount": 3
+      },
+      {
+        "id": "runenwurz",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "shadow-master",
+    "name": "Shadow Master",
+    "tier": 4,
+    "category": "stealth",
+    "icon": "🌚",
+    "rarity": "Legendary",
+    "effect": "Control over shadows, like the Shadow of Moil spell",
+    "dc": 24,
+    "brewTime": "10 days",
+    "cost": 4,
+    "position": {
+      "x": 5.5,
+      "y": 4
+    },
+    "requires": [
+      "shadow-walk"
+    ],
+    "unlocks": [],
+    "ingredients": [
+      {
+        "id": "schattenmondblute",
+        "amount": 8
+      },
+      {
+        "id": "todeswurz",
+        "amount": 5
+      },
+      {
+        "id": "hexenholz",
+        "amount": 3
+      }
+    ]
+  }
+]

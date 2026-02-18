@@ -6,6 +6,7 @@ import BrewingStation from './components/BrewingStation'
 import Inventory from './components/Inventory'
 import RecipeTree from './components/RecipeTree'
 import HerbsLibrary from './components/HerbsLibrary'
+import Roll20Sync from './components/Roll20Sync'
 import { loadData, saveData } from './utils/storage'
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
     { id: 'inventory', label: 'Inventory', component: Inventory },
     { id: 'recipes', label: 'Custom Recipes', component: RecipeManager },
     { id: 'ingredients', label: 'Ingredients', component: IngredientsLibrary },
+    { id: 'roll20', label: 'Roll20 Sync', component: Roll20Sync },
   ]
 
   const ActiveComponent = tabs.find(t => t.id === activeTab)?.component

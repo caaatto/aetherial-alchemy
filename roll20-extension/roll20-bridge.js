@@ -74,10 +74,39 @@ function recipeIcon(recipe) {
   return `<img class="ae-potion-img" src="${src}" alt="" style="filter:${filter}">`
 }
 
-// ── Load data from extension bundle ──────────────────────────────────────────
+// ── Load data: REST API (catto.at/api/v1) with extension bundle fallback ────────
+const API_BASE    = 'https://catto.at/api/v1'
+const BUNDLE_BASE = 'https://catto.at/alchemy'
+
+// Normalize API response: unwrap { data: [...] } or { herbs: [...] } etc.
+function unwrap(json, keys) {
+  for (const k of keys) { if (Array.isArray(json[k])) return json[k] }
+  return Array.isArray(json) ? json : []
+}
+
+async function fetchFromApi(apiPath, bundlePath, unwrapKeys) {
+  // 1. Try REST API
+  try {
+    const res = await fetch(`${API_BASE}${apiPath}`, { cache: 'no-store' })
+    if (res.ok) {
+      const json = await res.json()
+      const arr  = unwrap(json, unwrapKeys)
+      if (arr.length) return arr
+    }
+  } catch (_) { /* API unavailable */ }
+  // 2. Try static file from catto.at
+  try {
+    const res = await fetch(`${BUNDLE_BASE}/${bundlePath}`, { cache: 'no-store' })
+    if (res.ok) return res.json()
+  } catch (_) { /* offline */ }
+  // 3. Fall back to bundled extension file
+  return fetch(chrome.runtime.getURL(bundlePath)).then(r => r.json())
+}
+
+
 const [herbs, recipes] = await Promise.all([
-  fetch(chrome.runtime.getURL('herbs.json')).then(r => r.json()),
-  fetch(chrome.runtime.getURL('recipes.json')).then(r => r.json()),
+  fetchFromApi('/herbs',   'herbs.json',   ['herbs',   'data', 'items']),
+  fetchFromApi('/potions', 'recipes.json', ['potions', 'recipes', 'data', 'items']),
 ])
 
 // ── Storage helpers (per-character inventory) ─────────────────────────────────
@@ -278,6 +307,7 @@ function renderInventory() {
             <button class="ae-btn-sm" data-action="sub-herb" data-id="${id}">−</button>
             <span class="ae-herb-count">${count}</span>
             <button class="ae-btn-sm" data-action="add-herb" data-id="${id}">+</button>
+            <button class="ae-btn-sm ae-btn-push" data-action="push-herb" data-id="${id}" data-name="${herb?.name || id}" data-qty="${count}" ${!state.charId ? 'disabled title="Kein Charakter ausgewählt"' : ''}>⬆</button>
           </div>`
       })
     })
@@ -296,6 +326,7 @@ function renderInventory() {
           <button class="ae-btn-sm" data-action="sub-potion" data-id="${recipeId}">−</button>
           <span class="ae-herb-count">${count}</span>
           <button class="ae-btn-sm" data-action="add-potion" data-id="${recipeId}">+</button>
+          <button class="ae-btn-sm ae-btn-push" data-action="push-potion" data-id="${recipeId}" data-qty="${count}" ${!state.charId ? 'disabled title="Kein Charakter ausgewählt"' : ''}>⬆</button>
         </div>`
     })
   }
@@ -341,6 +372,23 @@ function renderInventory() {
           if (cur <= 1) delete inv.potions[id]
           else inv.potions[id] = cur - 1
         }
+      } else if (action === 'push-herb') {
+        const herbObj = herbs.find(h => h.id === id)
+        postPushCard({
+          name:        btn.dataset.name || id,
+          quantity:    parseInt(btn.dataset.qty) || 1,
+          description: herbObj ? herbObj.rarity + ' Herb — ' + (herbObj.description || '').slice(0, 100) : '',
+        }, state.charId)
+        return
+      } else if (action === 'push-potion') {
+        const recipe = recipes.find(r => r.id === id)
+        if (!recipe) return
+        postPushCard({
+          name:        recipe.name,
+          quantity:    parseInt(btn.dataset.qty) || 1,
+          description: recipe.effect || '',
+        }, state.charId)
+        return
       }
 
       await saveInventory(state.charId, inv)
@@ -645,5 +693,98 @@ render()
 // Request character list from roll20-page.js (MAIN world).
 // roll20-page.js also polls and pushes automatically — this is just an early nudge.
 setTimeout(loadCharacters, 1000)
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Push card helper (called from background.js when React app requests push)
+// ─────────────────────────────────────────────────────────────────────────────
+function postPushCard(item, charId) {
+  const lines = [
+    `&{template:default}`,
+    `{{name=Aetherial Push}}`,
+    `{{Item=${item.name}}}`,
+    `{{Quantity=${item.quantity || 1}}}`,
+    `{{Description=${item.description || ''}}}`,
+    `{{aetherial-push=1}}`,
+    `{{aetherial-push-name=${item.name}}}`,
+    `{{aetherial-push-desc=${item.description || ''}}}`,
+    `{{aetherial-push-qty=${item.quantity || 1}}}`,
+    `{{aetherial-push-charid=${charId}}}`,
+  ]
+  postToChat(lines.join(' '))
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Background <-> Roll20 bridge
+// Handles messages routed by background.js from the React app.
+// ─────────────────────────────────────────────────────────────────────────────
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+
+  // AE_GET_CHARS: background wants the Roll20 character list
+  if (msg.type === 'AE_GET_CHARS') {
+    const onChars = (e) => {
+      if (!e.data?.__ae_from_page || e.data.type !== 'CHARACTERS') return
+      window.removeEventListener('message', onChars)
+      clearTimeout(timeout)
+      sendResponse({ characters: e.data.characters || [] })
+    }
+    window.addEventListener('message', onChars)
+    window.postMessage({ __ae_to_page: true, type: 'GET_CHARACTERS' }, '*')
+
+    const timeout = setTimeout(() => {
+      window.removeEventListener('message', onChars)
+      sendResponse({ characters: [] })
+    }, 5000)
+
+    return true // keep channel open for async response
+  }
+
+  // AE_PUSH_ITEM: post push card to Roll20 chat
+  if (msg.type === 'AE_PUSH_ITEM') {
+    postPushCard(msg.item, msg.characterId)
+    sendResponse({ success: true })
+    return
+  }
+
+  // AE_READ_INVENTORY: post !brew-read, watch chat DOM for whisper response
+  if (msg.type === 'AE_READ_INVENTORY') {
+    postToChat('!brew-read')
+
+    const chatEl = document.querySelector('#textchat')
+    if (!chatEl) {
+      sendResponse({ error: 'chat-not-found', items: [] })
+      return
+    }
+
+    const observer = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
+          const text = node.textContent || ''
+          const match = text.match(/AETHERIAL-INVENTORY:(\[.*\])/)
+          if (match) {
+            observer.disconnect()
+            clearTimeout(timeout)
+            try {
+              sendResponse({ items: JSON.parse(match[1]) })
+            } catch (_) {
+              sendResponse({ items: [] })
+            }
+            return
+          }
+        }
+      }
+    })
+
+    observer.observe(chatEl, { childList: true, subtree: true })
+
+    const timeout = setTimeout(() => {
+      observer.disconnect()
+      sendResponse({ error: 'timeout', items: [] })
+    }, 12000)
+
+    return true // keep channel open for async response
+  }
+
+})
 
 })()

@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import './BrewingStation.css'
 import D20 from './D20'
+import { aetherialRecipeTree } from '../data/aetherialRecipeTree'
+import { getHerbById } from '../data/herbsDatabase'
 
 function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
   const [selectedRecipe, setSelectedRecipe] = useState(null)
@@ -9,6 +11,8 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
   const [result, setResult] = useState(null)
   const [diceRoll, setDiceRoll] = useState(null)
   const [extensionActive, setExtensionActive] = useState(false)
+  const [search, setSearch] = useState('')
+  const [filterRarity, setFilterRarity] = useState('all')
 
   useEffect(() => {
     // Detect the extension via postMessage (content scripts use an isolated world;
@@ -24,27 +28,46 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
     return () => window.removeEventListener('message', handler)
   }, [])
 
-  const getIngredientName = (ingredientId) => {
-    return ingredients.find(ing => ing.id === ingredientId)?.name || 'Unknown'
+  const getIngredientName = (id) => {
+    const herb = getHerbById(id)
+    if (herb) return herb.name
+    return (ingredients || []).find(ing => ing.id === id)?.name || id
   }
 
-  const checkIngredientAvailability = (recipe) => {
-    if (!recipe.requiredIngredients || recipe.requiredIngredients.length === 0) {
-      return { available: true, missing: [] }
-    }
+  // Normalize ingredients to [{id, amount}] regardless of recipe source
+  const normalizeIngredients = (recipe) => {
+    if (recipe.ingredients?.length)
+      return recipe.ingredients.map(i => ({ id: i.id, amount: i.amount }))
+    if (recipe.requiredIngredients?.length)
+      return recipe.requiredIngredients.map(i => ({ id: i.ingredientId, amount: i.amount }))
+    return []
+  }
 
+  // All recipes: aetherial (99) + custom (deduplicated)
+  const allRecipes = useMemo(() => {
+    const aIds = new Set(aetherialRecipeTree.recipes.map(r => r.id))
+    const customOnly = (recipes || []).filter(r => !aIds.has(r.id))
+    return [...aetherialRecipeTree.recipes, ...customOnly]
+  }, [recipes])
+
+  const filteredRecipes = useMemo(() => {
+    return allRecipes.filter(r => {
+      const ms = !search || r.name.toLowerCase().includes(search.toLowerCase())
+      const mr = filterRarity === 'all' || r.rarity === filterRarity
+      return ms && mr
+    })
+  }, [allRecipes, search, filterRarity])
+
+  const checkIngredientAvailability = (recipe) => {
+    const reqs = normalizeIngredients(recipe)
+    if (!reqs.length) return { available: true, missing: [] }
     const missing = []
-    for (const reqIng of recipe.requiredIngredients) {
-      const available = inventory.ingredients[reqIng.ingredientId] || 0
-      if (available < reqIng.amount) {
-        missing.push({
-          name: getIngredientName(reqIng.ingredientId),
-          needed: reqIng.amount,
-          have: available
-        })
+    for (const req of reqs) {
+      const have = inventory.ingredients[req.id] || 0
+      if (have < req.amount) {
+        missing.push({ name: getIngredientName(req.id), have, needed: req.amount })
       }
     }
-
     return { available: missing.length === 0, missing }
   }
 
@@ -54,16 +77,10 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
 
   const consumeIngredients = (recipe) => {
     const newIngredients = { ...inventory.ingredients }
-
-    for (const reqIng of recipe.requiredIngredients) {
-      if (newIngredients[reqIng.ingredientId]) {
-        newIngredients[reqIng.ingredientId] -= reqIng.amount
-        if (newIngredients[reqIng.ingredientId] <= 0) {
-          delete newIngredients[reqIng.ingredientId]
-        }
-      }
+    for (const req of normalizeIngredients(recipe)) {
+      newIngredients[req.id] = (newIngredients[req.id] || 0) - req.amount
+      if (newIngredients[req.id] <= 0) delete newIngredients[req.id]
     }
-
     return newIngredients
   }
 
@@ -167,19 +184,34 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
       {!selectedRecipe ? (
         <div className="recipe-selection">
           <h3>Select a Recipe</h3>
-          {recipes.length === 0 ? (
+          <div style={{ display:"flex", gap:"10px", marginBottom:"16px", flexWrap:"wrap" }}>
+            <input
+              placeholder="Search recipes..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ flex:1, minWidth:"140px", padding:"8px", background:"var(--bg-secondary)", border:"2px solid var(--border)", color:"var(--text-primary)", fontFamily:"inherit" }}
+            />
+            <select value={filterRarity} onChange={e => setFilterRarity(e.target.value)} style={{ padding:"8px", background:"var(--bg-secondary)", border:"2px solid var(--border)", color:"var(--text-primary)", fontFamily:"inherit" }}>
+              <option value="all">All Rarities</option>
+              {["Common","Uncommon","Rare","Very Rare","Legendary"].map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <span style={{ color:"var(--text-secondary)", fontSize:"12px", alignSelf:"center" }}>
+              {filteredRecipes.length}/{allRecipes.length}
+            </span>
+          </div>
+          {filteredRecipes.length === 0 && allRecipes.length === 0 ? (
             <div className="card empty-state">
               <p>No recipes available. Create recipes in Custom Recipes first!</p>
             </div>
           ) : (
             <div className="recipes-list grid grid-2">
-              {recipes.map(recipe => {
+              {filteredRecipes.map(recipe => {
                 const check = checkIngredientAvailability(recipe)
                 return (
                   <div
                     key={recipe.id}
                     className={`card recipe-card ${!check.available ? 'unavailable' : ''}`}
-                    onClick={() => check.available && setSelectedRecipe(recipe)}
+                    onClick={() => setSelectedRecipe(recipe)}
                   >
                     <div className="recipe-header">
                       <h3>{recipe.name}</h3>
@@ -339,13 +371,13 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                 </div>
               )}
 
-              {availability && availability.available && selectedRecipe.requiredIngredients.length > 0 && (
+              {normalizeIngredients(selectedRecipe).length > 0 && (
                 <div className="ingredients-used">
                   <h4>Consumed Ingredients:</h4>
                   <ul>
-                    {selectedRecipe.requiredIngredients.map((reqIng, idx) => (
+                    {normalizeIngredients(selectedRecipe).map((req, idx) => (
                       <li key={idx}>
-                        {reqIng.amount}x {getIngredientName(reqIng.ingredientId)}
+                        {req.amount}x {getIngredientName(req.id)}
                       </li>
                     ))}
                   </ul>

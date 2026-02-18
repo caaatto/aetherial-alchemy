@@ -1,194 +1,148 @@
-// ═══════════════════════════════════════════════════════════════════════════
-// AetherialSync — Roll20 Mod Script
-// Listens for brew cards posted by the Aetherial Alchemy Chrome Extension
-// and writes brewed potions into the D&D 2024 character sheet inventory.
-//
-// ⚠️  REQUIREMENTS:
-//   - Roll20 Pro (Mod Scripts require Pro)
-//   - Switch to the EXPERIMENTAL API SERVER in your game settings:
-//       Game Settings → API Server → Experimental
-//   - The Aetherial Alchemy Chrome Extension must be installed
-//
-// INSTALL: Paste this entire file into a new Mod Script in your Roll20 game.
-// ═══════════════════════════════════════════════════════════════════════════
+// ================================================================
+// AetherialSync - Roll20 Mod Script
+// Requires: Roll20 Pro + Experimental API Server for D&D 2024 Beacon sheet
+// Install: paste into a new Mod Script in Roll20.
+// ================================================================
 
 const SCRIPT_NAME = 'AetherialSync'
 
-// ── Extract a {{field=value}} field from a Roll20 template message ─────────
 function getField(content, field) {
-  const match = content.match(new RegExp('\\{\\{' + field + '=([^}]*)\\}\\}'))
+  const match = content.match(new RegExp('\{\{' + field + '=([^}]*)\}\}'))
   return match ? match[1].trim() : null
 }
 
-// ── Find character controlled by a player ─────────────────────────────────
 function findCharacterForPlayer(playerId) {
-  return findObjs({ _type: 'character' }).find((c) => {
+  return findObjs({ _type: 'character' }).find(c => {
     const ctrl = c.get('controlledby') || ''
     return ctrl.split(',').map(s => s.trim()).includes(playerId)
   })
 }
 
-// ── Generate a Roll20-style row ID ────────────────────────────────────────
 function makeRowId() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  const ch = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   let id = '-'
-  for (let i = 0; i < 16; i++) id += chars[Math.floor(Math.random() * chars.length)]
+  for (let i = 0; i < 16; i++) id += ch[Math.floor(Math.random() * ch.length)]
   return id
 }
 
-// ── Main handler: detect brew cards from the extension ────────────────────
-// The extension embeds {{aetherial-sync=1}} in the template when brew succeeds.
-// This avoids a separate !brew-sync message (Roll20 strips arguments from API commands).
-on('chat:message', async (msg) => {
-  if (!msg.content.includes('aetherial-sync=1')) return
+// Write equipment row: tries multiple section/field name patterns
+async function writeEquipmentRow(cId, rId, name, desc, qty) {
+  if (typeof setSheetItem === 'function') {
+    const sections = ['repeating_equipment','repeating_items','repeating_otherpossessions','repeating_inventory','repeating_possessions']
+    for (const sec of sections) {
+      const p = sec + '_' + rId + '_'
+      try {
+        await setSheetItem(cId, p + 'name', name)
+        // name written - write rest (best-effort)
+        for (const [k,v] of [[p+'description',String(desc||'')],[p+'quantity',String(qty||1)],[p+'weight','0']]) {
+          try { await setSheetItem(cId, k, v) } catch(_) {}
+        }
+        return 'beacon:' + sec
+      } catch(_) {}
+    }
+    log('[AetherialSync] setSheetItem: no matching section found for char ' + cId)
+    return 'beacon:no-section'
+  }
+  // Fallback createObj
+  const p = 'repeating_equipment_' + rId + '_'
+  [[p+'name',name],[p+'description',String(desc||'')],[p+'quantity',String(qty||1)]].forEach(([an,v]) => {
+    const ex = findObjs({ _type: 'attribute', _characterid: cId, name: an })[0]
+    if (ex) { ex.set('current', v) } else { createObj('attribute', { name: an, current: v, _characterid: cId }) }
+  })
+  return 'createObj'
+}
 
+on('chat:message', async msg => {
+  if (!msg.content.includes('aetherial-sync=1')) return
   const name    = getField(msg.content, 'aetherial-name')
   const effect  = getField(msg.content, 'aetherial-effect')
   const quality = getField(msg.content, 'aetherial-quality')
-
-  if (!name) {
-    sendChat(SCRIPT_NAME, `/w ${msg.who} ⚠️ Could not read potion name from brew card.`)
-    return
-  }
-
+  if (!name) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Could not read potion name.'); return }
   const char = findCharacterForPlayer(msg.playerid)
-  if (!char) {
-    sendChat(SCRIPT_NAME,
-      `/w ${msg.who} ⚠️ No character found for your player. ` +
-      `Make sure you control a character in this game.`
-    )
-    return
-  }
-
-  const charId = char.id
-  const rowId  = makeRowId()
-  const desc   = [effect, `Quality: ${quality}`].filter(Boolean).join(' | ')
-
+  if (!char) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' No character found. Make sure you control a character.'); return }
+  const desc = [effect, quality ? 'Quality: ' + quality : ''].filter(Boolean).join(' | ')
   try {
-    // D&D 2024 Beacon sheet — requires Experimental API Server
-    await setSheetItem(charId, `repeating_equipment_${rowId}_name`,       name)
-    await setSheetItem(charId, `repeating_equipment_${rowId}_description`, desc)
-    await setSheetItem(charId, `repeating_equipment_${rowId}_quantity`,    1)
-
-    sendChat(SCRIPT_NAME,
-      `/w ${msg.who} ✅ Added **${name}** (${quality}) to ${char.get('name')}'s inventory.`
-    )
-  } catch (err) {
-    sendChat(SCRIPT_NAME,
-      `/w ${msg.who} ❌ Could not write to sheet. ` +
-      `Make sure you are on the **Experimental API Server** ` +
-      `(Game Settings → API Server → Experimental). Error: ${err}`
-    )
-    log(`[${SCRIPT_NAME}] setSheetItem error: ${err}`)
+    const method = await writeEquipmentRow(char.id, makeRowId(), name, desc, 1)
+    sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Added ' + name + ' to ' + char.get('name') + '. [' + method + ']')
+  } catch(e) {
+    sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Write failed: ' + e + '. On D&D 2024? Enable: Game Settings > API Server > Experimental')
+    log('[' + SCRIPT_NAME + '] sync err: ' + e)
   }
 })
 
-// ── Push handler: push arbitrary item from Alchemy site ───────────────────
-// The extension embeds {{aetherial-push=1}} with item fields and a charId.
-on('chat:message', async (msg) => {
+on('chat:message', async msg => {
   if (!msg.content.includes('aetherial-push=1')) return
-
   const name   = getField(msg.content, 'aetherial-push-name')
   const desc   = getField(msg.content, 'aetherial-push-desc') || ''
   const qty    = parseInt(getField(msg.content, 'aetherial-push-qty') || '1', 10)
   const charId = getField(msg.content, 'aetherial-push-charid')
-
-  if (!name || !charId) {
-    sendChat(SCRIPT_NAME, `/w ${msg.who} ⚠️ Push failed: missing name or character ID.`)
-    return
-  }
-
+  if (!name || !charId) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Push failed: missing name or character ID.'); return }
   const char = getObj('character', charId)
-  if (!char) {
-    sendChat(SCRIPT_NAME, `/w ${msg.who} ⚠️ Character not found: ${charId}`)
-    return
-  }
-
-  const rowId = makeRowId()
-
+  if (!char) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Character not found (ID: ' + charId + '). Select correct character in sidebar.'); return }
   try {
-    await setSheetItem(charId, `repeating_equipment_${rowId}_name`,        name)
-    await setSheetItem(charId, `repeating_equipment_${rowId}_description`,  desc)
-    await setSheetItem(charId, `repeating_equipment_${rowId}_quantity`,      qty)
-
-    sendChat(SCRIPT_NAME,
-      `/w ${msg.who} ✅ Added **${name}** (x${qty}) to ${char.get('name')}'s inventory.`
-    )
-  } catch (err) {
-    sendChat(SCRIPT_NAME, `/w ${msg.who} ❌ Push failed. Error: ${err}`)
-    log(`[${SCRIPT_NAME}] push setSheetItem error: ${err}`)
+    const method = await writeEquipmentRow(charId, makeRowId(), name, desc, qty)
+    sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Added ' + name + ' (x' + qty + ') to ' + char.get('name') + '. [' + method + ']')
+  } catch(e) {
+    sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Push failed: ' + e)
+    log('[' + SCRIPT_NAME + '] push err: ' + e)
   }
 })
 
-// ── Read handler: return character's equipment as JSON whisper ─────────────
-// Usage: type  !brew-read  in Roll20 chat.
-// The extension intercepts the whispered response (prefixed AETHERIAL-INVENTORY:)
-// and forwards it back to the Alchemy site.
-on('chat:message', (msg) => {
+on('chat:message', msg => {
   if (!msg.content.startsWith('!brew-read')) return
-
   const char = findCharacterForPlayer(msg.playerid)
-  if (!char) {
-    sendChat(SCRIPT_NAME,
-      `/w ${msg.who} ⚠️ No character found for your player.`
-    )
-    return
-  }
-
-  const charId = char.id
-  const attrs  = findObjs({ _type: 'attribute', _characterid: charId })
-
-  // Collect repeating_equipment rows
+  if (!char) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' No character found.'); return }
+  const attrs = findObjs({ _type: 'attribute', _characterid: char.id })
   const rows = {}
-  attrs.forEach((a) => {
+  attrs.forEach(a => {
     const m = a.get('name').match(/^repeating_equipment_([^_]+)_(.+)$/)
     if (!m) return
-    const [, rowId, field] = m
-    if (!rows[rowId]) rows[rowId] = {}
-    rows[rowId][field] = a.get('current')
+    if (!rows[m[1]]) rows[m[1]] = {}
+    rows[m[1]][m[2]] = a.get('current')
   })
-
-  const items = Object.values(rows)
-    .filter(r => r.name)
-    .map(r => ({
-      name:        r.name        || '',
-      description: r.description || '',
-      quantity:    r.quantity    || 1,
-    }))
-
-  // Whisper back the JSON blob with a recognizable prefix
-  sendChat(SCRIPT_NAME,
-    `/w ${msg.who} AETHERIAL-INVENTORY:${JSON.stringify(items)}`
-  )
+  const items = Object.values(rows).filter(r => r.name).map(r => ({ name: r.name || '', description: r.description || '', quantity: r.quantity || 1 }))
+  sendChat(SCRIPT_NAME, '/w ' + msg.who + ' AETHERIAL-INVENTORY:' + JSON.stringify(items))
 })
 
-// ── Debug: list inventory/equipment attribute names on a selected token ────
-// Usage: select a token, then type:  !brew-attrs
-on('chat:message', (msg) => {
+on('chat:message', msg => {
   if (!msg.content.startsWith('!brew-attrs')) return
-  if (!msg.selected || msg.selected.length === 0) {
-    sendChat(SCRIPT_NAME, `/w ${msg.who} Select a token first, then run !brew-attrs.`)
-    return
-  }
-
-  const token  = getObj('graphic', msg.selected[0]._id)
-  const charId = token?.get('represents')
-  if (!charId) {
-    sendChat(SCRIPT_NAME, `/w ${msg.who} The selected token has no linked character.`)
-    return
-  }
-
-  const attrs    = findObjs({ _type: 'attribute', _characterid: charId })
-  const relevant = attrs
-    .filter(a => /equipment|inventory|item/i.test(a.get('name')))
-    .slice(0, 40)
-    .map(a => `<b>${a.get('name')}</b>: ${a.get('current')}`)
-    .join('<br>')
-
-  sendChat(SCRIPT_NAME,
-    `/w ${msg.who} <br><b>Inventory attrs on ${getObj('character', charId)?.get('name')}:</b><br>` +
-    (relevant || 'None found. The 2024 sheet may use a different attribute structure.')
-  )
+  if (!msg.selected || !msg.selected.length) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Select a token first.'); return }
+  const token = getObj('graphic', msg.selected[0]._id)
+  const charId = token && token.get('represents')
+  if (!charId) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Token has no linked character.'); return }
+  const attrs = findObjs({ _type: 'attribute', _characterid: charId })
+  // Group ALL repeating_ sections so we can see what section name the sheet uses
+  const secs = {}
+  attrs.forEach(a => {
+    const m = a.get('name').match(/^(repeating_[^_]+)_([^_]+)_(.+)$/)
+    if (!m) return
+    if (!secs[m[1]]) secs[m[1]] = {}
+    if (!secs[m[1]][m[2]]) secs[m[1]][m[2]] = []
+    secs[m[1]][m[2]].push(m[3])
+  })
+  let out = '<b>setSheetItem available: ' + (typeof setSheetItem === 'function') + '</b><br>'
+  const secEntries = Object.entries(secs)
+  if (!secEntries.length) { out += 'No repeating sections found on this character.' }
+  secEntries.slice(0, 8).forEach(([sec, rows]) => {
+    const rowCount = Object.keys(rows).length
+    const sampleFields = (Object.values(rows)[0] || []).slice(0, 6).join(', ')
+    out += '<b>' + sec + '</b> (' + rowCount + ' rows) fields: ' + sampleFields + '<br>'
+  })
+  sendChat(SCRIPT_NAME, '/w ' + msg.who + ' <br>' + out)
 })
 
-log(`[${SCRIPT_NAME}] Ready — listening for Aetherial brew cards`)
+on('chat:message', async msg => {
+  if (!msg.content.startsWith('!brew-test')) return
+  if (!msg.selected || !msg.selected.length) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Select a token first.'); return }
+  const token = getObj('graphic', msg.selected[0]._id)
+  const charId = token && token.get('represents')
+  if (!charId) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Token has no linked character.'); return }
+  try {
+    const method = await writeEquipmentRow(charId, makeRowId(), 'Aetherial Test Item', 'Test from AetherialSync', 1)
+    sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Test item added! Method: ' + method + '. Check the equipment tab.')
+  } catch(e) {
+    sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Test failed: ' + e)
+  }
+})
+
+log('[' + SCRIPT_NAME + '] Ready - setSheetItem: ' + (typeof setSheetItem === 'function'))
