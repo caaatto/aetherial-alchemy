@@ -555,7 +555,7 @@ export const herbsDatabase = {
     rarity: 'Very Rare',
     categories: ['Magical', 'Ritual/Cultural', 'Brewing/Crafting'],
     description: 'A striking crimson lotus that grows in areas where magical catastrophes have scarred the land, leaving behind mana-dead zones. Its blood-red petals emit a faint pulsating glow that dims nearby magical auras. The plant actively absorbs ambient mana from its surroundings, creating a null-magic field within a small radius. When brewed into a tincture, it temporarily suppresses the target\'s mana flow, weakening spellcasting and disrupting active enchantments. Highly valued by witch hunters, anti-mage specialists, and ARTEC operatives for neutralizing rogue magic users. Must be stored in lead-lined containers to prevent it from draining nearby magical items. Prolonged skin contact causes temporary mana numbness.',
-    location: 'Grows exclusively in mana-dead zones — sites of magical catastrophes, collapsed ley lines, and areas scorched by uncontrolled mana explosions',
+    location: 'Grows exclusively in mana-dead zones, sites of magical catastrophes, collapsed ley lines, and areas scorched by uncontrolled mana explosions',
     manaContent: 0,
     properties: {
       manaAbsorption: 'active',
