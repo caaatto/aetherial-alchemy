@@ -76,6 +76,9 @@ export const herbColors = {
   sternenfeuerkraut: { hue: 220, saturation: 1.5, brightness: 1.5, name: 'Star Blue' },
   geisterzunge: { hue: 270, saturation: 0.7, brightness: 1.3, name: 'Ghost Violet' },
 
+  // === ANTIMAGIC HERBS ===
+  rote_lotusblute: { hue: 355, saturation: 1.6, brightness: 0.9, name: 'Crimson Red' },
+
   // === VERY RARE HERBS ===
   flachlandische_grunwiesel: { hue: 100, saturation: 1.2, name: 'Meadow Green' },
   blaubergische_hammelblume: { hue: 220, saturation: 1.3, name: 'Mountain Blue' },

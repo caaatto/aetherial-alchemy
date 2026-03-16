@@ -60,6 +60,7 @@ const HERB_COLORS = {
   drachenmelisse:{hue:20,saturation:1.6,brightness:1.2}, silberspross:{hue:0,saturation:0.3,brightness:1.3},
   silberweide:{hue:0,saturation:0.2,brightness:1.4}, hexenholz:{hue:275,saturation:0.9,brightness:0.6},
   sternenfeuerkraut:{hue:220,saturation:1.5,brightness:1.5}, geisterzunge:{hue:270,saturation:0.7,brightness:1.3},
+  rote_lotusblute:{hue:355,saturation:1.6,brightness:0.9},
 }
 
 function getHerbColorFilter(herbId) {

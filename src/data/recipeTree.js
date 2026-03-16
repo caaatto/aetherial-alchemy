@@ -35,6 +35,7 @@ export const recipeTree = {
     drachenmelisse: { name: 'Drachenmelisse', rarity: 'Very Rare' },
     geisterzunge: { name: 'Geisterzunge', rarity: 'Very Rare' },
     schattenmondblute: { name: 'Schattenmondblüte', rarity: 'Very Rare' },
+    rote_lotusblute: { name: 'Rote Lotusblüte', rarity: 'Very Rare' },
 
     // Legendary
     mondfarn: { name: 'Mondfarn', rarity: 'Legendary' },

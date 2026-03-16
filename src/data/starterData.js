@@ -39,6 +39,7 @@ export const starterIngredients = [
   { name: 'Geisterzunge', rarity: 'Very Rare', effect: 'Magical, Ritual/Cultural, Brewing/Crafting', description: 'Enables communication with spirits', location: 'Haunted places' },
   { name: 'Flussperlminze', rarity: 'Very Rare', effect: 'Culinary, Brewing/Crafting', description: 'Grows along pure rivers', location: 'Clear rivers' },
   { name: 'Schattenmondblüte', rarity: 'Very Rare', effect: 'Magical, Ritual/Cultural, Brewing/Crafting', description: 'Blooms only during the new moon', location: '' },
+  { name: 'Rote Lotusblüte', rarity: 'Very Rare', effect: 'Magical, Ritual/Cultural, Brewing/Crafting', description: 'Suppresses mana flow and disrupts magic', location: 'Mana-dead zones' },
 
   // Mythical (Legendary in app)
   { name: 'Mondfarn', rarity: 'Legendary', effect: 'Magical, Ritual/Cultural, Brewing/Crafting', description: 'Legendary fern with lunar power', location: 'Moon temples' },
