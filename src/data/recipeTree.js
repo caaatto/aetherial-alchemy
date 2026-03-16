@@ -393,6 +393,29 @@ export const recipeTree = {
         { id: 'runenwurz', amount: 2 }
       ]
     },
+    // ========== ANTIMAGIC ==========
+    {
+      id: 'antimagic-suppression',
+      name: 'Mana-Damm Tinktur',
+      tier: 3,
+      category: 'protection',
+      icon: '🛡️',
+      rarity: 'Very Rare',
+      effect: 'Blocks mana flow and suppresses magical signature for 1 hour. Immune to magical detection, signature-based wards, and direct-target spells. AOE and external magical damage still apply. Cannot use magic or mana while active. After effect ends: CON save DC 10+CHA mod or 1 level exhaustion.',
+      dc: 20,
+      brewTime: '24 hours',
+      cost: 4,
+      position: { x: 6, y: 3 },
+      requires: [],
+      unlocks: [],
+      ingredients: [
+        { id: 'rote_lotusblute', amount: 4 },
+        { id: 'nachtschatten', amount: 5 },
+        { id: 'eisenkraut', amount: 3 },
+        { id: 'bitterlaub', amount: 3 }
+      ]
+    },
+
     {
       id: 'shadow-master',
       name: 'Shadow Master',
