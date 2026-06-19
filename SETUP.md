@@ -68,6 +68,17 @@ Chrome prüft dann regelmäßig `updates.xml` und zieht neue Versionen automatis
 2. `chrome://extensions` → **Entwicklermodus** an → **Entpackt laden** → Ordner `roll20-extension/`.
 3. Nach einem Update: Ordner aktualisieren + auf der Seite **⟳ (Neu laden)** klicken.
 
+### Microsoft Edge
+
+Edge ist Chromium-basiert — die Extension läuft dort identisch. Installation **wie Variante B**,
+nur unter **`edge://extensions`** → **Entwicklermodus** → **Entpackt laden** → Ordner `roll20-extension/`.
+
+- Das self-hosted **`.crx`-Auto-Update (Variante A) greift in Edge nicht** — Edge blockt extern
+  gehostete Extensions (wie Chrome unter Windows/Mac). Also: Updates manuell per ⟳.
+- Der Schalter *„Erweiterungen aus anderen Stores zulassen"* hilft hier **nicht** (der ist nur für
+  den Chrome Web Store, nicht für self-hosted `.crx`).
+- Echtes Auto-Update in Edge gäbe es nur über den **Microsoft Edge Add-ons Store**.
+
 ---
 
 Damit jeder seinen eigenen Charakter ansteuert: im Roll20-Spiel muss der Charakter unter
