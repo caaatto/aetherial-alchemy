@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚗ Aetherial — GM Dashboard</title>
+  <style>
+    :root {
+      --bg: #15131c; --panel: #1f1b2b; --panel2: #272135; --border: #3a3350;
+      --text: #e9e4f5; --muted: #9a91b4; --accent: #b98cff; --good: #7ee0a0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg); color: var(--text); padding: 20px;
+    }
+    header {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    h1 { font-size: 20px; margin: 0; font-weight: 600; }
+    .room-bar { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .room-bar input {
+      background: var(--panel2); border: 1px solid var(--border); color: var(--text);
+      border-radius: 6px; padding: 6px 10px; font-size: 13px; width: 220px;
+    }
+    .room-bar button {
+      background: var(--accent); border: 0; color: #1a1326; font-weight: 600;
+      border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 13px;
+    }
+    .status { font-size: 12px; color: var(--muted); }
+    .status .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background: #c0563f; margin-right: 5px; vertical-align: middle; }
+    .status.live .dot { background: var(--good); box-shadow: 0 0 6px var(--good); }
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .player {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .player h2 { font-size: 16px; margin: 0 0 2px; }
+    .player .pname { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+    .player .updated { font-size: 10px; color: var(--muted); float: right; font-weight: 400; }
+    .sect { font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
+      color: var(--accent); margin: 12px 0 6px; }
+    .row { display: flex; justify-content: space-between; font-size: 13px;
+      padding: 3px 0; border-bottom: 1px dashed var(--border); }
+    .row:last-child { border-bottom: 0; }
+    .row .qty { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .empty { color: var(--muted); font-size: 12px; font-style: italic; }
+    .none { color: var(--muted); text-align: center; padding: 60px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>⚗ Aetherial — GM Dashboard</h1>
+    <div class="status" id="status"><span class="dot"></span><span id="statusText">getrennt</span></div>
+    <div class="room-bar">
+      <input id="roomInput" placeholder="Room / Campaign-ID" />
+      <button id="connectBtn">Verbinden</button>
+    </div>
+  </header>
+
+  <div class="grid" id="grid"></div>
+  <div class="none" id="none">Keine Spielerdaten. Room-ID eingeben und verbinden.</div>
+
+  <script>
+    // API base = this page's URL without the trailing "/gm" → ".../api/v1"
+    const API = location.href.split('?')[0].replace(/\/gm\/?$/, '');
+    const grid       = document.getElementById('grid');
+    const none       = document.getElementById('none');
+    const statusEl   = document.getElementById('status');
+    const statusText = document.getElementById('statusText');
+    const roomInput  = document.getElementById('roomInput');
+    let source = null;
+
+    function setStatus(live, text) {
+      statusEl.classList.toggle('live', live);
+      statusText.textContent = text;
+    }
+
+    function fmtTime(ts) {
+      if (!ts) return '';
+      const d = new Date(ts);
+      return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function itemRows(items) {
+      if (!items || !items.length) return '<div class="empty">—</div>';
+      return items.map(i =>
+        '<div class="row"><span>' + escapeHtml(i.name) + '</span><span class="qty">×' + i.count + '</span></div>'
+      ).join('');
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+    }
+
+    function render(players) {
+      if (!players || !players.length) {
+        grid.innerHTML = '';
+        none.style.display = 'block';
+        none.textContent = 'Verbunden — noch keine Spielerdaten gemeldet.';
+        return;
+      }
+      none.style.display = 'none';
+      grid.innerHTML = players.map(p => `
+        <div class="player">
+          <span class="updated">${fmtTime(p.updatedAt)}</span>
+          <h2>${escapeHtml(p.characterName)}</h2>
+          <div class="pname">${p.playerName ? escapeHtml(p.playerName) : '&nbsp;'}</div>
+          <div class="sect">Kräuter</div>
+          ${itemRows(p.ingredients)}
+          <div class="sect">Tränke</div>
+          ${itemRows(p.potions)}
+        </div>
+      `).join('');
+    }
+
+    function connect(room) {
+      if (!room) return;
+      if (source) source.close();
+      localStorage.setItem('ae-gm-room', room);
+      setStatus(false, 'verbinde…');
+      source = new EventSource(API + '/rooms/' + encodeURIComponent(room) + '/stream');
+      source.onopen = () => setStatus(true, 'live: ' + room);
+      source.onmessage = (e) => {
+        try { render(JSON.parse(e.data).players); } catch (_) {}
+      };
+      source.onerror = () => setStatus(false, 'getrennt — reconnect…');
+    }
+
+    document.getElementById('connectBtn').addEventListener('click', () => connect(roomInput.value.trim()));
+    roomInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') connect(roomInput.value.trim()); });
+
+    // Auto-connect from ?room= or last used room
+    const params = new URLSearchParams(location.search);
+    const initial = params.get('room') || localStorage.getItem('ae-gm-room') || '';
+    if (initial) { roomInput.value = initial; connect(initial); }
+  </script>
+</body>
+</html>

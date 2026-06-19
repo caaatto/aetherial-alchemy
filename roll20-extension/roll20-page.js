@@ -5,6 +5,21 @@
 const AE_TO_PAGE   = '__ae_to_page'
 const AE_FROM_PAGE = '__ae_from_page'
 
+// Read campaign id, current player name and GM flag from Roll20 globals.
+// Used as the "room" key + player label for the GM live dashboard.
+function readMeta() {
+  let playerName = ''
+  try {
+    const p = window.currentPlayer
+    if (p) playerName = p.get('displayname') || p.get('_displayname') || ''
+  } catch (_) { /* currentPlayer not ready */ }
+  return {
+    campaignId: String(window.Campaign?.id || window.campaign_id || ''),
+    playerName,
+    isGm: window.is_gm === true,
+  }
+}
+
 function sendChars() {
   try {
     const models = window.Campaign?.characters?.models || []
@@ -12,9 +27,9 @@ function sendChars() {
       id:   c.id,
       name: c.get('name') || '(Unnamed)'
     }))
-    window.postMessage({ [AE_FROM_PAGE]: true, type: 'CHARACTERS', characters }, '*')
+    window.postMessage({ [AE_FROM_PAGE]: true, type: 'CHARACTERS', characters, meta: readMeta() }, '*')
   } catch (e) {
-    window.postMessage({ [AE_FROM_PAGE]: true, type: 'CHARACTERS', characters: [] }, '*')
+    window.postMessage({ [AE_FROM_PAGE]: true, type: 'CHARACTERS', characters: [], meta: readMeta() }, '*')
   }
 }
 

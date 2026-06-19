@@ -126,6 +126,25 @@ async function getInventory(charId) {
 async function saveInventory(charId, inv) {
   if (!charId) return
   await chrome.storage.local.set({ [`ae_inv_${charId}`]: inv })
+  reportInventory(charId, inv)
+}
+
+// ── Report inventory to the backend (powers the GM live dashboard) ────────────
+// Keyed by Roll20 campaign id ("room") + character id. Fire-and-forget;
+// failures are silent so the sidebar keeps working offline.
+function reportInventory(charId, inv) {
+  if (!charId || !state.roomId) return
+  fetch(`${API_BASE}/rooms/${encodeURIComponent(state.roomId)}/inventory`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      characterId:   charId,
+      characterName: state.charName || charId,
+      playerName:    state.playerName || '',
+      ingredients:   inv.ingredients || {},
+      potions:       inv.potions || {},
+    }),
+  }).catch(() => { /* offline / backend down — ignore */ })
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -134,11 +153,17 @@ let state = {
   charName:   '',
   inventory:  { ingredients: {} },
   characters: [],
-  tab:        'brew',          // 'inventory' | 'brew' | 'recipes' | 'herbs'
+  tab:        'brew',          // 'inventory' | 'brew' | 'recipes' | 'herbs' | 'gm'
   selectedRecipe: null,
   modifier:   0,
   brewResult: null,
   herbSearch: '',
+  // GM live dashboard
+  roomId:     '',              // Roll20 campaign id — the "room" key
+  playerName: '',
+  isGm:       false,
+  gmPlayers:  [],              // live snapshot from backend (other players' inventories)
+  gmSource:   null,            // EventSource handle
 }
 
 // ── Build DOM ─────────────────────────────────────────────────────────────────
@@ -170,6 +195,7 @@ function buildSidebar() {
       <button class="ae-tab active" data-tab="brew">Brauen</button>
       <button class="ae-tab" data-tab="recipes">Rezepte</button>
       <button class="ae-tab" data-tab="herbs">Kräuter</button>
+      <button class="ae-tab" data-tab="gm" id="ae-tab-gm" style="display:none">GM</button>
     </div>
 
     <div id="ae-content">
@@ -177,6 +203,7 @@ function buildSidebar() {
       <div id="ae-panel-brew"      class="ae-panel active"></div>
       <div id="ae-panel-recipes"   class="ae-panel"></div>
       <div id="ae-panel-herbs"     class="ae-panel"></div>
+      <div id="ae-panel-gm"        class="ae-panel"></div>
     </div>
   `
   document.body.appendChild(sidebar)
@@ -207,6 +234,8 @@ async function onCharChange(e) {
   state.inventory = await getInventory(state.charId)
   state.selectedRecipe = null
   state.brewResult     = null
+  // Push current inventory so the GM dashboard reflects existing stock immediately.
+  if (state.charId) reportInventory(state.charId, state.inventory)
   render()
 }
 
@@ -220,7 +249,13 @@ function requestCharacters() {
 window.addEventListener('message', (e) => {
   if (!e.data?.__ae_from_page || e.data.type !== 'CHARACTERS') return
   state.characters = e.data.characters || []
+  if (e.data.meta) {
+    state.roomId     = e.data.meta.campaignId || state.roomId
+    state.playerName = e.data.meta.playerName || state.playerName
+    state.isGm       = !!e.data.meta.isGm
+  }
   populateCharSelect()
+  updateGmTab()
   render()
 })
 
@@ -246,6 +281,78 @@ function render() {
   renderBrew()
   renderRecipes()
   renderHerbs()
+  renderGm()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GM live dashboard (only for the GM) — subscribes to the backend SSE feed
+// and shows every player's herbs + potions, updating live.
+// ─────────────────────────────────────────────────────────────────────────────
+function updateGmTab() {
+  const tab = document.getElementById('ae-tab-gm')
+  if (tab) tab.style.display = state.isGm ? '' : 'none'
+  if (state.isGm) connectGmStream()
+}
+
+function connectGmStream() {
+  if (state.gmSource || !state.roomId) return
+  try {
+    const src = new EventSource(`${API_BASE}/rooms/${encodeURIComponent(state.roomId)}/stream`)
+    src.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data)
+        state.gmPlayers = data.players || []
+        renderGm()
+      } catch (_) { /* ignore malformed frame */ }
+    }
+    // EventSource auto-reconnects on error — nothing to do.
+    state.gmSource = src
+  } catch (_) { /* EventSource unavailable */ }
+}
+
+function gmItemRows(items) {
+  if (!items || !items.length) return '<div class="ae-empty" style="margin:2px 0">—</div>'
+  return items.map(i =>
+    `<div class="ae-herb-row"><span class="ae-herb-name">${i.name}</span><span class="ae-herb-count">×${i.count}</span></div>`
+  ).join('')
+}
+
+function renderGm() {
+  const el = document.getElementById('ae-panel-gm')
+  if (!el) return
+
+  if (!state.roomId) {
+    el.innerHTML = '<p class="ae-empty">Keine Campaign-ID gefunden. Lade die Roll20-Seite neu.</p>'
+    return
+  }
+
+  const dashUrl = `${API_BASE}/gm?room=${encodeURIComponent(state.roomId)}`
+  let html = `<div class="ae-gm-head">
+      <div class="ae-gm-room">Room: <code>${state.roomId}</code></div>
+      <a class="ae-gm-link" href="${dashUrl}" target="_blank" rel="noreferrer">Vollbild-Dashboard ↗</a>
+    </div>`
+
+  if (!state.gmPlayers.length) {
+    html += '<p class="ae-empty">Noch keine Spielerdaten gemeldet. Spieler müssen die Sidebar öffnen und ihren Charakter wählen.</p>'
+    el.innerHTML = html
+    return
+  }
+
+  state.gmPlayers.forEach(p => {
+    html += `
+      <div class="ae-gm-player">
+        <div class="ae-gm-player-head">
+          <span class="ae-gm-char">${p.characterName}</span>
+          ${p.playerName ? `<span class="ae-gm-pname">${p.playerName}</span>` : ''}
+        </div>
+        <div class="ae-section-title">Kräuter</div>
+        ${gmItemRows(p.ingredients)}
+        <div class="ae-section-title">Tränke</div>
+        ${gmItemRows(p.potions)}
+      </div>`
+  })
+
+  el.innerHTML = html
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -1,0 +1,14 @@
+{
+  "name": "aetherial-alchemy-api",
+  "version": "1.0.0",
+  "description": "REST API for Aetherial Alchemy - Herbs, Potions & Recipes",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "cors": "^2.8.5"
+  }
+}
