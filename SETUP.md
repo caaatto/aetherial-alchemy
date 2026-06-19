@@ -49,16 +49,30 @@ nur ohne automatischen Bogen-Eintrag. **Das Live-Dashboard funktioniert auch ohn
 
 ## 3. Pro Person: Extension installieren (jeder Spieler + GM)
 
-Die Extension ist nicht im Web Store, daher manuell laden:
+### Variante A — Auto-Update (.crx), empfohlen für **Linux**
 
-1. In Chrome: `chrome://extensions` öffnen.
-2. **Entwicklermodus** (oben rechts) aktivieren.
-3. **Entpackt laden** → den Ordner `roll20-extension/` auswählen.
+So aktualisiert sich die Extension künftig **von selbst** (sobald ein neuer Build deployt ist):
 
-Nach einem Update: auf der Extensions-Seite einfach **⟳ (Neu laden)** klicken.
+1. [`https://catto.at/alchemy-ext/aetherial-roll20.crx`](https://catto.at/alchemy-ext/aetherial-roll20.crx) herunterladen.
+2. `chrome://extensions` öffnen → **Entwicklermodus** (oben rechts) aktivieren.
+3. Die heruntergeladene **`.crx`-Datei** auf die Seite **ziehen** → „Hinzufügen".
+
+Chrome prüft dann regelmäßig `updates.xml` und zieht neue Versionen automatisch.
+
+> **Windows/Mac:** Chrome **blockiert** selbst-gehostete Extensions — dort funktioniert
+> Variante A nicht. Diese Spieler nutzen Variante B (manuelles Neuladen bei Updates).
+
+### Variante B — Entpackt laden (Fallback / Windows/Mac)
+
+1. Repo-Ordner holen/aktualisieren (`git clone …` bzw. `git pull`).
+2. `chrome://extensions` → **Entwicklermodus** an → **Entpackt laden** → Ordner `roll20-extension/`.
+3. Nach einem Update: Ordner aktualisieren + auf der Seite **⟳ (Neu laden)** klicken.
+
+---
 
 Damit jeder seinen eigenen Charakter ansteuert: im Roll20-Spiel muss der Charakter unter
-**„Controlled by"** dem jeweiligen Spieler zugewiesen sein.
+**„Controlled by"** dem jeweiligen Spieler zugewiesen sein. (Der **GM** sieht in der
+Sidebar alle Charaktere, Spieler nur die, die sie steuern.)
 
 ---
 
@@ -132,3 +146,15 @@ sudo visudo -c    # Syntax prüfen → sollte "parsed OK" melden
 Ohne diese Regel deployt das Frontend trotzdem; der Restart wird nur mit einer Warnung
 übersprungen (das Backend bleibt dann bei der alten Version, bis manuell neu gestartet:
 `sudo systemctl restart alchemy-api`).
+
+### Extension-Auto-Update (self-hosted CRX)
+
+`deploy-alchemy.sh` ruft `tools/build-crx.mjs` auf — signiert die Extension neu und legt
+`.crx` + `updates.xml` nach `/home/amke/website/alchemy-ext/` (→ `catto.at/alchemy-ext/`).
+
+- **Signatur-Key:** `/home/amke/.secrets/aetherial-ext.pem` — **außerhalb des Repos, niemals
+  committen.** Bestimmt die Extension-ID (`ilaeeldbffbibdbpnjaolccjlnkgmhih`). Geht der Key
+  verloren, ändert sich die ID und **alle Spieler müssen neu installieren** → unbedingt sichern.
+- **Neue Version veröffentlichen:** `version` in `roll20-extension/manifest.json` erhöhen,
+  committen, pushen. Der Deploy baut die neue `.crx` + `updates.xml`; installierte Clients
+  (Linux) updaten automatisch. Manuell baubar mit `npm run build:crx`.

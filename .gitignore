@@ -7,6 +7,9 @@ dist/
 # Backend runtime state (party inventory store — regenerated at runtime)
 api/inventory-store.json
 
+# Extension signing keys — must NEVER be committed (lives in ~/.secrets)
+*.pem
+
 # Logs
 *.log
 npm-debug.log*
