@@ -164,6 +164,9 @@ let state = {
   isGm:       false,
   gmPlayers:  [],              // live snapshot from backend (other players' inventories)
   gmSource:   null,            // EventSource handle
+  // Import from Roll20 sheet
+  importing:     false,
+  importSummary: null,         // { total, herbs:[], potions:[], unmatched:[], error? }
 }
 
 // ── Build DOM ─────────────────────────────────────────────────────────────────
@@ -285,6 +288,153 @@ function render() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Import from Roll20 sheet
+// Reads the character's equipment via the `!brew-read` Mod Script command,
+// matches item names against the herb + recipe DB (normalized + fuzzy),
+// and imports matches into the sidebar inventory.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Ask the Mod Script for this player's sheet equipment; resolves with [{name, quantity}].
+function readSheetInventory(timeoutMs = 12000) {
+  return new Promise((resolve, reject) => {
+    const chatEl = document.querySelector('#textchat')
+    if (!chatEl) { reject(new Error('chat-not-found')); return }
+    const observer = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
+          const text = node.textContent || ''
+          const match = text.match(/AETHERIAL-INVENTORY:(\[.*\])/)
+          if (match) {
+            observer.disconnect(); clearTimeout(timer)
+            try { resolve(JSON.parse(match[1])) } catch (_) { resolve([]) }
+            return
+          }
+        }
+      }
+    })
+    observer.observe(chatEl, { childList: true, subtree: true })
+    const timer = setTimeout(() => { observer.disconnect(); reject(new Error('timeout')) }, timeoutMs)
+    postToChat('!brew-read')
+  })
+}
+
+// Normalize a name for matching: lowercase, strip diacritics + punctuation, collapse spaces.
+function normName(s) {
+  return (s || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ').trim()
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length
+  if (!m) return n
+  if (!n) return m
+  let prev = Array.from({ length: n + 1 }, (_, j) => j)
+  let curr = new Array(n + 1)
+  for (let i = 1; i <= m; i++) {
+    curr[0] = i
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1
+      curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost)
+    }
+    ;[prev, curr] = [curr, prev]
+  }
+  return prev[n]
+}
+
+// Build the search index once (herbs + recipes), reused across imports.
+let _matchIndex = null
+function matchIndex() {
+  if (_matchIndex) return _matchIndex
+  _matchIndex = [
+    ...herbs.map(h => ({ kind: 'herb', id: h.id, name: h.name, n: normName(h.name) })),
+    ...recipes.map(r => ({ kind: 'potion', id: r.id, name: r.name, n: normName(r.name) })),
+  ].filter(c => c.n)
+  return _matchIndex
+}
+
+// Best fuzzy match for a sheet item name, or null below the confidence threshold.
+function bestMatch(rawName) {
+  const q = normName(rawName)
+  if (q.length < 3) return null
+  let best = null
+  for (const c of matchIndex()) {
+    let score = 0
+    if (c.n === q) score = 1
+    else if (c.n.length >= 4 && q.includes(c.n)) score = 0.92
+    else if (q.length >= 4 && c.n.includes(q)) score = 0.88
+    else {
+      const sim = 1 - levenshtein(q, c.n) / Math.max(q.length, c.n.length)
+      if (sim >= 0.82) score = sim
+    }
+    if (score > (best?.score || 0)) best = { ...c, score }
+  }
+  return best && best.score >= 0.82 ? best : null
+}
+
+function renderImportSummary() {
+  const s = state.importSummary
+  if (!s) return ''
+  if (s.error) {
+    const hint = s.error === 'timeout'
+      ? 'Roll20 hat nicht geantwortet — läuft das AetherialSync Mod-Script?'
+      : s.error === 'chat-not-found' ? 'Chat nicht gefunden.' : s.error
+    return `<div class="ae-import-summary ae-import-err">⚠ ${hint}</div>`
+  }
+  if (!s.total) return '<div class="ae-import-summary">Keine Items auf dem Bogen gefunden.</div>'
+  let h = '<div class="ae-import-summary">'
+  h += `<div class="ae-import-ok">✓ Importiert: ${s.herbs.length} Kräuter, ${s.potions.length} Tränke</div>`
+  if (s.herbs.length)   h += `<div class="ae-import-list">🌿 ${s.herbs.join(', ')}</div>`
+  if (s.potions.length) h += `<div class="ae-import-list">⚗ ${s.potions.join(', ')}</div>`
+  if (s.unmatched.length) h += `<div class="ae-import-unmatched">Nicht zugeordnet (${s.unmatched.length}): ${s.unmatched.join(', ')}</div>`
+  h += '</div>'
+  return h
+}
+
+async function importFromRoll20() {
+  if (!state.charId || state.importing) return
+  state.importing = true
+  state.importSummary = null
+  renderInventory()
+
+  let items
+  try {
+    items = await readSheetInventory()
+  } catch (e) {
+    state.importing = false
+    state.importSummary = { error: e.message }
+    renderInventory()
+    return
+  }
+
+  const inv = state.inventory
+  if (!inv.ingredients) inv.ingredients = {}
+  if (!inv.potions) inv.potions = {}
+
+  const herbsAdded = [], potionsAdded = [], unmatched = []
+  for (const it of items) {
+    const qty = Math.max(1, parseInt(it.quantity, 10) || 1)
+    const m = bestMatch(it.name)
+    if (!m) { unmatched.push(it.name || '?'); continue }
+    if (m.kind === 'herb') {
+      inv.ingredients[m.id] = (inv.ingredients[m.id] || 0) + qty
+      herbsAdded.push(`${m.name} ×${qty}`)
+    } else {
+      inv.potions[m.id] = (inv.potions[m.id] || 0) + qty
+      potionsAdded.push(`${m.name} ×${qty}`)
+    }
+  }
+
+  await saveInventory(state.charId, inv)   // also reports to the GM dashboard
+
+  state.importing = false
+  state.importSummary = { total: items.length, herbs: herbsAdded, potions: potionsAdded, unmatched }
+  renderInventory()
+  renderBrew()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // GM live dashboard (only for the GM) — subscribes to the backend SSE feed
 // and shows every player's herbs + potions, updating live.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -390,7 +540,11 @@ function renderInventory() {
         <input id="ae-herb-amt" type="number" value="1" min="1" max="99">
         <button id="ae-herb-add-btn">+</button>
       </div>
-    </div>`
+      <button id="ae-import-btn" class="ae-btn-import" ${state.importing || !state.charId ? 'disabled' : ''}>
+        ${state.importing ? '⏳ Lese Bogen…' : '⬇ Aus Roll20-Bogen importieren'}
+      </button>
+    </div>
+    ${renderImportSummary()}`
 
   // ── Current herbs ─────────────────────────────────────────────────────────
   if (entries.length === 0) {
@@ -454,6 +608,9 @@ function renderInventory() {
     renderInventory()
     renderBrew()
   })
+
+  // Import-from-Roll20 button
+  document.getElementById('ae-import-btn')?.addEventListener('click', importFromRoll20)
 
   // +/− buttons
   el.querySelectorAll('[data-action]').forEach(btn => {
