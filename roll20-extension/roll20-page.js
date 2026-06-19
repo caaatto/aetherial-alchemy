@@ -22,11 +22,16 @@ function readMeta() {
 
 function sendChars() {
   try {
+    const isGm = window.is_gm === true
+    const myId = window.currentPlayer?.id || ''
     const models = window.Campaign?.characters?.models || []
-    const characters = models.map(c => ({
-      id:   c.id,
-      name: c.get('name') || '(Unnamed)'
-    }))
+    const characters = models
+      .filter(c => {
+        if (isGm) return true                                  // GM: alle Charaktere
+        const ctrl = (c.get('controlledby') || '').split(',').map(s => s.trim())
+        return ctrl.includes('all') || ctrl.includes(myId)     // Spieler: nur eigene/geteilte
+      })
+      .map(c => ({ id: c.id, name: c.get('name') || '(Unnamed)' }))
     window.postMessage({ [AE_FROM_PAGE]: true, type: 'CHARACTERS', characters, meta: readMeta() }, '*')
   } catch (e) {
     window.postMessage({ [AE_FROM_PAGE]: true, type: 'CHARACTERS', characters: [], meta: readMeta() }, '*')

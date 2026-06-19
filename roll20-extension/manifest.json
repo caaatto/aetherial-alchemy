@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Aetherial Alchemy — Roll20 Sync",
-  "version": "2.3",
+  "version": "2.4",
   "description": "Alchemy sidebar directly inside Roll20 — inventory, brewing, D&D sheet sync, and live party inventory for the GM.",
 
   "permissions": ["storage", "tabs"],
