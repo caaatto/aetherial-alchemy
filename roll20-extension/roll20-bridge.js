@@ -774,7 +774,8 @@ function renderBrewResult(el) {
         + ${r.modifier >= 0 ? '+' : ''}${r.modifier} = <strong>${r.total}</strong> vs DC ${r.dc}
       </div>
       <div class="ae-result-quality">${qualityEmoji} ${r.quality}</div>
-      ${r.success ? `<div style="font-size:12px;color:#aaa;margin-bottom:10px">${recipe?.effect || ''}</div>` : ''}
+      ${r.success ? `<div style="font-size:12px;color:#ccc;margin-bottom:6px">${r.scaledEffect || recipe?.effect || ''}</div>` : ''}
+      ${r.success && r.multiplier > 1 ? `<div class="ae-result-bonus">${qualityEmoji} ${r.quality}: Wirkung ×${r.multiplier} (Würfel hochgerechnet)</div>` : ''}
       <button class="ae-btn-back" id="ae-brew-again">Weiteres Rezept brauen</button>
     </div>`
 
@@ -783,6 +784,23 @@ function renderBrewResult(el) {
     state.brewResult     = null
     renderBrew()
   })
+}
+
+// Quality → effect multiplier. Better brews produce stronger potions.
+function qualityMultiplier(quality) {
+  if (quality === 'Masterwork') return 1.5
+  if (quality === 'Superior')   return 1.25
+  return 1
+}
+
+// Scale the dice values in an effect string by the multiplier (counts + flat mods).
+// Durations / flat words are left untouched. e.g. ('Heals 2d4+2 HP', 1.5) → 'Heals 3d4 + 3 HP'
+function scaleEffect(effect, mult) {
+  if (!effect || mult === 1) return effect
+  const r = n => Math.max(1, Math.round(n * mult))
+  return effect.replace(/(\d+)\s*d\s*(\d+)(\s*([+\-])\s*(\d+))?/gi,
+    (_m, count, sides, _grp, sign, flat) =>
+      `${r(+count)}d${sides}` + (flat ? ` ${sign} ${r(+flat)}` : ''))
 }
 
 async function doBrew() {
@@ -823,7 +841,15 @@ async function doBrew() {
 
   await saveInventory(state.charId, inv)
 
-  state.brewResult = { roll, modifier: state.modifier, total, dc, success: success || critSuccess, quality, critSuccess, critFail }
+  const multiplier   = qualityMultiplier(quality)
+  const scaledEffect = scaleEffect(recipe.effect || '', multiplier)
+
+  state.brewResult = {
+    roll, modifier: state.modifier, total, dc,
+    success: success || critSuccess,
+    quality, critSuccess, critFail,
+    multiplier, scaledEffect,
+  }
 
   // Post brew card to Roll20 chat
   postBrewCard(recipe, state.brewResult)
@@ -928,20 +954,22 @@ function postBrewCard(recipe, result) {
   const qualityEmoji = result.quality === 'Masterwork' ? '⭐' : result.quality === 'Superior' ? '✨' : result.quality === 'Failure' ? '❌' : result.quality === 'Critical Failure' ? '💀' : '✅'
   const rollText = result.critSuccess ? `${result.roll} (Natural 20!)` : result.critFail ? `${result.roll} (Natural 1!)` : `${result.roll}`
   const mod = result.modifier >= 0 ? `+${result.modifier}` : `${result.modifier}`
+  const effect = result.scaledEffect || recipe.effect || ''
 
   const lines = [
     `&{template:default}`,
     `{{name=Aetherial Brew}}`,
     `{{Potion=${recipe.name}}}`,
-    `{{Effect=${recipe.effect || ''}}}`,
+    `{{Effect=${effect}}}`,
     `{{Quality=${qualityEmoji} ${result.quality}}}`,
     `{{Roll=d20: ${rollText} ${mod} = ${result.total} vs DC ${result.dc}}}`,
     `{{Brew Time=${recipe.brewTime}}}`,
   ]
+  if (result.multiplier > 1) lines.push(`{{Bonus=Wirkung ×${result.multiplier} (${result.quality})}}`)
 
   if (result.success) {
     lines.push(`{{aetherial-name=${recipe.name}}}`)
-    lines.push(`{{aetherial-effect=${recipe.effect || ''}}}`)
+    lines.push(`{{aetherial-effect=${effect}}}`)
     lines.push(`{{aetherial-quality=${result.quality}}}`)
     lines.push(`{{aetherial-sync=1}}`)
   }

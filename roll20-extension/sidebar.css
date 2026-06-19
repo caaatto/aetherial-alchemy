@@ -554,3 +554,16 @@
 .ae-import-list { color: #aaa; }
 .ae-import-unmatched { color: #d8a657; margin-top: 4px; }
 .ae-import-summary.ae-import-err { color: #e06c75; border-color: #5a2a30; }
+
+/* ── Masterwork / Superior brew bonus ───────────────── */
+
+.ae-result-bonus {
+  margin: 4px 0 10px;
+  padding: 5px 9px;
+  background: rgba(255, 215, 0, 0.10);
+  border: 1px solid #6a5a2a;
+  border-radius: 6px;
+  color: #ffd86b;
+  font-size: 12px;
+  font-weight: 600;
+}
