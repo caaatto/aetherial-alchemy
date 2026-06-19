@@ -97,3 +97,38 @@ Die Spieler werden über die **Roll20-Campaign-ID** gruppiert — kein manueller
 | Dashboard bleibt leer | Spieler müssen die Sidebar geöffnet **und ihren Charakter gewählt** haben. Backend erreichbar? (`catto.at/api/v1` testen) |
 | „getrennt" im Dashboard | Backend läuft nicht oder Campaign-ID falsch. |
 | Tränke landen nicht auf dem Bogen | Mod-Script installiert? Bei D&D 2024: API Server → Experimental aktiv? Charakter „Controlled by" gesetzt? |
+
+---
+
+## Für den Host: Deploy & Wartung (nur Server-Admin)
+
+catto.at läuft auf demselben Server. Deploy-Kette:
+
+```
+git push → GitHub-Webhook → webhook-alchemy.service (Port 3003) → deploy-alchemy.sh
+           ↳ git pull · npm build · Frontend nach /home/amke/website/alchemy
+           ↳ alchemy-api.service neu starten  (Backend, Port 3004)
+```
+
+**Was bei `git push` automatisch aktualisiert wird:**
+- Web-App (`catto.at/alchemy`) — neu gebaut & deployt
+- Backend-API (`catto.at/api`) — **sofern die sudoers-Regel unten installiert ist**
+
+**Was NICHT über git push kommt:** die Roll20-Extension (lokal pro Spieler installiert) —
+siehe Schritt 3. Daten (Kräuter/Rezepte) lädt die Extension live von der API, die
+aktualisieren sich also automatisch; nur Extension-**Code** braucht ein manuelles Neuladen.
+
+### Einmalig: Backend-Auto-Restart erlauben (sudoers)
+
+Damit `deploy-alchemy.sh` (läuft als `amke`) den API-Dienst ohne Passwort neu starten darf:
+
+```bash
+echo 'amke ALL=(root) NOPASSWD: /usr/bin/systemctl restart alchemy-api' \
+  | sudo tee /etc/sudoers.d/alchemy-api-restart > /dev/null
+sudo chmod 0440 /etc/sudoers.d/alchemy-api-restart
+sudo visudo -c    # Syntax prüfen → sollte "parsed OK" melden
+```
+
+Ohne diese Regel deployt das Frontend trotzdem; der Restart wird nur mit einer Warnung
+übersprungen (das Backend bleibt dann bei der alten Version, bis manuell neu gestartet:
+`sudo systemctl restart alchemy-api`).
