@@ -567,3 +567,52 @@
   font-size: 12px;
   font-weight: 600;
 }
+
+/* ── GM: Items verteilen (grants) ───────────────────── */
+
+.ae-gm-grant {
+  background: rgba(185, 140, 255, 0.06);
+  border: 1px solid #3a2a5a;
+  border-radius: 8px;
+  padding: 8px 10px 10px;
+  margin-bottom: 12px;
+}
+
+.ae-gm-grant .ae-section-title { margin-top: 0; }
+
+.ae-gm-grant-msg {
+  min-height: 14px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #7ee0a0;
+}
+
+.ae-gm-pending {
+  font-size: 11px;
+  color: #ffd86b;
+  white-space: nowrap;
+}
+
+/* ── Toast (GM-Gabe erhalten) ───────────────────────── */
+
+.ae-toast {
+  position: fixed;
+  right: 60px;
+  bottom: 24px;
+  z-index: 100001;
+  max-width: 320px;
+  padding: 10px 14px;
+  background: #1d1d3a;
+  border: 1px solid #b98cff;
+  border-radius: 8px;
+  color: #e9e4f5;
+  font-family: inherit;
+  font-size: 13px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  animation: ae-toast-in 0.25s ease-out;
+}
+
+@keyframes ae-toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

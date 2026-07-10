@@ -110,7 +110,7 @@
         <div class="player">
           <span class="updated">${fmtTime(p.updatedAt)}</span>
           <h2>${escapeHtml(p.characterName)}</h2>
-          <div class="pname">${p.playerName ? escapeHtml(p.playerName) : '&nbsp;'}</div>
+          <div class="pname">${p.playerName ? escapeHtml(p.playerName) : '&nbsp;'}${p.pendingGrants ? ' <span style="color:#ffd86b">🎁 ' + p.pendingGrants + ' ausstehend</span>' : ''}</div>
           <div class="sect">Kräuter</div>
           ${itemRows(p.ingredients)}
           <div class="sect">Tränke</div>

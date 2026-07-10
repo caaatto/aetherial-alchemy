@@ -125,6 +125,7 @@ async function getInventory(charId) {
 
 async function saveInventory(charId, inv) {
   if (!charId) return
+  inv.updatedAt = Date.now()   // client-side change timestamp, drives join sync
   await chrome.storage.local.set({ [`ae_inv_${charId}`]: inv })
   reportInventory(charId, inv)
 }
@@ -143,8 +144,119 @@ function reportInventory(charId, inv) {
       playerName:    state.playerName || '',
       ingredients:   inv.ingredients || {},
       potions:       inv.potions || {},
+      updatedAt:     inv.updatedAt || 0,
     }),
   }).catch(() => { /* offline / backend down — ignore */ })
+}
+
+// ── Server sync: join-time reconciliation + live GM grants ────────────────────
+// The server keeps a copy of each inventory (see reportInventory) plus a queue
+// of GM grants. On character select we reconcile local vs server copy by client
+// timestamp (newer wins — covers "new device" and "played offline"), then apply
+// pending grants. While in the game, a per-character SSE stream delivers new
+// grants instantly. Grants are acked after applying; already-seen grant ids are
+// remembered locally so a failed ack can't duplicate items.
+
+function grantsUrl(charId, suffix = '') {
+  return `${API_BASE}/rooms/${encodeURIComponent(state.roomId)}/grants/${encodeURIComponent(charId)}${suffix}`
+}
+
+async function syncInventoryFromServer(charId) {
+  if (!charId || !state.roomId) return
+  try {
+    const res = await fetch(
+      `${API_BASE}/rooms/${encodeURIComponent(state.roomId)}/inventory/${encodeURIComponent(charId)}`,
+      { cache: 'no-store' }
+    )
+    if (!res.ok) return
+    const server = await res.json()
+    if (!server.exists) {
+      reportInventory(charId, state.inventory)   // first contact — seed the server copy
+      return
+    }
+    const localTs  = state.inventory.updatedAt || 0
+    const serverTs = server.clientUpdatedAt || 0
+    if (serverTs > localTs) {
+      // Server copy is newer (e.g. played on another device) — take it.
+      state.inventory = {
+        ingredients: server.ingredients || {},
+        potions:     server.potions || {},
+        updatedAt:   serverTs,
+      }
+      await chrome.storage.local.set({ [`ae_inv_${charId}`]: state.inventory })
+    } else {
+      // Local is same or newer (e.g. brewed while backend was down) — push it.
+      reportInventory(charId, state.inventory)
+    }
+  } catch (_) { /* offline / backend down — keep local */ }
+}
+
+// Apply GM grants to the local inventory, then ack them. Fresh grants only:
+// ids we already applied (ack lost?) are re-acked without adding items again.
+async function applyGrants(charId, grantList) {
+  if (!charId || charId !== state.charId || !grantList?.length) return
+  const seenKey = `ae_grants_seen_${charId}`
+  const seen = new Set((await chrome.storage.local.get(seenKey))[seenKey] || [])
+  const fresh = grantList.filter(g => g.grantId && !seen.has(g.grantId))
+
+  if (fresh.length) {
+    const inv = state.inventory
+    if (!inv.ingredients) inv.ingredients = {}
+    if (!inv.potions)     inv.potions     = {}
+    const received = []
+    for (const g of fresh) {
+      const map = g.kind === 'potion' ? inv.potions : inv.ingredients
+      map[g.id] = (map[g.id] || 0) + g.count
+      received.push(`${g.count}× ${g.name || g.id}`)
+      seen.add(g.grantId)
+    }
+    await chrome.storage.local.set({ [seenKey]: [...seen].slice(-300) })
+    await saveInventory(charId, inv)   // persists + pushes merged state to server
+    showToast(`🎁 Vom GM erhalten: ${received.join(', ')}`)
+    renderInventory()
+    renderBrew()
+  }
+
+  fetch(grantsUrl(charId, '/ack'), {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ grantIds: grantList.map(g => g.grantId) }),
+  }).catch(() => { /* ack retried on next delivery — seen-list prevents doubles */ })
+}
+
+async function fetchPendingGrants(charId) {
+  if (!charId || !state.roomId) return
+  try {
+    const res = await fetch(grantsUrl(charId), { cache: 'no-store' })
+    if (!res.ok) return
+    const data = await res.json()
+    await applyGrants(charId, data.grants || [])
+  } catch (_) { /* offline — grants stay queued on the server */ }
+}
+
+// Live delivery while playing: per-character SSE feed (auto-reconnects).
+function connectGrantStream(charId) {
+  if (state.grantSource) { state.grantSource.close(); state.grantSource = null }
+  if (!charId || !state.roomId) return
+  try {
+    const src = new EventSource(grantsUrl(charId, '/stream'))
+    src.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data)
+        applyGrants(charId, data.grants || [])
+      } catch (_) { /* ignore malformed frame */ }
+    }
+    state.grantSource = src
+  } catch (_) { /* EventSource unavailable */ }
+}
+
+// Small transient notification, visible even when the sidebar is closed.
+function showToast(msg) {
+  const t = document.createElement('div')
+  t.className = 'ae-toast'
+  t.textContent = msg
+  document.body.appendChild(t)
+  setTimeout(() => t.remove(), 8000)
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -163,7 +275,8 @@ let state = {
   playerName: '',
   isGm:       false,
   gmPlayers:  [],              // live snapshot from backend (other players' inventories)
-  gmSource:   null,            // EventSource handle
+  gmSource:   null,            // EventSource handle (GM room feed)
+  grantSource: null,           // EventSource handle (own character's GM-grant feed)
   // Import from Roll20 sheet
   importing:     false,
   importSummary: null,         // { total, herbs:[], potions:[], unmatched:[], error? }
@@ -237,8 +350,13 @@ async function onCharChange(e) {
   state.inventory = await getInventory(state.charId)
   state.selectedRecipe = null
   state.brewResult     = null
-  // Push current inventory so the GM dashboard reflects existing stock immediately.
-  if (state.charId) reportInventory(state.charId, state.inventory)
+  if (state.charId) {
+    // Joining as this character: reconcile with the server copy (newer side
+    // wins), collect queued GM grants, then listen for live ones.
+    await syncInventoryFromServer(state.charId)
+    await fetchPendingGrants(state.charId)
+  }
+  connectGrantStream(state.charId)
   render()
 }
 
@@ -467,6 +585,65 @@ function gmItemRows(items) {
   ).join('')
 }
 
+// GM grant form: hand out herbs/potions to a character. POSTs to the grants
+// queue; the player's extension applies it live (or on next join).
+function gmGrantFormHtml() {
+  let charOpts = '<option value="">— Charakter —</option>'
+  state.characters.forEach(c => { charOpts += `<option value="${c.id}">${c.name}</option>` })
+
+  const rarityOrder = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary']
+  let itemOpts = '<option value="">— Item —</option>'
+  rarityOrder.forEach(rarity => {
+    const group = herbs.filter(h => h.rarity === rarity)
+    if (!group.length) return
+    itemOpts += `<optgroup label="🌿 ${rarity}">`
+    group.forEach(h => { itemOpts += `<option value="herb:${h.id}">${h.name}</option>` })
+    itemOpts += '</optgroup>'
+  })
+  itemOpts += '<optgroup label="⚗ Tränke">'
+  recipes.forEach(r => { itemOpts += `<option value="potion:${r.id}">${r.name}</option>` })
+  itemOpts += '</optgroup>'
+
+  return `
+    <div class="ae-gm-grant">
+      <div class="ae-section-title">🎁 Items verteilen</div>
+      <div class="ae-add-herb-row">
+        <select id="ae-gm-grant-char">${charOpts}</select>
+      </div>
+      <div class="ae-add-herb-row">
+        <select id="ae-gm-grant-item">${itemOpts}</select>
+        <input id="ae-gm-grant-amt" type="number" value="1" min="1" max="99">
+        <button id="ae-gm-grant-btn">🎁</button>
+      </div>
+      <div id="ae-gm-grant-msg" class="ae-gm-grant-msg"></div>
+    </div>`
+}
+
+async function gmSendGrant() {
+  const charSel = document.getElementById('ae-gm-grant-char')
+  const itemSel = document.getElementById('ae-gm-grant-item')
+  const amt     = parseInt(document.getElementById('ae-gm-grant-amt')?.value) || 1
+  const msgEl   = document.getElementById('ae-gm-grant-msg')
+  const charId  = charSel?.value
+  const [kind, itemId] = (itemSel?.value || '').split(':')
+  if (!charId || !itemId) return
+
+  const charName = charSel.options[charSel.selectedIndex]?.text || charId
+  const itemName = itemSel.options[itemSel.selectedIndex]?.text || itemId
+  try {
+    const res = await fetch(grantsUrl(charId), {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind, id: itemId, count: amt }),
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    if (msgEl) msgEl.textContent = `✓ ${amt}× ${itemName} → ${charName}`
+    itemSel.value = ''
+  } catch (_) {
+    if (msgEl) msgEl.textContent = '⚠ Backend nicht erreichbar'
+  }
+}
+
 function renderGm() {
   const el = document.getElementById('ae-panel-gm')
   if (!el) return
@@ -476,16 +653,23 @@ function renderGm() {
     return
   }
 
+  // Live SSE updates re-render this panel — keep the GM's form input alive.
+  const keep = {
+    char: document.getElementById('ae-gm-grant-char')?.value || '',
+    item: document.getElementById('ae-gm-grant-item')?.value || '',
+    amt:  document.getElementById('ae-gm-grant-amt')?.value || '1',
+    msg:  document.getElementById('ae-gm-grant-msg')?.textContent || '',
+  }
+
   const dashUrl = `${API_BASE}/gm?room=${encodeURIComponent(state.roomId)}`
   let html = `<div class="ae-gm-head">
       <div class="ae-gm-room">Room: <code>${state.roomId}</code></div>
       <a class="ae-gm-link" href="${dashUrl}" target="_blank" rel="noreferrer">Vollbild-Dashboard ↗</a>
-    </div>`
+    </div>
+    ${gmGrantFormHtml()}`
 
   if (!state.gmPlayers.length) {
     html += '<p class="ae-empty">Noch keine Spielerdaten gemeldet. Spieler müssen die Sidebar öffnen und ihren Charakter wählen.</p>'
-    el.innerHTML = html
-    return
   }
 
   state.gmPlayers.forEach(p => {
@@ -494,6 +678,7 @@ function renderGm() {
         <div class="ae-gm-player-head">
           <span class="ae-gm-char">${p.characterName}</span>
           ${p.playerName ? `<span class="ae-gm-pname">${p.playerName}</span>` : ''}
+          ${p.pendingGrants ? `<span class="ae-gm-pending" title="Vergeben, aber vom Spieler noch nicht abgeholt">🎁 ${p.pendingGrants} ausstehend</span>` : ''}
         </div>
         <div class="ae-section-title">Kräuter</div>
         ${gmItemRows(p.ingredients)}
@@ -503,6 +688,16 @@ function renderGm() {
   })
 
   el.innerHTML = html
+
+  const charSel = document.getElementById('ae-gm-grant-char')
+  const itemSel = document.getElementById('ae-gm-grant-item')
+  const amtEl   = document.getElementById('ae-gm-grant-amt')
+  const msgEl   = document.getElementById('ae-gm-grant-msg')
+  if (charSel) charSel.value = keep.char
+  if (itemSel) itemSel.value = keep.item
+  if (amtEl)   amtEl.value   = keep.amt
+  if (msgEl)   msgEl.textContent = keep.msg
+  document.getElementById('ae-gm-grant-btn')?.addEventListener('click', gmSendGrant)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

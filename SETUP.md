@@ -107,6 +107,12 @@ Sidebar alle Charaktere, Spieler nur die, die sie steuern.)
 Sobald du deinen Charakter auswählst oder dein Inventar änderst, wird es **automatisch**
 ans Dashboard gemeldet — du musst nichts extra tun.
 
+Beim Auswählen des Charakters gleicht die Extension außerdem mit dem Server ab: die
+**neuere** Seite gewinnt (Zeitstempel). Wechselst du also PC oder Browser, ist dein
+Inventar wieder da; hast du offline gebraut, wird dein lokaler Stand hochgeladen.
+**Items vom GM** (siehe unten) landen automatisch in deinem Inventar — live während
+des Spiels (kleine 🎁-Meldung unten rechts) oder beim nächsten Betreten.
+
 ---
 
 ## 5. GM: Live-Inventar sehen
@@ -117,6 +123,11 @@ Der GM hat zwei Wege (beide zeigen dieselben Live-Daten):
   Live-Übersicht aller Spieler (Kräuter + Tränke), aktualisiert sich automatisch.
 - **Vollbild:** `https://catto.at/api/v1/gm` im Browser öffnen. Die Campaign-ID wird
   automatisch erkannt bzw. ist über den „Vollbild-Dashboard ↗"-Link im GM-Tab vorausgefüllt.
+
+**Items verteilen:** Oben im GM-Tab („🎁 Items verteilen") Charakter + Kraut/Trank +
+Menge wählen. Ist der Spieler gerade im Spiel, bekommt er das Item **sofort** (mit
+🎁-Meldung); sonst wartet es auf dem Server und wird beim nächsten Betreten abgeholt —
+bis dahin steht beim Charakter „🎁 n ausstehend".
 
 Die Spieler werden über die **Roll20-Campaign-ID** gruppiert — kein manueller Raum-Code nötig.
 
