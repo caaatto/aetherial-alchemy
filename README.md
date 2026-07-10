@@ -52,6 +52,18 @@ A web-based alchemy crafting system for D&D 5e campaigns set in the Aetherial wo
 - **Custom Recipes**: Add your own homebrew potions
 - **Custom Ingredients**: Extend the herb database with your own creations
 
+##  Roll20 Browser Extension
+
+Bring the alchemy system directly into your [Roll20](https://roll20.net) game: an in-game
+sidebar with inventory, brewing rolls, D&D character-sheet sync, and a live party-inventory
+dashboard for the GM.
+
+- **Install:** download from the [latest `Roll20-Extension` release](https://github.com/caaatto/aetherial-alchemy/releases)
+  — `aetherial-roll20.crx` (Linux Chrome, auto-updates) or `aetherial-roll20.zip`
+  (Windows/Mac/Edge, "Load unpacked"; an update badge appears when a new version is out).
+- **Full setup guide (German):** [SETUP.md](SETUP.md) — backend, GM mod script, and
+  per-player installation.
+
 ##  Getting Started
 
 ### Prerequisites
@@ -316,7 +328,8 @@ Contributions are welcome! Feel free to:
 - [ ] Mobile app (React Native)
 - [ ] Print-friendly recipe cards
 - [ ] Character sheet integration
-- [ ] Roll20/Foundry VTT plugins
+- [x] Roll20 browser extension (see [Roll20 Browser Extension](#-roll20-browser-extension))
+- [ ] Foundry VTT plugin
 - [ ] AI-powered custom recipe generator
 
 ##  Support

@@ -49,32 +49,41 @@ nur ohne automatischen Bogen-Eintrag. **Das Live-Dashboard funktioniert auch ohn
 
 ## 3. Pro Person: Extension installieren (jeder Spieler + GM)
 
+Alle Downloads kommen von den **[GitHub Releases](https://github.com/caaatto/aetherial-alchemy/releases)**
+(neuestes `Roll20-Extension vX.Y`-Release nehmen). Ein Repo-Checkout ist **nicht** nötig.
+
 ### Variante A — Auto-Update (.crx), empfohlen für **Linux**
 
-So aktualisiert sich die Extension künftig **von selbst** (sobald ein neuer Build deployt ist):
+So aktualisiert sich die Extension künftig **von selbst**:
 
-1. [`https://catto.at/alchemy-ext/aetherial-roll20.crx`](https://catto.at/alchemy-ext/aetherial-roll20.crx) herunterladen.
+1. `aetherial-roll20.crx` vom neuesten Release herunterladen.
 2. `chrome://extensions` öffnen → **Entwicklermodus** (oben rechts) aktivieren.
 3. Die heruntergeladene **`.crx`-Datei** auf die Seite **ziehen** → „Hinzufügen".
 
-Chrome prüft dann regelmäßig `updates.xml` und zieht neue Versionen automatisch.
+Chrome prüft dann regelmäßig die `updates.xml` im Repo und zieht neue Versionen
+automatisch von GitHub.
 
 > **Windows/Mac:** Chrome **blockiert** selbst-gehostete Extensions — dort funktioniert
-> Variante A nicht. Diese Spieler nutzen Variante B (manuelles Neuladen bei Updates).
+> Variante A nicht. Diese Spieler nutzen Variante B.
 
-### Variante B — Entpackt laden (Fallback / Windows/Mac)
+### Variante B — Entpackt laden (Windows/Mac/Edge)
 
-1. Repo-Ordner holen/aktualisieren (`git clone …` bzw. `git pull`).
-2. `chrome://extensions` → **Entwicklermodus** an → **Entpackt laden** → Ordner `roll20-extension/`.
-3. Nach einem Update: Ordner aktualisieren + auf der Seite **⟳ (Neu laden)** klicken.
+1. `aetherial-roll20.zip` vom neuesten Release herunterladen und entpacken.
+2. `chrome://extensions` → **Entwicklermodus** an → **Entpackt laden** → den entpackten
+   Ordner `roll20-extension/` auswählen.
+3. **Bei Updates:** Die Extension meldet sich selbst — am Extension-Icon erscheint ein
+   rotes **„NEU"-Badge**, sobald eine neuere Version veröffentlicht ist. Icon anklicken
+   → das passende Release öffnet sich → neues Zip herunterladen, über den alten Ordner
+   entpacken, auf der Extensions-Seite **⟳ (Neu laden)** klicken.
 
 ### Microsoft Edge
 
 Edge ist Chromium-basiert — die Extension läuft dort identisch. Installation **wie Variante B**,
-nur unter **`edge://extensions`** → **Entwicklermodus** → **Entpackt laden** → Ordner `roll20-extension/`.
+nur unter **`edge://extensions`** → **Entwicklermodus** → **Entpackt laden**.
 
 - Das self-hosted **`.crx`-Auto-Update (Variante A) greift in Edge nicht** — Edge blockt extern
-  gehostete Extensions (wie Chrome unter Windows/Mac). Also: Updates manuell per ⟳.
+  gehostete Extensions (wie Chrome unter Windows/Mac). Das **„NEU"-Badge** (Variante B) funktioniert
+  aber auch in Edge.
 - Der Schalter *„Erweiterungen aus anderen Stores zulassen"* hilft hier **nicht** (der ist nur für
   den Chrome Web Store, nicht für self-hosted `.crx`).
 - Echtes Auto-Update in Edge gäbe es nur über den **Microsoft Edge Add-ons Store**.
@@ -158,14 +167,34 @@ Ohne diese Regel deployt das Frontend trotzdem; der Restart wird nur mit einer W
 übersprungen (das Backend bleibt dann bei der alten Version, bis manuell neu gestartet:
 `sudo systemctl restart alchemy-api`).
 
-### Extension-Auto-Update (self-hosted CRX)
+### Extension-Auto-Update (GitHub Releases)
 
-`deploy-alchemy.sh` ruft `tools/build-crx.mjs` auf — signiert die Extension neu und legt
-`.crx` + `updates.xml` nach `/home/amke/website/alchemy-ext/` (→ `catto.at/alchemy-ext/`).
+Update-Kette: installierte Extension → pollt `update_url`
+(`raw.githubusercontent.com/…/roll20-extension/updates.xml`, git-getrackt) → lädt die
+`.crx` vom GitHub-Release `ext-v<version>`. Signiert wird **nur auf diesem Server** —
+der Key verlässt die Maschine nie (kein CI-Secret nötig).
+
+**Neue Version veröffentlichen:**
+
+```bash
+npm run bump:ext 2.8    # setzt manifest.json-Version + regeneriert updates.xml
+git commit -am "Extension v2.8: …" && git push
+```
+
+Der Deploy erledigt den Rest automatisch:
+- `tools/build-crx.mjs` — signiert die `.crx` und legt sie zusätzlich als Mirror nach
+  `/home/amke/website/alchemy-ext/` (Alt-Installationen von dort migrieren so auf GitHub).
+- `tools/release-ext.mjs` — erstellt (idempotent, via `gh` CLI) das GitHub-Release
+  `ext-v<version>` mit `aetherial-roll20.crx`, `aetherial-roll20.zip` (für „Entpackt laden")
+  und `updates.xml`. Manuell nachholbar mit `npm run release:ext`.
+
+Installierte Clients: Linux-`.crx` updatet automatisch (Chrome pollt alle paar Stunden);
+entpackte Installationen (Win/Mac/Edge) bekommen das **„NEU"-Badge** am Icon
+(Versionscheck in `background.js` alle 6 h gegen das Manifest im Repo).
 
 - **Signatur-Key:** `/home/amke/.secrets/aetherial-ext.pem` — **außerhalb des Repos, niemals
   committen.** Bestimmt die Extension-ID (`ilaeeldbffbibdbpnjaolccjlnkgmhih`). Geht der Key
   verloren, ändert sich die ID und **alle Spieler müssen neu installieren** → unbedingt sichern.
-- **Neue Version veröffentlichen:** `version` in `roll20-extension/manifest.json` erhöhen,
-  committen, pushen. Der Deploy baut die neue `.crx` + `updates.xml`; installierte Clients
-  (Linux) updaten automatisch. Manuell baubar mit `npm run build:crx`.
+- **Wichtig:** `version` nie von Hand in `manifest.json` ändern — immer `npm run bump:ext`,
+  sonst zeigt `updates.xml` auf die falsche Release-URL (das Release-Script bricht dann
+  mit einer entsprechenden Fehlermeldung ab).

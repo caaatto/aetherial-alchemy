@@ -26,7 +26,10 @@ const extDir    = join(repoRoot, 'roll20-extension')
 
 const KEY     = process.env.CRX_KEY || '/home/amke/.secrets/aetherial-ext.pem'
 const OUT     = process.env.CRX_OUT || '/home/amke/website/alchemy-ext'
-const CRX_URL = 'https://catto.at/alchemy-ext/aetherial-roll20.crx'
+// Where the generated updates.xml claims the .crx lives. Default: catto.at
+// mirror (legacy installs still poll it). tools/release-ext.mjs overrides this
+// with the GitHub release asset URL.
+const CRX_URL = process.env.CRX_URL || 'https://catto.at/alchemy-ext/aetherial-roll20.crx'
 
 const manifest = JSON.parse(readFileSync(join(extDir, 'manifest.json'), 'utf8'))
 

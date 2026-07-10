@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "build:crx": "node tools/build-crx.mjs"
+    "build:crx": "node tools/build-crx.mjs",
+    "bump:ext": "node tools/bump-ext-version.mjs",
+    "release:ext": "node tools/release-ext.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",

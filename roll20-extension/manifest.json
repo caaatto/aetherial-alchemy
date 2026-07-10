@@ -1,47 +1,69 @@
 {
   "manifest_version": 3,
   "name": "Aetherial Alchemy — Roll20 Sync",
-  "version": "2.6",
+  "version": "2.7",
   "description": "Alchemy sidebar directly inside Roll20 — inventory, brewing, D&D sheet sync, and live party inventory for the GM.",
-
   "key": "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAnePD4NLGvSsilICxj9yf4Ves0Lrd7rxoVyw5VxmROOOKzpxd+49RwXFs+h9YqFCGqYJVfD4JsA7ufygqr3vm28PdR5wjAslTl6r+YEgqkglMGogyhhPsJrUjNU/hkh2Eqd/jdD8puTgnv3UjCwLOnwlcqoacOB1ovk9PLJHL6QPGI/JgRS1RTaqNloLKb1BOiGqgPPl7CXXp4xHAF9S0WQ7rF1Rnmy8XaXlc9mO69duiMKsNRC9HBU1fKF7W/We5aP6pBgugqjyA+H/8IwaQKBV0bu7hlAo+1TALweUVNXAUO19t3WYUR0hJhMw4Xp4iLzzcj84woVfvPq+EnnS65Vi3x6m9n8JekntnBF4sr08Vl0LirFMr+wt+7UjtIdpR03xyU92LEQwwA6GfK2+yk/h2tYCFB7x4iq3s8zK5XBXq0e14iPGfDOrFL/TfSL4dLZUlocITcBdpDlhj2QTjqG8o7Q3wTIvhFrr4nj30ECh6Zi6Gqwey3wrmiVIS/e6V1piMIVjnNz8KbQwyiE7UhNCwELeDbhVVHwBZRNIimgwwtfF2iGdOOEfTwy2nrn4lHZSIfKaX2UcHogzLz47m0RnYIv0aszcHh6pKq9qX4hRARLpJwUNaM1I6X8guQkEOvztPWdTQdujijVP0Y6XqKSVLJewUs42ugFBcfp7/E80CAwEAAQ==",
-  "update_url": "https://catto.at/alchemy-ext/updates.xml",
-
-  "permissions": ["storage", "tabs"],
+  "update_url": "https://raw.githubusercontent.com/caaatto/aetherial-alchemy/master/roll20-extension/updates.xml",
+  "permissions": [
+    "storage",
+    "tabs",
+    "alarms"
+  ],
   "host_permissions": [
     "http://localhost:5173/*",
     "https://catto.at/*",
     "https://app.roll20.net/*"
   ],
-
+  "action": {
+    "default_title": "Aetherial Alchemy — Roll20 Sync"
+  },
   "background": {
     "service_worker": "background.js"
   },
-
   "content_scripts": [
     {
-      "matches": ["http://localhost:5173/*", "https://catto.at/*"],
-      "js": ["alchemy-bridge.js"],
+      "matches": [
+        "http://localhost:5173/*",
+        "https://catto.at/*"
+      ],
+      "js": [
+        "alchemy-bridge.js"
+      ],
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://app.roll20.net/editor/*"],
-      "js": ["roll20-page.js"],
+      "matches": [
+        "https://app.roll20.net/editor/*"
+      ],
+      "js": [
+        "roll20-page.js"
+      ],
       "world": "MAIN",
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://app.roll20.net/editor/*"],
-      "js": ["roll20-bridge.js"],
-      "css": ["sidebar.css"],
+      "matches": [
+        "https://app.roll20.net/editor/*"
+      ],
+      "js": [
+        "roll20-bridge.js"
+      ],
+      "css": [
+        "sidebar.css"
+      ],
       "run_at": "document_idle"
     }
   ],
-
   "web_accessible_resources": [
     {
-      "resources": ["herbs.json", "recipes.json"],
-      "matches": ["https://app.roll20.net/*"],
+      "resources": [
+        "herbs.json",
+        "recipes.json"
+      ],
+      "matches": [
+        "https://app.roll20.net/*"
+      ],
       "_comment": "Offline fallback — primary source is https://catto.at/api/v1"
     }
   ]
