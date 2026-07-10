@@ -39,7 +39,7 @@ async function checkForUpdate() {
       await chrome.action.setBadgeBackgroundColor({ color: '#c0392b' })
       await chrome.action.setBadgeText({ text: 'NEU' })
       await chrome.action.setTitle({
-        title: `Update verfügbar: v${remote.version} (installiert: v${local}) — klicken zum Herunterladen`,
+        title: `Update verfügbar: v${remote.version} (installiert: v${local}), klicken zum Herunterladen`,
       })
     } else {
       await chrome.storage.local.remove('aeLatestReleaseUrl')

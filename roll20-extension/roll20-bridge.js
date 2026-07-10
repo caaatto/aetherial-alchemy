@@ -212,7 +212,7 @@ async function applyGrants(charId, grantList) {
     }
     await chrome.storage.local.set({ [seenKey]: [...seen].slice(-300) })
     await saveInventory(charId, inv)   // persists + pushes merged state to server
-    showToast(`🎁 Vom GM erhalten: ${received.join(', ')}`)
+    showToast(`Vom GM erhalten: ${received.join(', ')}`)
     renderInventory()
     renderBrew()
   }
@@ -596,24 +596,24 @@ function gmGrantFormHtml() {
   rarityOrder.forEach(rarity => {
     const group = herbs.filter(h => h.rarity === rarity)
     if (!group.length) return
-    itemOpts += `<optgroup label="🌿 ${rarity}">`
+    itemOpts += `<optgroup label="${rarity}">`
     group.forEach(h => { itemOpts += `<option value="herb:${h.id}">${h.name}</option>` })
     itemOpts += '</optgroup>'
   })
-  itemOpts += '<optgroup label="⚗ Tränke">'
+  itemOpts += '<optgroup label="Tränke">'
   recipes.forEach(r => { itemOpts += `<option value="potion:${r.id}">${r.name}</option>` })
   itemOpts += '</optgroup>'
 
   return `
     <div class="ae-gm-grant">
-      <div class="ae-section-title">🎁 Items verteilen</div>
+      <div class="ae-section-title">Items verteilen</div>
       <div class="ae-add-herb-row">
         <select id="ae-gm-grant-char">${charOpts}</select>
       </div>
       <div class="ae-add-herb-row">
         <select id="ae-gm-grant-item">${itemOpts}</select>
         <input id="ae-gm-grant-amt" type="number" value="1" min="1" max="99">
-        <button id="ae-gm-grant-btn">🎁</button>
+        <button id="ae-gm-grant-btn">Geben</button>
       </div>
       <div id="ae-gm-grant-msg" class="ae-gm-grant-msg"></div>
     </div>`
@@ -678,7 +678,7 @@ function renderGm() {
         <div class="ae-gm-player-head">
           <span class="ae-gm-char">${p.characterName}</span>
           ${p.playerName ? `<span class="ae-gm-pname">${p.playerName}</span>` : ''}
-          ${p.pendingGrants ? `<span class="ae-gm-pending" title="Vergeben, aber vom Spieler noch nicht abgeholt">🎁 ${p.pendingGrants} ausstehend</span>` : ''}
+          ${p.pendingGrants ? `<span class="ae-gm-pending" title="Vergeben, aber vom Spieler noch nicht abgeholt">${p.pendingGrants} ausstehend</span>` : ''}
         </div>
         <div class="ae-section-title">Kräuter</div>
         ${gmItemRows(p.ingredients)}

@@ -75,10 +75,10 @@ try {
   ])
 
   const notes = [
-    `Roll20-Extension **v${version}** — Installation siehe [SETUP.md](https://github.com/${REPO}/blob/master/SETUP.md#3-pro-person-extension-installieren-jeder-spieler--gm).`,
+    `Roll20-Extension **v${version}**. Installation siehe [SETUP.md](https://github.com/${REPO}/blob/master/SETUP.md#3-pro-person-extension-installieren-jeder-spieler--gm).`,
     '',
-    '- **Linux (Chrome/Chromium):** `aetherial-roll20.crx` laden und auf `chrome://extensions` ziehen — updatet sich danach automatisch.',
-    '- **Windows/Mac/Edge:** `aetherial-roll20.zip` entpacken und über „Entpackt laden" installieren — bei neuen Versionen erscheint ein „NEU"-Badge am Extension-Icon.',
+    '- **Linux (Chrome/Chromium):** `aetherial-roll20.crx` laden und auf `chrome://extensions` ziehen. Updatet sich danach automatisch.',
+    '- **Windows/Mac/Edge:** `aetherial-roll20.zip` entpacken und über „Entpackt laden" installieren. Bei neuen Versionen erscheint ein „NEU"-Badge am Extension-Icon.',
   ].join('\n')
 
   run('gh', [

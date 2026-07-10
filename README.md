@@ -58,11 +58,11 @@ Bring the alchemy system directly into your [Roll20](https://roll20.net) game: a
 sidebar with inventory, brewing rolls, D&D character-sheet sync, and a live party-inventory
 dashboard for the GM.
 
-- **Install:** download from the [latest `Roll20-Extension` release](https://github.com/caaatto/aetherial-alchemy/releases)
-  — `aetherial-roll20.crx` (Linux Chrome, auto-updates) or `aetherial-roll20.zip`
+- **Install:** download from the [latest `Roll20-Extension` release](https://github.com/caaatto/aetherial-alchemy/releases):
+  `aetherial-roll20.crx` (Linux Chrome, auto-updates) or `aetherial-roll20.zip`
   (Windows/Mac/Edge, "Load unpacked"; an update badge appears when a new version is out).
-- **Full setup guide (German):** [SETUP.md](SETUP.md) — backend, GM mod script, and
-  per-player installation.
+- **Full setup guide (German):** [SETUP.md](SETUP.md) covers the backend, the GM mod
+  script, and per-player installation.
 
 ##  Getting Started
 
