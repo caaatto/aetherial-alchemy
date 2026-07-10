@@ -75,10 +75,33 @@ try {
   ])
 
   const notes = [
-    `Roll20-Extension **v${version}**. Installation siehe [SETUP.md](https://github.com/${REPO}/blob/master/SETUP.md#3-pro-person-extension-installieren-jeder-spieler--gm).`,
+    `Roll20-Extension **v${version}**: Alchemie-Sidebar direkt in Roll20 (Inventar, Brauen, Bogen-Sync, GM-Dashboard).`,
     '',
-    '- **Linux (Chrome/Chromium):** `aetherial-roll20.crx` laden und auf `chrome://extensions` ziehen. Updatet sich danach automatisch.',
-    '- **Windows/Mac/Edge:** `aetherial-roll20.zip` entpacken und über „Entpackt laden" installieren. Bei neuen Versionen erscheint ein „NEU"-Badge am Extension-Icon.',
+    '## Installation',
+    '',
+    '### Linux (Chrome/Chromium): .crx mit Auto-Update',
+    '',
+    '1. `aetherial-roll20.crx` (unten bei Assets) herunterladen.',
+    '2. `chrome://extensions` öffnen und den **Entwicklermodus** (oben rechts) aktivieren.',
+    '3. Die `.crx`-Datei auf die Extensions-Seite **ziehen** und mit „Hinzufügen" bestätigen.',
+    '',
+    'Die Extension aktualisiert sich danach automatisch.',
+    '',
+    '### Windows / Mac / Edge: Zip entpackt laden',
+    '',
+    '1. `aetherial-roll20.zip` (unten bei Assets) herunterladen und entpacken.',
+    '2. `chrome://extensions` öffnen (Edge: `edge://extensions`) und den **Entwicklermodus** aktivieren.',
+    '3. **„Entpackt laden"** anklicken und den entpackten Ordner `roll20-extension/` auswählen.',
+    '',
+    'Bei neuen Versionen erscheint am Extension-Icon ein rotes **„NEU"-Badge**: Icon anklicken,',
+    'neues Zip herunterladen, über den alten Ordner entpacken, auf der Extensions-Seite **Neu laden**.',
+    '',
+    '## Danach',
+    '',
+    'Roll20-Spiel öffnen, rechts auf den **Alchemie-Button** (Kolben-Symbol) klicken und oben den',
+    'eigenen Charakter wählen (muss dir per „Controlled by" zugewiesen sein).',
+    '',
+    `Gruppen-Setup (Backend, GM-Dashboard, Mod-Script): [SETUP.md](https://github.com/${REPO}/blob/master/SETUP.md).`,
   ].join('\n')
 
   run('gh', [
