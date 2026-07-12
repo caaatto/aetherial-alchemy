@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './Roll20Sync.css'
 
-// postMessage tags — must match alchemy-bridge.js
+// postMessage tags - must match alchemy-bridge.js
 const FROM_EXT  = '__aetherial_from_ext'
 const FROM_PAGE = '__aetherial_from_page'
 
@@ -78,7 +78,7 @@ function Roll20Sync({ inventory, ingredients }) {
 
     window.addEventListener('message', handler)
 
-    // Ping — if the content script loaded before this component mounted it will respond
+    // Ping - if the content script loaded before this component mounted it will respond
     toExt('PING')
 
     return () => window.removeEventListener('message', handler)
@@ -172,7 +172,7 @@ function Roll20Sync({ inventory, ingredients }) {
         <div className="roll20-inventory">
           <h4>
             {selectedChar?.name}'s Roll20 Inventory
-            <span className="item-count"> ({roll20Items.length} items)</span>
+            <span className="item-count">({roll20Items.length} items)</span>
           </h4>
           {roll20Items.length === 0 ? (
             <p className="sync-empty">No equipment items found on this character's sheet.</p>
@@ -182,8 +182,8 @@ function Roll20Sync({ inventory, ingredients }) {
                 <li key={idx} className="roll20-item">
                   <div className="roll20-item-info">
                     <strong>{item.name}</strong>
-                    {item.quantity > 1 && <span className="roll20-qty"> ×{item.quantity}</span>}
-                    {item.description && <span className="roll20-desc"> — {item.description}</span>}
+                    {item.quantity > 1 && <span className="roll20-qty">×{item.quantity}</span>}
+                    {item.description && <span className="roll20-desc">- {item.description}</span>}
                   </div>
                 </li>
               ))}
@@ -216,7 +216,7 @@ function Roll20Sync({ inventory, ingredients }) {
                       disabled={status === 'pushing' || status === 'done'}
                       className={`push-btn ${status === 'done' ? 'push-done' : status === 'error' ? 'push-error' : ''}`}
                     >
-                      {status === 'pushing' ? '…' : status === 'done' ? '✓ Added' : status === 'error' ? '✗ Error' : '+ Add to Roll20'}
+                      {status === 'pushing' ? '…' : status === 'done' ? 'Added' : status === 'error' ? 'Error' : '+ Add to Roll20'}
                     </button>
                   </div>
                 )
@@ -241,7 +241,7 @@ function Roll20Sync({ inventory, ingredients }) {
                       disabled={status === 'pushing' || status === 'done'}
                       className={`push-btn ${status === 'done' ? 'push-done' : status === 'error' ? 'push-error' : ''}`}
                     >
-                      {status === 'pushing' ? '…' : status === 'done' ? '✓ Added' : status === 'error' ? '✗ Error' : '+ Add to Roll20'}
+                      {status === 'pushing' ? '…' : status === 'done' ? 'Added' : status === 'error' ? 'Error' : '+ Add to Roll20'}
                     </button>
                   </div>
                 )

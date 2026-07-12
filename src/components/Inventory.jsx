@@ -108,11 +108,11 @@ function Inventory({ inventory, setInventory }) {
   return (
     <div className="inventory">
       <div className="inventory-header">
-        <h2>📦 Inventar</h2>
+        <h2> Inventar</h2>
         <div className="header-actions">
-          <button onClick={handleExport}>💾 Export</button>
+          <button onClick={handleExport}> Export</button>
           <button onClick={() => fileInputRef.current?.click()}>
-            📂 Import
+             Import
           </button>
           <input
             ref={fileInputRef}
@@ -132,9 +132,9 @@ function Inventory({ inventory, setInventory }) {
         {/* Ingredients Section */}
         <div className="inventory-section">
           <div className="section-header">
-            <h3>🌿 Ingredients ({ingredientsList.length})</h3>
+            <h3> Ingredients ({ingredientsList.length})</h3>
             <button onClick={() => setShowAddIngredient(!showAddIngredient)}>
-              {showAddIngredient ? '❌ Cancel' : '➕ Add Ingredient'}
+              {showAddIngredient ? 'Cancel' : 'Add Ingredient'}
             </button>
           </div>
 
@@ -220,7 +220,7 @@ function Inventory({ inventory, setInventory }) {
         {/* Potions Section */}
         <div className="inventory-section">
           <div className="section-header">
-            <h3>⚗️ Potions ({potionsList.length})</h3>
+            <h3> Potions ({potionsList.length})</h3>
           </div>
 
           {potionsList.length === 0 ? (
@@ -241,7 +241,7 @@ function Inventory({ inventory, setInventory }) {
                   <p className="potion-effect">
                     <strong>Effect:</strong> {potion.effect}
                     {potion.effectMultiplier > 1 && (
-                      <span className="multiplier"> (×{potion.effectMultiplier})</span>
+                      <span className="multiplier">(×{potion.effectMultiplier})</span>
                     )}
                   </p>
 
@@ -251,10 +251,10 @@ function Inventory({ inventory, setInventory }) {
 
                   <div className="potion-actions">
                     <button onClick={() => handleUsePotion(potion.id)} className="use-button">
-                      🍶 Verwenden
+                       Verwenden
                     </button>
                     <button onClick={() => handleDeletePotion(potion.id)} className="btn-danger">
-                      🗑️
+                      
                     </button>
                   </div>
                 </div>

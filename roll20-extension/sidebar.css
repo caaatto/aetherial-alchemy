@@ -224,19 +224,15 @@
 }
 .ae-btn-sm:hover { background: #e94560; color: #fff; border-color: #e94560; }
 
-.ae-btn-push { background: #1a6b3c; border-color: #2d9e5f; color: #7effc0; margin-left: 4px; }
-.ae-btn-push:hover { background: #2d9e5f; color: #fff; border-color: #7effc0; }
-.ae-btn-push:disabled { opacity: 0.3; cursor: not-allowed; }
-
-/* Text buttons in inventory rows (Bogen, Trinken): auto width */
-.ae-btn-sm.ae-btn-push, .ae-btn-sm.ae-btn-drink {
+/* Roll/drink button on potion rows (green): posts the effect roll to chat */
+.ae-btn-sm.ae-btn-drink {
   width: auto;
   padding: 0 8px;
   font-size: 11px;
   font-weight: 600;
 }
-.ae-btn-drink { background: #4a2a5a; border-color: #7a4a9a; color: #d9b8f0; margin-left: 4px; }
-.ae-btn-drink:hover { background: #7a4a9a; color: #fff; border-color: #d9b8f0; }
+.ae-btn-drink { background: #1a6b3c; border-color: #2d9e5f; color: #7effc0; margin-left: 4px; }
+.ae-btn-drink:hover { background: #2d9e5f; color: #fff; border-color: #7effc0; }
 .ae-btn-drink:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .ae-empty {

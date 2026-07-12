@@ -286,7 +286,7 @@ export const herbsDatabase = {
     name: 'Silberspross',
     rarity: 'Uncommon',
     categories: ['Medicinal', 'Magical', 'Brewing/Crafting'],
-    description: 'A rare and mystical herb known for its shimmering silver leaves that glow faintly under moonlight. Blooms infrequently—only once every decade—making it exceptionally difficult to cultivate or harvest. Enhances mana regeneration, heals severe injuries and wounds, and restores depleted magical reserves. Grants prophetic visions when consumed during a full moon. Believed to be spiritually blessed by forest spirits.',
+    description: 'A rare and mystical herb known for its shimmering silver leaves that glow faintly under moonlight. Blooms infrequently-only once every decade-making it exceptionally difficult to cultivate or harvest. Enhances mana regeneration, heals severe injuries and wounds, and restores depleted magical reserves. Grants prophetic visions when consumed during a full moon. Believed to be spiritually blessed by forest spirits.',
     location: 'Grows exclusively in secluded, enchanted groves that are typically guarded by ancient magical protections',
     manaContent: 7,
     properties: {
@@ -355,7 +355,7 @@ export const herbsDatabase = {
     name: 'Morak/Moraqu',
     rarity: 'Rare',
     categories: ['Medicinal', 'Magical', 'Ritual/Cultural', 'Brewing/Crafting'],
-    description: 'A healing herb inhabiting moorland regions with extraordinary properties. The plant can absorb creature blood into its biological cycle, and when sufficient blood combines with the herb\'s spiritual essence, it manifests into a necromant—a ghost-like entity draped in tattered cloth. When harvested, Morak is a useful tool for stopping bleeding wounds through enzymes that create molecular bonds forming thin protective skin over wounds. Stronger than yarrow and requires no magical knowledge to use. Named after ancient mage Morak who protected forests.',
+    description: 'A healing herb inhabiting moorland regions with extraordinary properties. The plant can absorb creature blood into its biological cycle, and when sufficient blood combines with the herb\'s spiritual essence, it manifests into a necromant-a ghost-like entity draped in tattered cloth. When harvested, Morak is a useful tool for stopping bleeding wounds through enzymes that create molecular bonds forming thin protective skin over wounds. Stronger than yarrow and requires no magical knowledge to use. Named after ancient mage Morak who protected forests.',
     location: 'Moorland environments',
     manaContent: 18,
     properties: {
@@ -388,7 +388,7 @@ export const herbsDatabase = {
     name: 'Hexenholz',
     rarity: 'Rare',
     categories: ['Magical', 'Ritual/Cultural', 'Brewing/Crafting'],
-    description: 'A rare and highly sought-after herb renowned for its potent magical properties. It manifests as a gnarled, dark wood with vibrant green veins and produces a faint nocturnal glow. Enhances mana manipulation efficiency, improves spellcasting abilities, boosts alchemy effectiveness, and is valuable for transmutation and enchantment rituals. Attracts nocturnal predators and is dangerous to harvest—has claimed entire expeditions.',
+    description: 'A rare and highly sought-after herb renowned for its potent magical properties. It manifests as a gnarled, dark wood with vibrant green veins and produces a faint nocturnal glow. Enhances mana manipulation efficiency, improves spellcasting abilities, boosts alchemy effectiveness, and is valuable for transmutation and enchantment rituals. Attracts nocturnal predators and is dangerous to harvest-has claimed entire expeditions.',
     location: 'Ancient forests, typically in protected areas guarded by mystical creatures',
     manaContent: 22,
     properties: {
@@ -406,7 +406,7 @@ export const herbsDatabase = {
     name: 'Sternenfeuerkraut',
     rarity: 'Rare',
     categories: ['Medicinal', 'Magical', 'Brewing/Crafting'],
-    description: 'This rare herb displays distinctive features: ethereal blue light, resembling tiny stars scattered among its leaves combined with delicate and fiery red petals. The dual coloration—celestial glow with flame-like appearance—inspires its name. Glows faintly with blue light and blooms under full moon conditions, absorbing lunar energy. Provides wound mending, poison curing, vitality restoration, and miraculous healing feats. Discovered by ancient elven druids for sacred rituals. Improper use can lead to severe side effects.',
+    description: 'This rare herb displays distinctive features: ethereal blue light, resembling tiny stars scattered among its leaves combined with delicate and fiery red petals. The dual coloration-celestial glow with flame-like appearance-inspires its name. Glows faintly with blue light and blooms under full moon conditions, absorbing lunar energy. Provides wound mending, poison curing, vitality restoration, and miraculous healing feats. Discovered by ancient elven druids for sacred rituals. Improper use can lead to severe side effects.',
     location: 'Found exclusively in the most secluded and magical parts of ancient forests',
     manaContent: 25,
     properties: {
@@ -697,7 +697,7 @@ export const herbsDatabase = {
     name: 'Götterbalsam',
     rarity: 'Legendary',
     categories: ['Medicinal'],
-    description: 'An extraordinarily rare botanical phenomenon manifesting as a luminescent, silver-blue sap that crystallizes into delicate, frost-like patterns on the bark of ordinary trees. Unlike conventional plants, it appears exclusively at nexus points where reality has been altered by divine intervention or profound magical events—locations where miracles have occurred. Forms through convergence of Temporal Mana and Life magic rather than biological processes. Heals fatal wounds, restores lost limbs, cures incurable diseases, temporarily halts aging, and can anchor souls to bodies. Unparalleled potion potency. Appears during specific celestial alignments and remains viable for just hours before dissolving into pure mana. Cannot be artificially synthesized. Worth more than its weight in gold; a single vial could purchase a small kingdom. Requires tools carved from iron-untouched wood and incantations from Divine and Life magic schools. Powerful potions carry metaphysical costs including vivid visions of alternate timelines or temporary temporal sensitivity. Religious institutions claim ownership as evidence of divine favor.',
+    description: 'An extraordinarily rare botanical phenomenon manifesting as a luminescent, silver-blue sap that crystallizes into delicate, frost-like patterns on the bark of ordinary trees. Unlike conventional plants, it appears exclusively at nexus points where reality has been altered by divine intervention or profound magical events-locations where miracles have occurred. Forms through convergence of Temporal Mana and Life magic rather than biological processes. Heals fatal wounds, restores lost limbs, cures incurable diseases, temporarily halts aging, and can anchor souls to bodies. Unparalleled potion potency. Appears during specific celestial alignments and remains viable for just hours before dissolving into pure mana. Cannot be artificially synthesized. Worth more than its weight in gold; a single vial could purchase a small kingdom. Requires tools carved from iron-untouched wood and incantations from Divine and Life magic schools. Powerful potions carry metaphysical costs including vivid visions of alternate timelines or temporary temporal sensitivity. Religious institutions claim ownership as evidence of divine favor.',
     location: 'Exclusively at nexus points where reality has been altered by divine intervention or profound magical events; locations where miracles have occurred',
     manaContent: 180,
     properties: {

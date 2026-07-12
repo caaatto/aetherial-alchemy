@@ -92,7 +92,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
       <div className="library-header">
         <h2>Recipe Management</h2>
         <button onClick={() => setShowForm(!showForm)}>
-          {showForm ? '❌ Cancel' : '➕ New Recipe'}
+          {showForm ? 'Cancel' : 'New Recipe'}
         </button>
       </div>
 
@@ -171,12 +171,12 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
               <div className="ingredients-header">
                 <label>Required Ingredients</label>
                 <button type="button" onClick={addIngredient} disabled={ingredients.length === 0}>
-                  ➕ Add Ingredient
+                   Add Ingredient
                 </button>
               </div>
 
               {ingredients.length === 0 ? (
-                <p className="warning-text">⚠️ Create ingredients in the Ingredients Library first!</p>
+                <p className="warning-text">Create ingredients in the Ingredients Library first!</p>
               ) : (
                 <div className="required-ingredients">
                   {formData.requiredIngredients.map((reqIng, index) => (
@@ -201,7 +201,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
                       />
 
                       <button type="button" onClick={() => removeIngredient(index)} className="btn-danger">
-                        🗑️
+                        
                       </button>
                     </div>
                   ))}
@@ -215,7 +215,7 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
 
             <div className="form-actions">
               <button type="submit">
-                {editingId ? '💾 Save' : '➕ Create Recipe'}
+                {editingId ? 'Save' : 'Create Recipe'}
               </button>
               <button type="button" onClick={resetForm}>
                 Cancel
@@ -241,8 +241,8 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
               </div>
 
               <div className="recipe-meta">
-                <span>🎲 DC {recipe.dc}</span>
-                <span>⏱️ {recipe.brewTime}</span>
+                <span> DC {recipe.dc}</span>
+                <span>⏱ {recipe.brewTime}</span>
               </div>
 
               {recipe.effect && (
@@ -267,9 +267,9 @@ function RecipeManager({ ingredients, recipes, setRecipes }) {
               )}
 
               <div className="recipe-actions">
-                <button onClick={() => handleEdit(recipe)}>✏️ Edit</button>
+                <button onClick={() => handleEdit(recipe)}> Edit</button>
                 <button onClick={() => handleDelete(recipe.id)} className="btn-danger">
-                  🗑️ Delete
+                   Delete
                 </button>
               </div>
             </div>

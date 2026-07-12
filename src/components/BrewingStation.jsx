@@ -23,7 +23,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
       }
     }
     window.addEventListener('message', handler)
-    // Ping — handles the case where the content script loaded before this component mounted
+    // Ping - handles the case where the content script loaded before this component mounted
     window.postMessage({ __aetherial_from_page: true, type: 'PING' }, '*')
     return () => window.removeEventListener('message', handler)
   }, [])
@@ -99,9 +99,10 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
 
     const total = roll + modifier
     const dc = selectedRecipe.dc
-    const success = total >= dc
     const critSuccess = roll === 20
     const critFail = roll === 1
+    // Nat 1 always fails, nat 20 always succeeds, otherwise total vs DC
+    const success = (total >= dc || critSuccess) && !critFail
 
     let quality = 'Normal'
     let effectMultiplier = 1
@@ -123,7 +124,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
 
     // On success: Add potion
     let newPotions = [...inventory.potions]
-    if (success || critSuccess) {
+    if (success) {
       const potion = {
         id: Date.now().toString(),
         recipeId: selectedRecipe.id,
@@ -146,7 +147,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
       modifier,
       total,
       dc,
-      success: success || critSuccess,
+      success,
       quality,
       critSuccess,
       critFail
@@ -179,7 +180,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
 
   return (
     <div className="brewing-station">
-      <h2>🧪 Brewing Station</h2>
+      <h2> Brewing Station</h2>
 
       {!selectedRecipe ? (
         <div className="recipe-selection">
@@ -220,15 +221,15 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                       </span>
                     </div>
                     <div className="recipe-meta">
-                      <span>🎲 DC {recipe.dc}</span>
-                      <span>⏱️ {recipe.brewTime}</span>
+                      <span> DC {recipe.dc}</span>
+                      <span>⏱ {recipe.brewTime}</span>
                     </div>
                     {recipe.effect && (
                       <p className="recipe-effect"><strong>Effect:</strong> {recipe.effect}</p>
                     )}
                     {!check.available && (
                       <div className="missing-ingredients">
-                        <strong>⚠️ Missing Ingredients:</strong>
+                        <strong> Missing Ingredients:</strong>
                         <ul>
                           {check.missing.map((miss, idx) => (
                             <li key={idx}>
@@ -286,9 +287,9 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                       {diceRoll !== null && (
                         <p className="roll-announce">
                           {diceRoll === 20
-                            ? '⭐ Natural 20!'
+                            ? 'Natural 20!'
                             : diceRoll === 1
-                            ? '💀 Natural 1!'
+                            ? 'Natural 1!'
                             : `You rolled a ${diceRoll}!`}
                         </p>
                       )}
@@ -299,7 +300,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                       disabled={brewing || !availability?.available}
                       className="brew-action-button"
                     >
-                      🎲 Roll and Brew!
+                       Roll and Brew!
                     </button>
                   )}
                 </div>
@@ -307,7 +308,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
 
               {result && (
                 <div className={`brew-result ${result.success ? 'success' : 'failure'}`}>
-                  <h3>{result.success ? '✅ Success!' : '❌ Failed!'}</h3>
+                  <h3>{result.success ? 'Success!' : 'Failed!'}</h3>
 
                   <div className="result-d20-row">
                     <D20
@@ -327,7 +328,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                       </strong>
                     </div>
                     <div className="roll-detail">
-                      <span>➕ Bonus:</span>
+                      <span> Bonus:</span>
                       <strong>{result.modifier >= 0 ? '+' : ''}{result.modifier}</strong>
                     </div>
                     <div className="roll-detail total">
@@ -335,7 +336,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
                       <strong>{result.total}</strong>
                     </div>
                     <div className="roll-detail">
-                      <span>🎯 Required:</span>
+                      <span> Required:</span>
                       <strong>{result.dc}</strong>
                     </div>
                   </div>
@@ -356,7 +357,7 @@ function BrewingStation({ recipes, ingredients, inventory, setInventory }) {
 
                   <div className="roll20-sync-row">
                     {extensionActive
-                      ? <span className="roll20-badge active">📡 Sent to Roll20</span>
+                      ? <span className="roll20-badge active">Sent to Roll20</span>
                       : <span className="roll20-badge inactive">
                           <a href="https://github.com/caaatto/aetherial-alchemy/tree/master/roll20-extension" target="_blank" rel="noreferrer">
                             Install extension

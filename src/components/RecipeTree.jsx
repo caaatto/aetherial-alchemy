@@ -79,7 +79,7 @@ function RecipeTree({ inventory }) {
           className="search-input"
         />
         {search && (
-          <button className="search-clear" onClick={() => setSearch('')}>✕</button>
+          <button className="search-clear" onClick={() => setSearch('')}></button>
         )}
       </div>
 
@@ -136,7 +136,7 @@ function RecipeTree({ inventory }) {
                             )}
                           </div>
                           {craftable && (
-                            <div className="recipe-craftable" title="Craftable with current inventory">✓</div>
+                            <div className="recipe-craftable" title="Craftable with current inventory"></div>
                           )}
                         </div>
 
@@ -470,7 +470,7 @@ function RecipeTree({ inventory }) {
 
             {isCraftable(selectedRecipe) && (
               <div className="craftable-banner">
-                ✓ You have all ingredients to brew this!
+                 You have all ingredients to brew this!
               </div>
             )}
           </div>
@@ -482,7 +482,7 @@ function RecipeTree({ inventory }) {
         <div className="legend-grid">
           <div className="legend-item">
             <div className="recipe-node mini craftable available">
-              <div className="recipe-icon">✓</div>
+              <div className="recipe-icon"></div>
             </div>
             <span>Craftable (enough herbs in inventory)</span>
           </div>

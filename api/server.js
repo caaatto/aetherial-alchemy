@@ -25,7 +25,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const app = express()
 const PORT = Number(process.env.PORT) || 3004
 
-// Behind the catto.at nginx reverse proxy — trust one proxy hop so req.ip
+// Behind the catto.at nginx reverse proxy - trust one proxy hop so req.ip
 // reflects the real client for the rate limiter below.
 app.set('trust proxy', 1)
 
@@ -185,7 +185,7 @@ try {
   console.error('Could not load grants store:', e.message)
 }
 
-// Live SSE subscribers — runtime only, never persisted.
+// Live SSE subscribers - runtime only, never persisted.
 const subscribers = {}       // room feed (GM dashboard):    { [roomId]: Set(res) }
 const charSubscribers = {}   // per-character grants feed:   { [roomId]: { [charId]: Set(res) } }
 
@@ -263,7 +263,7 @@ function broadcast(roomId) {
 // unset, the check is a no-op so the existing extension keeps working.
 const API_TOKEN = process.env.ALCHEMY_API_TOKEN || ''
 function requireToken(req, res, next) {
-  if (!API_TOKEN) return next() // auth disabled — preserve current behavior
+  if (!API_TOKEN) return next() // auth disabled - preserve current behavior
   const provided = Buffer.from(String(req.get('X-Api-Token') || ''))
   const expected = Buffer.from(API_TOKEN)
   if (provided.length === expected.length && timingSafeEqual(provided, expected)) return next()
@@ -321,7 +321,7 @@ function sanitizeName(v, fallback = '') {
   return typeof v === 'string' ? v.slice(0, MAX_NAME_LEN) : fallback
 }
 
-// POST /api/v1/rooms/:roomId/inventory — upsert one player's inventory
+// POST /api/v1/rooms/:roomId/inventory - upsert one player's inventory
 app.post('/api/v1/rooms/:roomId/inventory', rateLimit, requireToken, (req, res) => {
   const { roomId } = req.params
   if (!roomId || roomId.length > MAX_ID_LEN) {
@@ -345,7 +345,7 @@ app.post('/api/v1/rooms/:roomId/inventory', rateLimit, requireToken, (req, res) 
     return res.status(429).json({ error: 'character limit reached for room' })
   }
 
-  // Client-side change timestamp (client clock) — used by the extension's
+  // Client-side change timestamp (client clock) - used by the extension's
   // join-time sync to decide whether the server copy or the local copy is
   // newer. Kept separate from updatedAt (server clock).
   const clientUpdatedAt = Number(body.updatedAt)
@@ -364,12 +364,12 @@ app.post('/api/v1/rooms/:roomId/inventory', rateLimit, requireToken, (req, res) 
   res.json({ ok: true })
 })
 
-// GET /api/v1/rooms/:roomId/inventory — full snapshot (one-shot)
+// GET /api/v1/rooms/:roomId/inventory - full snapshot (one-shot)
 app.get('/api/v1/rooms/:roomId/inventory', (req, res) => {
   res.json(roomSnapshot(req.params.roomId))
 })
 
-// GET /api/v1/rooms/:roomId/inventory/:characterId — one player's raw copy
+// GET /api/v1/rooms/:roomId/inventory/:characterId - one player's raw copy
 // (unenriched {id: count} maps + timestamps), used by the extension to sync
 // its local inventory when joining the game.
 app.get('/api/v1/rooms/:roomId/inventory/:characterId', (req, res) => {
@@ -387,7 +387,7 @@ app.get('/api/v1/rooms/:roomId/inventory/:characterId', (req, res) => {
   })
 })
 
-// DELETE /api/v1/rooms/:roomId/inventory/:characterId — remove a player
+// DELETE /api/v1/rooms/:roomId/inventory/:characterId - remove a player
 app.delete('/api/v1/rooms/:roomId/inventory/:characterId', rateLimit, requireToken, (req, res) => {
   const { roomId, characterId } = req.params
   if (rooms[roomId] && rooms[roomId][characterId]) {
@@ -398,7 +398,7 @@ app.delete('/api/v1/rooms/:roomId/inventory/:characterId', rateLimit, requireTok
   res.json({ ok: true })
 })
 
-// GET /api/v1/rooms/:roomId/stream — Server-Sent Events live feed
+// GET /api/v1/rooms/:roomId/stream - Server-Sent Events live feed
 app.get('/api/v1/rooms/:roomId/stream', (req, res) => {
   const { roomId } = req.params
   // Note: the Access-Control-Allow-Origin header is set by the cors() middleware
@@ -451,7 +451,7 @@ function notifyChar(roomId, characterId) {
   }
 }
 
-// POST /api/v1/rooms/:roomId/grants/:characterId — GM hands items to a player
+// POST /api/v1/rooms/:roomId/grants/:characterId - GM hands items to a player
 app.post('/api/v1/rooms/:roomId/grants/:characterId', rateLimit, requireToken, (req, res) => {
   const { roomId, characterId } = req.params
   if (!roomId || roomId.length > MAX_ID_LEN || !characterId || characterId.length > MAX_ID_LEN) {
@@ -486,13 +486,13 @@ app.post('/api/v1/rooms/:roomId/grants/:characterId', rateLimit, requireToken, (
   res.json({ ok: true, grantId: grant.grantId, pending: queue.length })
 })
 
-// GET /api/v1/rooms/:roomId/grants/:characterId — pending grants (join-time poll)
+// GET /api/v1/rooms/:roomId/grants/:characterId - pending grants (join-time poll)
 app.get('/api/v1/rooms/:roomId/grants/:characterId', (req, res) => {
   const { roomId, characterId } = req.params
   res.json({ grants: pendingGrants(roomId, characterId) })
 })
 
-// POST /api/v1/rooms/:roomId/grants/:characterId/ack — player confirms receipt
+// POST /api/v1/rooms/:roomId/grants/:characterId/ack - player confirms receipt
 app.post('/api/v1/rooms/:roomId/grants/:characterId/ack', rateLimit, requireToken, (req, res) => {
   const { roomId, characterId } = req.params
   const ids = Array.isArray(req.body?.grantIds) ? req.body.grantIds.filter(x => typeof x === 'string') : []
@@ -510,7 +510,7 @@ app.post('/api/v1/rooms/:roomId/grants/:characterId/ack', rateLimit, requireToke
   res.json({ ok: true, pending: grants[roomId]?.[characterId]?.length || 0 })
 })
 
-// GET /api/v1/rooms/:roomId/grants/:characterId/stream — per-character SSE feed
+// GET /api/v1/rooms/:roomId/grants/:characterId/stream - per-character SSE feed
 // so an in-game player receives GM grants instantly (initial payload + pushes).
 app.get('/api/v1/rooms/:roomId/grants/:characterId/stream', (req, res) => {
   const { roomId, characterId } = req.params
@@ -537,7 +537,7 @@ app.get('/api/v1/rooms/:roomId/grants/:characterId/stream', (req, res) => {
   })
 })
 
-// GET /api/v1/gm — standalone live dashboard page (served under the proxied /api path)
+// GET /api/v1/gm - standalone live dashboard page (served under the proxied /api path)
 app.get('/api/v1/gm', (req, res) => {
   res.sendFile(join(__dirname, 'gm-dashboard.html'))
 })
@@ -559,7 +559,7 @@ app.get('/api/v1', (req, res) => {
       'rooms/:roomId/inventory/:characterId': 'GET one player\'s raw inventory copy (extension sync)',
       'rooms/:roomId/stream': 'GET Server-Sent Events live feed (GM dashboard)',
       'rooms/:roomId/grants/:characterId': 'POST GM grant / GET pending / POST …/ack / GET …/stream',
-      gm: '/api/v1/gm — live GM dashboard'
+      gm: '/api/v1/gm - live GM dashboard'
     }
   })
 })

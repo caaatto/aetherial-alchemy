@@ -14,7 +14,7 @@ fixes.forEach(({ from, to }) => {
   const count = (content.match(regex) || []).length
   if (count > 0) {
     content = content.replace(regex, to)
-    console.log(`✅ Fixed: ${from} → ${to} (${count} instances)`)
+    console.log(` Fixed: ${from} → ${to} (${count} instances)`)
   }
 })
 
@@ -41,7 +41,7 @@ const nonExistent = []
 
 usedIcons.forEach(icon => {
   if (!existingImages.includes(icon)) {
-    console.log(`❌ Missing: ${icon}`)
+    console.log(` Missing: ${icon}`)
     nonExistent.push(icon)
   }
 })
@@ -50,5 +50,5 @@ if (nonExistent.length > 0) {
   console.log(`\nFound ${nonExistent.length} non-existent icons`)
   console.log('Please update potionIconMapper.js to use correct image names')
 } else {
-  console.log('✅ All icons exist!')
+  console.log(' All icons exist!')
 }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚗ Aetherial — GM Dashboard</title>
+  <title> Aetherial - GM Dashboard</title>
   <style>
     :root {
       --bg: #15131c; --panel: #1f1b2b; --panel2: #272135; --border: #3a3350;
@@ -55,7 +55,7 @@
 </head>
 <body>
   <header>
-    <h1>⚗ Aetherial — GM Dashboard</h1>
+    <h1> Aetherial - GM Dashboard</h1>
     <div class="status" id="status"><span class="dot"></span><span id="statusText">getrennt</span></div>
     <div class="room-bar">
       <input id="roomInput" placeholder="Room / Campaign-ID" />
@@ -88,7 +88,7 @@
     }
 
     function itemRows(items) {
-      if (!items || !items.length) return '<div class="empty">—</div>';
+      if (!items || !items.length) return '<div class="empty">-</div>';
       return items.map(i =>
         '<div class="row"><span>' + escapeHtml(i.name) + '</span><span class="qty">×' + i.count + '</span></div>'
       ).join('');
@@ -102,7 +102,7 @@
       if (!players || !players.length) {
         grid.innerHTML = '';
         none.style.display = 'block';
-        none.textContent = 'Verbunden — noch keine Spielerdaten gemeldet.';
+        none.textContent = 'Verbunden - noch keine Spielerdaten gemeldet.';
         return;
       }
       none.style.display = 'none';
@@ -129,7 +129,7 @@
       source.onmessage = (e) => {
         try { render(JSON.parse(e.data).players); } catch (_) {}
       };
-      source.onerror = () => setStatus(false, 'getrennt — reconnect…');
+      source.onerror = () => setStatus(false, 'getrennt - reconnect…');
     }
 
     document.getElementById('connectBtn').addEventListener('click', () => connect(roomInput.value.trim()));

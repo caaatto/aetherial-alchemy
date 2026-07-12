@@ -3,133 +3,133 @@ export const herbNodes = {
     {
       "id": "wolfsfarn",
       "name": "Wolfsfarn",
-      "icon": "🌿",
+      "icon": "",
       "x": 0,
       "category": "healing"
     },
     {
       "id": "eisenkraut",
       "name": "Eisenkraut",
-      "icon": "🌿",
+      "icon": "",
       "x": 2,
       "category": "combat"
     },
     {
       "id": "mondkresse",
       "name": "Mondkresse",
-      "icon": "🌿",
+      "icon": "",
       "x": 4,
       "category": "mana"
     },
     {
       "id": "mondfarn",
       "name": "Mondfarn",
-      "icon": "🌙",
+      "icon": "",
       "x": 6,
       "category": "mana"
     },
     {
       "id": "runenwurz",
       "name": "Runenwurz",
-      "icon": "✨",
+      "icon": "",
       "x": 8,
       "category": "special"
     },
     {
       "id": "feuerblute",
       "name": "Feuerblüte",
-      "icon": "🔥",
+      "icon": "",
       "x": 10,
       "category": "fire"
     },
     {
       "id": "eisblume",
       "name": "Eisblume",
-      "icon": "❄️",
+      "icon": "",
       "x": 12,
       "category": "cold"
     },
     {
       "id": "blitzgras",
       "name": "Blitzgras",
-      "icon": "⚡",
+      "icon": "",
       "x": 14,
       "category": "lightning"
     },
     {
       "id": "schattenkraut",
       "name": "Schattenkraut",
-      "icon": "🌑",
+      "icon": "",
       "x": 16,
       "category": "stealth"
     },
     {
       "id": "elfenhaar",
       "name": "Elfenhaar",
-      "icon": "✨",
+      "icon": "",
       "x": 18,
       "category": "utility"
     },
     {
       "id": "wolkenkraut",
       "name": "Wolkenkraut",
-      "icon": "☁️",
+      "icon": "",
       "x": 20,
       "category": "utility"
     },
     {
       "id": "sternenfeuerkraut",
       "name": "Sternenfeuerkraut",
-      "icon": "⭐",
+      "icon": "",
       "x": 22,
       "category": "mana"
     },
     {
       "id": "phonixfederkraut",
       "name": "Phönixfederkraut",
-      "icon": "🔥",
+      "icon": "",
       "x": 24,
       "category": "legendary"
     },
     {
       "id": "ewiggrün",
       "name": "Ewiggrün",
-      "icon": "🌿",
+      "icon": "",
       "x": 26,
       "category": "legendary"
     },
     {
       "id": "gotterbalsam",
       "name": "Götterbalsam",
-      "icon": "✨",
+      "icon": "",
       "x": 28,
       "category": "legendary"
     },
     {
       "id": "bergveilchen",
       "name": "Bergveilchen",
-      "icon": "🌸",
+      "icon": "",
       "x": 30,
       "category": "support"
     },
     {
       "id": "silberweide",
       "name": "Silberweide",
-      "icon": "🌿",
+      "icon": "",
       "x": 32,
       "category": "healing"
     },
     {
       "id": "alraunenkraut",
       "name": "Alraunenkraut",
-      "icon": "🌿",
+      "icon": "",
       "x": 34,
       "category": "healing"
     },
     {
       "id": "manndrache",
       "name": "Manndrache",
-      "icon": "🌿",
+      "icon": "",
       "x": 36,
       "category": "combat"
     }

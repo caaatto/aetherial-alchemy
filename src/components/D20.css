@@ -26,7 +26,7 @@
   100% { transform: rotate(0deg)   scale(1)    translateY(0);   }
 }
 
-/* ── Natural 20 — golden glow ── */
+/* ── Natural 20 - golden glow ── */
 .d20-container.crit .d20-svg {
   animation: d20-crit-pulse 1.4s ease-in-out infinite;
 }
@@ -42,7 +42,7 @@
   }
 }
 
-/* ── Natural 1 — red glow ── */
+/* ── Natural 1 - red glow ── */
 .d20-container.fail .d20-svg {
   filter: drop-shadow(0 0 10px #ff4444) drop-shadow(0 0 20px rgba(255, 68, 68, 0.5));
 }

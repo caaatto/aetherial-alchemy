@@ -6,8 +6,8 @@ const WIKI_BASE = 'https://aetherial.fandom.com/wiki/'
 // Liste aller Kräuter
 const herbs = getAllHerbs()
 
-console.log(`🌿 Fetching descriptions for ${herbs.length} herbs from Aetherial Wiki...`)
-console.log('⚠️  This is a dry run - showing what would be fetched\n')
+console.log(` Fetching descriptions for ${herbs.length} herbs from Aetherial Wiki...`)
+console.log('  This is a dry run - showing what would be fetched\n')
 
 // Generiere die URL für jedes Kraut
 const herbUrls = herbs.map(herb => {
@@ -44,7 +44,7 @@ const byRarity = {
 Object.entries(byRarity).forEach(([rarity, herbs]) => {
   if (herbs.length === 0) return
 
-  console.log(`\n📋 ${rarity} (${herbs.length} herbs)`)
+  console.log(`\n ${rarity} (${herbs.length} herbs)`)
   console.log('─'.repeat(80))
 
   herbs.forEach((herb, i) => {
@@ -55,7 +55,7 @@ Object.entries(byRarity).forEach(([rarity, herbs]) => {
   })
 })
 
-console.log('\n💡 To fetch descriptions, you can use the Claude Code WebFetch tool')
+console.log('\n To fetch descriptions, you can use the Claude Code WebFetch tool')
 console.log('   for each URL and update the herbsDatabase.js file.')
 
 // Speichere die URLs in eine JSON-Datei für spätere Verwendung
@@ -65,4 +65,4 @@ fs.writeFileSync(
   'utf8'
 )
 
-console.log('\n✅ Herb URLs saved to .herb-wiki-urls.json')
+console.log('\n Herb URLs saved to .herb-wiki-urls.json')

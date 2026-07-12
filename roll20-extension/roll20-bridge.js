@@ -874,7 +874,6 @@ function renderInventory() {
             <button class="ae-btn-sm" data-action="sub-herb" data-id="${id}">−</button>
             <span class="ae-herb-count">${count}</span>
             <button class="ae-btn-sm" data-action="add-herb" data-id="${id}">+</button>
-            <button class="ae-btn-sm ae-btn-push" data-action="push-herb" data-id="${id}" data-name="${herb?.name || id}" data-qty="${count}" ${!state.charId ? 'disabled title="Kein Charakter ausgewählt"' : 'title="Auf den Roll20-Bogen schreiben"'}>Bogen</button>
           </div>`
       })
     })
@@ -949,23 +948,6 @@ function renderInventory() {
         if (cur <= 1) delete inv.potions[id]
         else inv.potions[id] = cur - 1
         drinkPotion(id)
-      } else if (action === 'push-herb') {
-        const herbObj = herbs.find(h => h.id === id)
-        postPushCard({
-          name:        btn.dataset.name || id,
-          quantity:    parseInt(btn.dataset.qty) || 1,
-          description: herbObj ? herbObj.rarity + ' Herb - ' + (herbObj.description || '').slice(0, 100) : '',
-        }, state.charId)
-        return
-      } else if (action === 'push-potion') {
-        const recipe = recipes.find(r => r.id === id)
-        if (!recipe) return
-        postPushCard({
-          name:        recipe.name,
-          quantity:    parseInt(btn.dataset.qty) || 1,
-          description: recipe.effect || '',
-        }, state.charId)
-        return
       }
 
       await saveInventory(state.charId, inv)
@@ -1149,9 +1131,10 @@ async function doBrew() {
   const roll       = Math.floor(Math.random() * 20) + 1
   const total      = roll + state.modifier
   const dc         = recipe.dc
-  const success    = total >= dc
   const critSuccess = roll === 20
   const critFail   = roll === 1
+  // Nat 1 always fails, nat 20 always succeeds, otherwise total vs DC
+  const success    = (total >= dc || critSuccess) && !critFail
 
   let quality = 'Normal'
   if      (critFail)            quality = 'Critical Failure'
@@ -1182,7 +1165,7 @@ async function doBrew() {
 
   state.brewResult = {
     roll, modifier: state.modifier, total, dc,
-    success: success || critSuccess,
+    success,
     quality, critSuccess, critFail,
     multiplier, scaledEffect,
   }

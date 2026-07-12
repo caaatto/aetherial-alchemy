@@ -40,5 +40,5 @@ colorMappings.forEach(({ from, to }) => {
 // Write back to file
 fs.writeFileSync(filePath, content, 'utf8');
 
-console.log('✅ All potion icons updated to RED base images!');
+console.log(' All potion icons updated to RED base images!');
 console.log('Now all potions will use hue-rotate for consistent coloring.');
