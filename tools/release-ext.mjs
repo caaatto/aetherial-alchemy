@@ -4,7 +4,8 @@
 // copies can auto-update from GitHub (update_url → raw updates.xml → release
 // asset). Tag: ext-v<version>. Assets:
 //
-//   aetherial-roll20.crx  — signed package (Linux Chrome: drag & drop, auto-updates)
+//   aetherial-roll20.crx  — signed package; installed/updated by Chrome itself
+//                           via the ExtensionSettings policy (chrome-policy.json)
 //   aetherial-roll20.zip  — for "Load unpacked" (Windows/Mac/Edge)
 //   updates.xml           — copy of the update manifest (served live from
 //                           raw.githubusercontent.com/…/roll20-extension/updates.xml)
@@ -79,15 +80,19 @@ try {
     '',
     '## Installation',
     '',
-    '### Linux (Chrome/Chromium): .crx mit Auto-Update',
+    '### Linux (Chrome/Chromium): Auto-Update über Policy-Datei',
     '',
-    '1. `aetherial-roll20.crx` (unten bei Assets) herunterladen.',
-    '2. `chrome://extensions` öffnen und den **Entwicklermodus** (oben rechts) aktivieren.',
-    '3. Die `.crx`-Datei auf die Extensions-Seite **ziehen** und mit „Hinzufügen" bestätigen.',
+    'Chrome blockiert selbst-gehostete `.crx`-Dateien (auch per Drag-and-drop:',
+    '`CRX_REQUIRED_PROOF_MISSING`). Auto-Update geht über die mitgelieferte Policy-Datei:',
     '',
-    'Die Extension aktualisiert sich danach automatisch.',
+    '1. `aetherial-roll20.zip` (unten bei Assets) herunterladen und entpacken.',
+    '2. Im entpackten Ordner: `sudo install -D -m 644 chrome-policy.json /etc/opt/chrome/policies/managed/aetherial-alchemy.json`',
+    '   (Chromium: Zielordner `/etc/chromium/policies/managed/`).',
+    '3. Chrome komplett beenden und neu starten. Die Extension installiert und aktualisiert sich selbst.',
     '',
-    '### Windows / Mac / Edge: Zip entpackt laden',
+    'Eine vorher entpackt geladene Version zuerst unter `chrome://extensions` entfernen.',
+    '',
+    '### Windows / Mac / Edge (oder ohne Root-Rechte): Zip entpackt laden',
     '',
     '1. `aetherial-roll20.zip` (unten bei Assets) herunterladen und entpacken.',
     '2. `chrome://extensions` öffnen (Edge: `edge://extensions`) und den **Entwicklermodus** aktivieren.',

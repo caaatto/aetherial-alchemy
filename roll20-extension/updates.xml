@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
   <app appid='ilaeeldbffbibdbpnjaolccjlnkgmhih'>
-    <updatecheck codebase='https://github.com/caaatto/aetherial-alchemy/releases/download/ext-v2.12/aetherial-roll20.crx' version='2.12'/>
+    <updatecheck codebase='https://github.com/caaatto/aetherial-alchemy/releases/download/ext-v2.13/aetherial-roll20.crx' version='2.13'/>
   </app>
 </gupdate>

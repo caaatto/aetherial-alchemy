@@ -8,20 +8,32 @@ Alle Downloads: [GitHub Releases](https://github.com/caaatto/aetherial-alchemy/r
 
 ## Installation
 
-### Linux (Chrome/Chromium): .crx mit Auto-Update
+### Linux (Chrome/Chromium): Auto-Update über Policy-Datei
 
-1. `aetherial-roll20.crx` vom neuesten Release herunterladen.
-2. `chrome://extensions` öffnen und den **Entwicklermodus** (Schalter oben rechts) aktivieren.
-3. Die heruntergeladene `.crx`-Datei aus dem Download-Ordner **auf die Extensions-Seite
-   ziehen** und mit „Hinzufügen" bestätigen.
+Chrome blockiert selbst-gehostete `.crx`-Dateien inzwischen komplett, auch per
+Drag-and-drop (Fehler: `CRX_REQUIRED_PROOF_MISSING`). Echtes Auto-Update geht
+trotzdem, über eine Policy-Datei, die Chrome auf unsere Update-Quelle zeigt:
 
-Fertig. Die Extension prüft danach selbst auf neue Versionen und aktualisiert sich
-automatisch.
+1. `aetherial-roll20.zip` vom neuesten Release herunterladen und entpacken.
+   Darin liegt `chrome-policy.json`.
+2. Policy installieren (Terminal, im entpackten Ordner `roll20-extension/`):
 
-### Windows / Mac / Edge: Zip entpackt laden
+   ```
+   sudo install -D -m 644 chrome-policy.json /etc/opt/chrome/policies/managed/aetherial-alchemy.json
+   ```
 
-Chrome und Edge blockieren auf diesen Systemen selbst-gehostete `.crx`-Dateien,
-deshalb läuft die Installation über den entpackten Ordner:
+   Für Chromium statt Chrome: `/etc/chromium/policies/managed/` als Zielordner.
+3. Chrome **komplett beenden** und neu starten. Die Extension installiert sich
+   automatisch und aktualisiert sich künftig selbst. Kontrolle: `chrome://policy`
+   listet `ExtensionSettings`, `chrome://extensions` zeigt „Aetherial Alchemy".
+
+Wichtig: War vorher schon eine **entpackt geladene** Version installiert, diese
+zuerst unter `chrome://extensions` entfernen (gleiche Extension-ID, Chrome
+verweigert sonst die Zweitinstallation).
+
+### Windows / Mac / Edge (oder ohne Root-Rechte): Zip entpackt laden
+
+Ohne Policy-Datei läuft die Installation über den entpackten Ordner:
 
 1. `aetherial-roll20.zip` vom neuesten Release herunterladen und entpacken.
 2. `chrome://extensions` öffnen (in Edge: `edge://extensions`) und den

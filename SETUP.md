@@ -62,21 +62,29 @@ nur ohne automatischen Bogen-Eintrag. **Das Live-Dashboard funktioniert auch ohn
 Alle Downloads kommen von den **[GitHub Releases](https://github.com/caaatto/aetherial-alchemy/releases)**
 (neuestes `Roll20-Extension vX.Y`-Release nehmen). Ein Repo-Checkout ist **nicht** nötig.
 
-### Variante A: Auto-Update (.crx), empfohlen für **Linux**
+### Variante A: Auto-Update über Policy-Datei, empfohlen für **Linux**
 
-So aktualisiert sich die Extension künftig **von selbst**:
+Chrome blockiert selbst-gehostete `.crx`-Dateien inzwischen auf allen Systemen,
+auch per Drag-and-drop (Fehler: `CRX_REQUIRED_PROOF_MISSING`). Echtes Auto-Update
+geht über eine Policy-Datei (braucht einmalig Root-Rechte):
 
-1. `aetherial-roll20.crx` vom neuesten Release herunterladen.
-2. `chrome://extensions` öffnen → **Entwicklermodus** (oben rechts) aktivieren.
-3. Die heruntergeladene **`.crx`-Datei** auf die Seite **ziehen** → „Hinzufügen".
+1. `aetherial-roll20.zip` vom neuesten Release herunterladen und entpacken.
+   Darin liegt `chrome-policy.json`.
+2. Im entpackten Ordner `roll20-extension/`:
 
-Chrome prüft dann regelmäßig die `updates.xml` im Repo und zieht neue Versionen
-automatisch von GitHub.
+   ```
+   sudo install -D -m 644 chrome-policy.json /etc/opt/chrome/policies/managed/aetherial-alchemy.json
+   ```
 
-> **Windows/Mac:** Chrome **blockiert** selbst-gehostete Extensions, dort funktioniert
-> Variante A nicht. Diese Spieler nutzen Variante B.
+   Für Chromium: Zielordner `/etc/chromium/policies/managed/`.
+3. Chrome **komplett beenden** und neu starten. Die Extension installiert sich
+   automatisch, zieht künftige Versionen selbst von GitHub und braucht keinen
+   Entwicklermodus. Kontrolle: `chrome://policy` listet `ExtensionSettings`.
 
-### Variante B: Entpackt laden (Windows/Mac/Edge)
+War vorher schon eine entpackt geladene Version installiert: die zuerst unter
+`chrome://extensions` entfernen (gleiche Extension-ID).
+
+### Variante B: Entpackt laden (Windows/Mac/Edge, oder ohne Root-Rechte)
 
 1. `aetherial-roll20.zip` vom neuesten Release herunterladen und entpacken.
 2. `chrome://extensions` → **Entwicklermodus** an → **Entpackt laden** → den entpackten
@@ -91,9 +99,8 @@ automatisch von GitHub.
 Edge ist Chromium-basiert, die Extension läuft dort identisch. Installation **wie Variante B**,
 nur unter **`edge://extensions`** → **Entwicklermodus** → **Entpackt laden**.
 
-- Das self-hosted **`.crx`-Auto-Update (Variante A) greift in Edge nicht**: Edge blockt extern
-  gehostete Extensions (wie Chrome unter Windows/Mac). Das **„NEU"-Badge** (Variante B)
-  funktioniert aber auch in Edge.
+- Das **Policy-Auto-Update (Variante A) greift in Edge nicht**: Edge liest die
+  Chrome-Policy-Pfade nicht. Das **„NEU"-Badge** (Variante B) funktioniert aber auch in Edge.
 - Der Schalter *„Erweiterungen aus anderen Stores zulassen"* hilft hier **nicht** (der ist nur für
   den Chrome Web Store, nicht für self-hosted `.crx`).
 - Echtes Auto-Update in Edge gäbe es nur über den **Microsoft Edge Add-ons Store**.
