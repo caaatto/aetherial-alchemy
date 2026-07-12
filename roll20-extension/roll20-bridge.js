@@ -7,7 +7,8 @@
 ;(async () => {
 
 // ── Potion icon + herb colour helpers (mirrors website logic) ─────────────────
-const POTION_BASE = 'https://catto.at/assets/potions/'
+// The pixel-art PNGs ship inside the extension (assets/potions/, listed in
+// web_accessible_resources): no server dependency, no page-CSP surprises.
 
 const POTION_ICONS = {
   healing:             { 1:'Small Vial - RED - 0000.png',        2:'Round Potion - RED - 0000.png',        3:'Big Vial - RED - 0000.png',           4:'Large Bottle - RED - 0000.png',    5:'Glowing Potion - RED - 0000.png' },
@@ -38,7 +39,7 @@ function getPotionIcon(category, tier, name = '') {
   }
   const map  = POTION_ICONS[key] || FALLBACK_ICONS
   const file = map[tier] || map[1] || FALLBACK_ICONS[1]
-  return POTION_BASE + encodeURIComponent(file)
+  return chrome.runtime.getURL('assets/potions/' + encodeURIComponent(file))
 }
 
 const HERB_COLORS = {
