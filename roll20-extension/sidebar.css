@@ -78,6 +78,8 @@
   letter-spacing: 0.5px;
 }
 
+#ae-version { font-size: 10px; font-weight: normal; color: #666; letter-spacing: 0; }
+
 #ae-close {
   background: none;
   border: none;

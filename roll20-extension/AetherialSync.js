@@ -6,6 +6,19 @@
 
 const SCRIPT_NAME = 'AetherialSync'
 
+// Whisper helper: quote the target and strip Roll20's " (GM)" suffix,
+// otherwise whispers to multi-word display names are never delivered.
+function whisper(msg, text) {
+  const who = (msg.who || '').replace(/ \(GM\)\s*$/i, '')
+  sendChat(SCRIPT_NAME, '/w "' + who + '" ' + text)
+}
+
+// getSheetItem key candidates for a custom "Alchemy" skill on Beacon sheets.
+const BEACON_SKILL_KEYS = [
+  'alchemy_bonus', 'alchemy_mod', 'alchemy_total', 'alchemy', 'alchemy_check',
+  'custom_skill_alchemy', 'customskill_alchemy', 'skills.alchemy.total', 'skills.alchemy.bonus',
+]
+
 function getField(content, field) {
   const match = content.match(new RegExp('\{\{' + field + '=([^}]*)\}\}'))
   return match ? match[1].trim() : null
@@ -58,15 +71,15 @@ on('chat:message', async msg => {
   const name    = getField(msg.content, 'aetherial-name')
   const effect  = getField(msg.content, 'aetherial-effect')
   const quality = getField(msg.content, 'aetherial-quality')
-  if (!name) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Could not read potion name.'); return }
+  if (!name) { whisper(msg, 'Could not read potion name.'); return }
   const char = findCharacterForPlayer(msg.playerid)
-  if (!char) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' No character found. Make sure you control a character.'); return }
+  if (!char) { whisper(msg, 'No character found. Make sure you control a character.'); return }
   const desc = [effect, quality ? 'Quality: ' + quality : ''].filter(Boolean).join(' | ')
   try {
     const method = await writeEquipmentRow(char.id, makeRowId(), name, desc, 1)
-    sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Added ' + name + ' to ' + char.get('name') + '. [' + method + ']')
+    whisper(msg, 'Added ' + name + ' to ' + char.get('name') + '. [' + method + ']')
   } catch(e) {
-    sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Write failed: ' + e + '. On D&D 2024? Enable: Game Settings > API Server > Experimental')
+    whisper(msg, 'Write failed: ' + e + '. On D&D 2024? Enable: Game Settings > API Server > Experimental')
     log('[' + SCRIPT_NAME + '] sync err: ' + e)
   }
 })
@@ -77,14 +90,14 @@ on('chat:message', async msg => {
   const desc   = getField(msg.content, 'aetherial-push-desc') || ''
   const qty    = parseInt(getField(msg.content, 'aetherial-push-qty') || '1', 10)
   const charId = getField(msg.content, 'aetherial-push-charid')
-  if (!name || !charId) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Push failed: missing name or character ID.'); return }
+  if (!name || !charId) { whisper(msg, 'Push failed: missing name or character ID.'); return }
   const char = getObj('character', charId)
-  if (!char) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Character not found (ID: ' + charId + '). Select correct character in sidebar.'); return }
+  if (!char) { whisper(msg, 'Character not found (ID: ' + charId + '). Select correct character in sidebar.'); return }
   try {
     const method = await writeEquipmentRow(charId, makeRowId(), name, desc, qty)
-    sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Added ' + name + ' (x' + qty + ') to ' + char.get('name') + '. [' + method + ']')
+    whisper(msg, 'Added ' + name + ' (x' + qty + ') to ' + char.get('name') + '. [' + method + ']')
   } catch(e) {
-    sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Push failed: ' + e)
+    whisper(msg, 'Push failed: ' + e)
     log('[' + SCRIPT_NAME + '] push err: ' + e)
   }
 })
@@ -92,7 +105,7 @@ on('chat:message', async msg => {
 on('chat:message', msg => {
   if (!msg.content.startsWith('!brew-read')) return
   const char = findCharacterForPlayer(msg.playerid)
-  if (!char) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' No character found.'); return }
+  if (!char) { whisper(msg, 'No character found.'); return }
   const attrs = findObjs({ _type: 'attribute', _characterid: char.id })
   const rows = {}
   attrs.forEach(a => {
@@ -102,7 +115,7 @@ on('chat:message', msg => {
     rows[m[1]][m[2]] = a.get('current')
   })
   const items = Object.values(rows).filter(r => r.name).map(r => ({ name: r.name || '', description: r.description || '', quantity: r.quantity || 1 }))
-  sendChat(SCRIPT_NAME, '/w ' + msg.who + ' AETHERIAL-INVENTORY:' + JSON.stringify(items))
+  whisper(msg, 'AETHERIAL-INVENTORY:' + JSON.stringify(items))
 })
 
 // Read the character's custom "Alchemy" skill modifier from the sheet.
@@ -114,10 +127,11 @@ on('chat:message', msg => {
 //   3. Beacon sheets via getSheetItem with common key candidates
 // Answers with a whisper: AETHERIAL-SKILL:{"found":true,"modifier":N,"source":"..."}
 on('chat:message', async msg => {
-  if (!msg.content.startsWith('!brew-skill')) return
-  const argId = msg.content.split(/\s+/)[1]
+  const parts = msg.content.split(/\s+/)
+  if (parts[0] !== '!brew-skill') return
+  const argId = parts[1]
   const char = argId ? getObj('character', argId) : findCharacterForPlayer(msg.playerid)
-  const answer = payload => sendChat(SCRIPT_NAME, '/w ' + msg.who + ' AETHERIAL-SKILL:' + JSON.stringify(payload))
+  const answer = payload => whisper(msg, 'AETHERIAL-SKILL:' + JSON.stringify(payload))
   if (!char) { answer({ found: false, reason: 'no-character' }); return }
 
   const num = v => { const n = parseInt(v, 10); return isNaN(n) ? null : n }
@@ -157,8 +171,7 @@ on('chat:message', async msg => {
 
   // 3) Beacon sheet values (not mirrored as classic attributes)
   if (!found && typeof getSheetItem === 'function') {
-    const keys = ['alchemy_bonus', 'alchemy_mod', 'alchemy_total', 'alchemy']
-    for (const k of keys) {
+    for (const k of BEACON_SKILL_KEYS) {
       try {
         const n = num(await getSheetItem(char.id, k))
         if (n !== null) { found = { modifier: n, source: 'beacon:' + k }; break }
@@ -166,15 +179,53 @@ on('chat:message', async msg => {
     }
   }
 
-  answer(found ? { found: true, modifier: found.modifier, source: found.source } : { found: false })
+  answer(found
+    ? { found: true, modifier: found.modifier, source: found.source }
+    : { found: false, scanned: attrs.length, beacon: typeof getSheetItem === 'function' })
+})
+
+// Debug: whisper everything alchemy-related the script can see for a character.
+// Usage: !brew-skill-scan (own character; the GM can select a token first).
+on('chat:message', async msg => {
+  if (!msg.content.startsWith('!brew-skill-scan')) return
+  let char = null
+  if (msg.selected && msg.selected.length) {
+    const token = getObj('graphic', msg.selected[0]._id)
+    const cId = token && token.get('represents')
+    if (cId) char = getObj('character', cId)
+  }
+  if (!char) char = findCharacterForPlayer(msg.playerid)
+  if (!char) { whisper(msg, 'Scan: no character found (select a token or control one).'); return }
+
+  const attrs = findObjs({ _type: 'attribute', _characterid: char.id })
+  const hits = attrs.filter(a =>
+    /alchemy/i.test(a.get('name')) || /alchemy/i.test(String(a.get('current'))))
+  const sections = [...new Set(attrs
+    .map(a => (a.get('name').match(/^repeating_([^_]+)_/) || [])[1])
+    .filter(Boolean))]
+
+  let out = '<b>Skill-Scan: ' + char.get('name') + '</b><br>'
+  out += 'Classic attributes: ' + attrs.length + ' total, ' + hits.length + ' matching "alchemy"<br>'
+  hits.slice(0, 12).forEach(a => { out += '&bull; ' + a.get('name') + ' = ' + a.get('current') + '<br>' })
+  out += 'Repeating sections: ' + (sections.join(', ') || 'none') + '<br>'
+  out += 'Beacon getSheetItem: ' + (typeof getSheetItem === 'function') + '<br>'
+  if (typeof getSheetItem === 'function') {
+    for (const k of BEACON_SKILL_KEYS) {
+      try {
+        const v = await getSheetItem(char.id, k)
+        if (v !== undefined && v !== null && v !== '') out += 'beacon ' + k + ' = ' + v + '<br>'
+      } catch (_) {}
+    }
+  }
+  whisper(msg, '<br>' + out)
 })
 
 on('chat:message', msg => {
   if (!msg.content.startsWith('!brew-attrs')) return
-  if (!msg.selected || !msg.selected.length) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Select a token first.'); return }
+  if (!msg.selected || !msg.selected.length) { whisper(msg, 'Select a token first.'); return }
   const token = getObj('graphic', msg.selected[0]._id)
   const charId = token && token.get('represents')
-  if (!charId) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Token has no linked character.'); return }
+  if (!charId) { whisper(msg, 'Token has no linked character.'); return }
   const attrs = findObjs({ _type: 'attribute', _characterid: charId })
   // Group ALL repeating_ sections so we can see what section name the sheet uses
   const secs = {}
@@ -193,20 +244,20 @@ on('chat:message', msg => {
     const sampleFields = (Object.values(rows)[0] || []).slice(0, 6).join(', ')
     out += '<b>' + sec + '</b> (' + rowCount + ' rows) fields: ' + sampleFields + '<br>'
   })
-  sendChat(SCRIPT_NAME, '/w ' + msg.who + ' <br>' + out)
+  whisper(msg, '<br>' + out)
 })
 
 on('chat:message', async msg => {
   if (!msg.content.startsWith('!brew-test')) return
-  if (!msg.selected || !msg.selected.length) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Select a token first.'); return }
+  if (!msg.selected || !msg.selected.length) { whisper(msg, 'Select a token first.'); return }
   const token = getObj('graphic', msg.selected[0]._id)
   const charId = token && token.get('represents')
-  if (!charId) { sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Token has no linked character.'); return }
+  if (!charId) { whisper(msg, 'Token has no linked character.'); return }
   try {
     const method = await writeEquipmentRow(charId, makeRowId(), 'Aetherial Test Item', 'Test from AetherialSync', 1)
-    sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Test item added! Method: ' + method + '. Check the equipment tab.')
+    whisper(msg, 'Test item added! Method: ' + method + '. Check the equipment tab.')
   } catch(e) {
-    sendChat(SCRIPT_NAME, '/w ' + msg.who + ' Test failed: ' + e)
+    whisper(msg, 'Test failed: ' + e)
   }
 })
 

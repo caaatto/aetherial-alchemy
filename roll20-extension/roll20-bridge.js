@@ -301,7 +301,7 @@ function buildSidebar() {
   sidebar.innerHTML = `
     <div id="ae-header">
       <div id="ae-header-top">
-        <span id="ae-title">⚗ Aetherial Alchemy</span>
+        <span id="ae-title">⚗ Aetherial Alchemy <span id="ae-version">v${chrome.runtime.getManifest().version}</span></span>
         <button id="ae-close">✕</button>
       </div>
       <select id="ae-char-select">
@@ -465,8 +465,21 @@ function readSheetSkill(timeoutMs = 12000) {
   })
 }
 
+// Per-character modifier memory: survives reloads and sheet-read failures.
+function savedModKey(charId) { return `ae-skill-mod:${state.roomId}:${charId}` }
+function loadSavedModifier(charId) {
+  try {
+    const v = localStorage.getItem(savedModKey(charId))
+    return v === null ? null : (parseInt(v, 10) || 0)
+  } catch (_) { return null }
+}
+function saveModifier(charId, mod) {
+  try { localStorage.setItem(savedModKey(charId), String(mod)) } catch (_) {}
+}
+
 // Load the Alchemy skill from the Roll20 sheet into the brew modifier.
 // Runs on character select and via the "Vom Bogen" button; manual edits win afterwards.
+// If the sheet has no readable skill, fall back to the last saved bonus for this character.
 async function loadAlchemySkill() {
   if (!state.charId || state.skillLoading) return
   state.skillLoading = true
@@ -479,11 +492,19 @@ async function loadAlchemySkill() {
       state.modifier    = res.modifier
       state.skillSource = 'sheet'
       state.skillAttr   = res.source || ''
+      saveModifier(state.charId, state.modifier)
     } else {
       state.skillSource = 'missing'
     }
   } catch (_) {
     state.skillSource = 'error'
+  }
+  if (state.skillSource !== 'sheet') {
+    const saved = loadSavedModifier(state.charId)
+    if (saved !== null) {
+      state.modifier    = saved
+      state.skillSource = 'saved'
+    }
   }
   state.skillLoading = false
   renderBrew()
@@ -1005,9 +1026,10 @@ function renderBrewAction(el) {
   document.getElementById('ae-modifier').addEventListener('input', e => {
     state.modifier = parseInt(e.target.value) || 0
     state.skillSource = 'manual'
+    saveModifier(state.charId, state.modifier)
     // update the status line in place — a full re-render would steal input focus
     const st = document.getElementById('ae-skill-status')
-    if (st) { st.textContent = 'Bonus manuell gesetzt'; st.className = 'ae-skill-status' }
+    if (st) { st.textContent = 'Bonus manuell gesetzt (gespeichert)'; st.className = 'ae-skill-status' }
   })
   document.getElementById('ae-skill-load').addEventListener('click', loadAlchemySkill)
   document.getElementById('ae-brew-btn').addEventListener('click', doBrew)
@@ -1019,8 +1041,10 @@ function renderSkillStatus() {
     return '<div class="ae-skill-status" id="ae-skill-status">Lese Skill "Alchemy" vom Bogen...</div>'
   if (state.skillSource === 'sheet')
     return `<div class="ae-skill-status ae-skill-ok" id="ae-skill-status">Skill "Alchemy" vom Bogen übernommen (${state.skillAttr})</div>`
+  if (state.skillSource === 'saved')
+    return '<div class="ae-skill-status" id="ae-skill-status">Gespeicherter Bonus übernommen. Bogen lieferte keinen Skill "Alchemy" (Details: !brew-skill-scan im Chat).</div>'
   if (state.skillSource === 'missing')
-    return '<div class="ae-skill-status ae-skill-warn" id="ae-skill-status">Kein Skill "Alchemy" auf dem Bogen gefunden. Bonus manuell eintragen.</div>'
+    return '<div class="ae-skill-status ae-skill-warn" id="ae-skill-status">Kein Skill "Alchemy" auf dem Bogen gefunden (Details: !brew-skill-scan im Chat). Bonus manuell eintragen.</div>'
   if (state.skillSource === 'error')
     return '<div class="ae-skill-status ae-skill-warn" id="ae-skill-status">Bogen nicht erreichbar. Läuft das AetherialSync Mod-Script? Bonus manuell eintragen.</div>'
   if (state.skillSource === 'manual')
