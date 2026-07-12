@@ -4,15 +4,15 @@
 // copies can auto-update from GitHub (update_url → raw updates.xml → release
 // asset). Tag: ext-v<version>. Assets:
 //
-//   aetherial-roll20.crx  — signed package; installed/updated by Chrome itself
+//   aetherial-roll20.crx  - signed package; installed/updated by Chrome itself
 //                           via the ExtensionSettings policy (chrome-policy.json)
-//   aetherial-roll20.zip  — for "Load unpacked" (Windows/Mac/Edge)
-//   updates.xml           — copy of the update manifest (served live from
+//   aetherial-roll20.zip  - for "Load unpacked" (Windows/Mac/Edge)
+//   updates.xml           - copy of the update manifest (served live from
 //                           raw.githubusercontent.com/…/roll20-extension/updates.xml)
 //
 // Idempotent: exits quietly when the release already exists, so the deploy can
 // run it on every push. Needs an authenticated `gh` CLI plus the signing key
-// (CRX_KEY env or /home/amke/.secrets/aetherial-ext.pem — NEVER in the repo).
+// (CRX_KEY env or /home/amke/.secrets/aetherial-ext.pem - NEVER in the repo).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { readFileSync, existsSync, mkdtempSync, rmSync } from 'fs'
@@ -39,25 +39,25 @@ const crxUrl   = `https://github.com/${REPO}/releases/download/${tag}/aetherial-
 // Guard 1: updates.xml must point at THIS version (i.e. bump:ext was used).
 const updatesXml = readFileSync(join(extDir, 'updates.xml'), 'utf8')
 if (!updatesXml.includes(`version='${version}'`) || !updatesXml.includes(crxUrl)) {
-  console.error(`[release-ext] updates.xml does not match manifest v${version} — run: npm run bump:ext ${version}`)
+  console.error(`[release-ext] updates.xml does not match manifest v${version} - run: npm run bump:ext ${version}`)
   process.exit(1)
 }
 
 // Guard 2: release from committed state only (the zip is built via git archive).
 if (run('git', ['status', '--porcelain', 'roll20-extension']).trim()) {
-  console.error('[release-ext] roll20-extension/ has uncommitted changes — commit first')
+  console.error('[release-ext] roll20-extension/ has uncommitted changes - commit first')
   process.exit(1)
 }
 
 // Already released? Then there is nothing to do (deploy calls this every push).
 try {
   run('gh', ['release', 'view', tag, '--repo', REPO, '--json', 'tagName'])
-  console.log(`[release-ext] ${tag} already exists — nothing to do`)
+  console.log(`[release-ext] ${tag} already exists - nothing to do`)
   process.exit(0)
 } catch { /* not released yet */ }
 
 if (!existsSync(KEY)) {
-  console.error(`[release-ext] signing key not found at ${KEY} — cannot release`)
+  console.error(`[release-ext] signing key not found at ${KEY} - cannot release`)
   process.exit(1)
 }
 

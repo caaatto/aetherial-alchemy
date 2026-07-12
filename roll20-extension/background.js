@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// Aetherial Alchemy — Background Service Worker
+// Aetherial Alchemy - Background Service Worker
 // Routes messages between the Alchemy React app and the Roll20 tab.
 //
 // Message flow:
@@ -9,7 +9,7 @@
 
 // ── Update notifier ───────────────────────────────────────────────────────────
 // Chrome only auto-updates the .crx install (Linux, via update_url). Unpacked
-// installs (Windows/Mac/Edge) can't auto-update — for those we poll the version
+// installs (Windows/Mac/Edge) can't auto-update - for those we poll the version
 // in the repo and show a "NEU" badge on the toolbar icon; clicking it opens the
 // matching GitHub release to download.
 const REMOTE_MANIFEST_URL =
@@ -44,10 +44,10 @@ async function checkForUpdate() {
     } else {
       await chrome.storage.local.remove('aeLatestReleaseUrl')
       await chrome.action.setBadgeText({ text: '' })
-      await chrome.action.setTitle({ title: 'Aetherial Alchemy — Roll20 Sync' })
+      await chrome.action.setTitle({ title: 'Aetherial Alchemy - Roll20 Sync' })
     }
   } catch {
-    // Offline / GitHub unreachable — the next alarm tries again.
+    // Offline / GitHub unreachable - the next alarm tries again.
   }
 }
 

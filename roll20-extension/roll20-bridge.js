@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// Aetherial Alchemy — Roll20 Sidebar
+// Aetherial Alchemy - Roll20 Sidebar
 // Self-contained content script injected into app.roll20.net/editor/*
-// No tab messaging needed — everything runs on the Roll20 page directly.
+// No tab messaging needed - everything runs on the Roll20 page directly.
 // ═══════════════════════════════════════════════════════════════════════════
 
 ;(async () => {
 
 // ── Potion icon + herb colour helpers (mirrors website logic) ─────────────────
-const POTION_BASE = 'https://catto.at/alchemy/assets/potions/'
+const POTION_BASE = 'https://catto.at/assets/potions/'
 
 const POTION_ICONS = {
   healing:             { 1:'Small Vial - RED - 0000.png',        2:'Round Potion - RED - 0000.png',        3:'Big Vial - RED - 0000.png',           4:'Large Bottle - RED - 0000.png',    5:'Glowing Potion - RED - 0000.png' },
@@ -146,13 +146,13 @@ function reportInventory(charId, inv) {
       potions:       inv.potions || {},
       updatedAt:     inv.updatedAt || 0,
     }),
-  }).catch(() => { /* offline / backend down — ignore */ })
+  }).catch(() => { /* offline / backend down - ignore */ })
 }
 
 // ── Server sync: join-time reconciliation + live GM grants ────────────────────
 // The server keeps a copy of each inventory (see reportInventory) plus a queue
 // of GM grants. On character select we reconcile local vs server copy by client
-// timestamp (newer wins — covers "new device" and "played offline"), then apply
+// timestamp (newer wins - covers "new device" and "played offline"), then apply
 // pending grants. While in the game, a per-character SSE stream delivers new
 // grants instantly. Grants are acked after applying; already-seen grant ids are
 // remembered locally so a failed ack can't duplicate items.
@@ -171,13 +171,13 @@ async function syncInventoryFromServer(charId) {
     if (!res.ok) return
     const server = await res.json()
     if (!server.exists) {
-      reportInventory(charId, state.inventory)   // first contact — seed the server copy
+      reportInventory(charId, state.inventory)   // first contact - seed the server copy
       return
     }
     const localTs  = state.inventory.updatedAt || 0
     const serverTs = server.clientUpdatedAt || 0
     if (serverTs > localTs) {
-      // Server copy is newer (e.g. played on another device) — take it.
+      // Server copy is newer (e.g. played on another device) - take it.
       state.inventory = {
         ingredients: server.ingredients || {},
         potions:     server.potions || {},
@@ -185,10 +185,10 @@ async function syncInventoryFromServer(charId) {
       }
       await chrome.storage.local.set({ [`ae_inv_${charId}`]: state.inventory })
     } else {
-      // Local is same or newer (e.g. brewed while backend was down) — push it.
+      // Local is same or newer (e.g. brewed while backend was down) - push it.
       reportInventory(charId, state.inventory)
     }
-  } catch (_) { /* offline / backend down — keep local */ }
+  } catch (_) { /* offline / backend down - keep local */ }
 }
 
 // Apply GM grants to the local inventory, then ack them. Fresh grants only:
@@ -221,7 +221,7 @@ async function applyGrants(charId, grantList) {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ grantIds: grantList.map(g => g.grantId) }),
-  }).catch(() => { /* ack retried on next delivery — seen-list prevents doubles */ })
+  }).catch(() => { /* ack retried on next delivery - seen-list prevents doubles */ })
 }
 
 async function fetchPendingGrants(charId) {
@@ -231,7 +231,7 @@ async function fetchPendingGrants(charId) {
     if (!res.ok) return
     const data = await res.json()
     await applyGrants(charId, data.grants || [])
-  } catch (_) { /* offline — grants stay queued on the server */ }
+  } catch (_) { /* offline - grants stay queued on the server */ }
 }
 
 // Live delivery while playing: per-character SSE feed (auto-reconnects).
@@ -274,7 +274,7 @@ let state = {
   brewResult: null,
   herbSearch: '',
   // GM live dashboard
-  roomId:     '',              // Roll20 campaign id — the "room" key
+  roomId:     '',              // Roll20 campaign id - the "room" key
   playerName: '',
   isGm:       false,
   gmPlayers:  [],              // live snapshot from backend (other players' inventories)
@@ -285,12 +285,35 @@ let state = {
   importSummary: null,         // { total, herbs:[], potions:[], unmatched:[], error? }
 }
 
+// ── Chat cleanup: hide machine-to-machine protocol whispers ──────────────────
+// The Mod Script answers !brew-skill / !brew-read with AETHERIAL-* whispers.
+// They are parsed from the DOM (hiding keeps textContent readable), but nobody
+// needs to SEE them: hide them for everyone running the extension.
+const PROTOCOL_RE = /AETHERIAL-(SKILL|INVENTORY):/
+function hideProtocolMessages(root) {
+  root.querySelectorAll?.('.message')?.forEach(m => {
+    if (PROTOCOL_RE.test(m.textContent || '')) m.style.display = 'none'
+  })
+  if (root.classList?.contains('message') && PROTOCOL_RE.test(root.textContent || '')) {
+    root.style.display = 'none'
+  }
+}
+function watchChatForProtocolMessages() {
+  const chatEl = document.querySelector('#textchat')
+  if (!chatEl) { setTimeout(watchChatForProtocolMessages, 2000); return }
+  hideProtocolMessages(chatEl)
+  new MutationObserver(muts => {
+    muts.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1) hideProtocolMessages(n) }))
+  }).observe(chatEl, { childList: true, subtree: true })
+}
+watchChatForProtocolMessages()
+
 // ── Build DOM ─────────────────────────────────────────────────────────────────
 function buildSidebar() {
   // Toggle button
   const toggle = document.createElement('div')
   toggle.id = 'ae-toggle'
-  toggle.textContent = '⚗'
+  toggle.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3h4M10 3v6l-5.2 9.2A1.8 1.8 0 0 0 6.4 21h11.2a1.8 1.8 0 0 0 1.6-2.8L14 9V3"/><path d="M7.5 15.5h9"/></svg>'
   toggle.title = 'Aetherial Alchemy'
   toggle.addEventListener('click', toggleSidebar)
   document.body.appendChild(toggle)
@@ -301,11 +324,11 @@ function buildSidebar() {
   sidebar.innerHTML = `
     <div id="ae-header">
       <div id="ae-header-top">
-        <span id="ae-title">⚗ Aetherial Alchemy <span id="ae-version">v${chrome.runtime.getManifest().version}</span></span>
-        <button id="ae-close">✕</button>
+        <span id="ae-title">Aetherial Alchemy <span id="ae-version">v${chrome.runtime.getManifest().version}</span></span>
+        <button id="ae-close">×</button>
       </div>
       <select id="ae-char-select">
-        <option value="">— Select Character —</option>
+        <option value="">Charakter wählen</option>
       </select>
     </div>
 
@@ -365,7 +388,7 @@ async function onCharChange(e) {
 }
 
 // ── Read characters from Roll20 (via roll20-page.js in MAIN world) ────────────
-// window.Campaign lives in the page's JS context — not visible from here.
+// window.Campaign lives in the page's JS context - not visible from here.
 // roll20-page.js reads it and posts it back via postMessage.
 function requestCharacters() {
   window.postMessage({ __ae_to_page: true, type: 'GET_CHARACTERS' }, '*')
@@ -387,7 +410,7 @@ window.addEventListener('message', (e) => {
 function populateCharSelect() {
   const sel = document.getElementById('ae-char-select')
   if (!sel) return
-  sel.innerHTML = '<option value="">— Select Character —</option>'
+  sel.innerHTML = '<option value="">Charakter wählen</option>'
   state.characters.forEach(c => {
     const opt = document.createElement('option')
     opt.value = c.id
@@ -480,8 +503,19 @@ function saveModifier(charId, mod) {
 // Load the Alchemy skill from the Roll20 sheet into the brew modifier.
 // Runs on character select and via the "Vom Bogen" button; manual edits win afterwards.
 // If the sheet has no readable skill, fall back to the last saved bonus for this character.
-async function loadAlchemySkill() {
+// Successful reads are cached per character for the session so switching
+// characters back and forth does not re-query the sheet every time.
+const skillCache = {}   // charId -> { modifier, source }
+async function loadAlchemySkill(force = false) {
   if (!state.charId || state.skillLoading) return
+  const cached = skillCache[state.charId]
+  if (!force && cached) {
+    state.modifier    = cached.modifier
+    state.skillSource = 'sheet'
+    state.skillAttr   = cached.source
+    renderBrew()
+    return
+  }
   state.skillLoading = true
   state.skillSource  = null
   state.skillAttr    = ''
@@ -492,6 +526,7 @@ async function loadAlchemySkill() {
       state.modifier    = res.modifier
       state.skillSource = 'sheet'
       state.skillAttr   = res.source || ''
+      skillCache[state.charId] = { modifier: res.modifier, source: state.skillAttr }
       saveModifier(state.charId, state.modifier)
     } else {
       state.skillSource = 'missing'
@@ -570,15 +605,15 @@ function renderImportSummary() {
   if (!s) return ''
   if (s.error) {
     const hint = s.error === 'timeout'
-      ? 'Roll20 hat nicht geantwortet — läuft das AetherialSync Mod-Script?'
+      ? 'Roll20 hat nicht geantwortet. Läuft das AetherialSync Mod-Script?'
       : s.error === 'chat-not-found' ? 'Chat nicht gefunden.' : s.error
-    return `<div class="ae-import-summary ae-import-err">⚠ ${hint}</div>`
+    return `<div class="ae-import-summary ae-import-err">${hint}</div>`
   }
   if (!s.total) return '<div class="ae-import-summary">Keine Items auf dem Bogen gefunden.</div>'
   let h = '<div class="ae-import-summary">'
-  h += `<div class="ae-import-ok">✓ Importiert: ${s.herbs.length} Kräuter, ${s.potions.length} Tränke</div>`
-  if (s.herbs.length)   h += `<div class="ae-import-list">🌿 ${s.herbs.join(', ')}</div>`
-  if (s.potions.length) h += `<div class="ae-import-list">⚗ ${s.potions.join(', ')}</div>`
+  h += `<div class="ae-import-ok">Importiert: ${s.herbs.length} Kräuter, ${s.potions.length} Tränke</div>`
+  if (s.herbs.length)   h += `<div class="ae-import-list">Kräuter: ${s.herbs.join(', ')}</div>`
+  if (s.potions.length) h += `<div class="ae-import-list">Tränke: ${s.potions.join(', ')}</div>`
   if (s.unmatched.length) h += `<div class="ae-import-unmatched">Nicht zugeordnet (${s.unmatched.length}): ${s.unmatched.join(', ')}</div>`
   h += '</div>'
   return h
@@ -627,7 +662,7 @@ async function importFromRoll20() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GM live dashboard (only for the GM) — subscribes to the backend SSE feed
+// GM live dashboard (only for the GM) - subscribes to the backend SSE feed
 // and shows every player's herbs + potions, updating live.
 // ─────────────────────────────────────────────────────────────────────────────
 function updateGmTab() {
@@ -647,13 +682,13 @@ function connectGmStream() {
         renderGm()
       } catch (_) { /* ignore malformed frame */ }
     }
-    // EventSource auto-reconnects on error — nothing to do.
+    // EventSource auto-reconnects on error - nothing to do.
     state.gmSource = src
   } catch (_) { /* EventSource unavailable */ }
 }
 
 function gmItemRows(items) {
-  if (!items || !items.length) return '<div class="ae-empty" style="margin:2px 0">—</div>'
+  if (!items || !items.length) return '<div class="ae-empty" style="margin:2px 0">keine</div>'
   return items.map(i =>
     `<div class="ae-herb-row"><span class="ae-herb-name">${i.name}</span><span class="ae-herb-count">×${i.count}</span></div>`
   ).join('')
@@ -662,11 +697,11 @@ function gmItemRows(items) {
 // GM grant form: hand out herbs/potions to a character. POSTs to the grants
 // queue; the player's extension applies it live (or on next join).
 function gmGrantFormHtml() {
-  let charOpts = '<option value="">— Charakter —</option>'
+  let charOpts = '<option value="">Charakter</option>'
   state.characters.forEach(c => { charOpts += `<option value="${c.id}">${c.name}</option>` })
 
   const rarityOrder = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary']
-  let itemOpts = '<option value="">— Item —</option>'
+  let itemOpts = '<option value="">Item</option>'
   rarityOrder.forEach(rarity => {
     const group = herbs.filter(h => h.rarity === rarity)
     if (!group.length) return
@@ -711,10 +746,10 @@ async function gmSendGrant() {
       body: JSON.stringify({ kind, id: itemId, count: amt }),
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    if (msgEl) msgEl.textContent = `✓ ${amt}× ${itemName} → ${charName}`
+    if (msgEl) msgEl.textContent = `${amt}× ${itemName} an ${charName} geschickt`
     itemSel.value = ''
   } catch (_) {
-    if (msgEl) msgEl.textContent = '⚠ Backend nicht erreichbar'
+    if (msgEl) msgEl.textContent = 'Backend nicht erreichbar'
   }
 }
 
@@ -727,7 +762,7 @@ function renderGm() {
     return
   }
 
-  // Live SSE updates re-render this panel — keep the GM's form input alive.
+  // Live SSE updates re-render this panel - keep the GM's form input alive.
   const keep = {
     char: document.getElementById('ae-gm-grant-char')?.value || '',
     item: document.getElementById('ae-gm-grant-item')?.value || '',
@@ -738,7 +773,7 @@ function renderGm() {
   const dashUrl = `${API_BASE}/gm?room=${encodeURIComponent(state.roomId)}`
   let html = `<div class="ae-gm-head">
       <div class="ae-gm-room">Room: <code>${state.roomId}</code></div>
-      <a class="ae-gm-link" href="${dashUrl}" target="_blank" rel="noreferrer">Vollbild-Dashboard ↗</a>
+      <a class="ae-gm-link" href="${dashUrl}" target="_blank" rel="noreferrer">Vollbild-Dashboard</a>
     </div>
     ${gmGrantFormHtml()}`
 
@@ -793,7 +828,7 @@ function renderInventory() {
   const rarityOrder = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary']
 
   // Build herb options grouped by rarity
-  let optHtml = '<option value="">— Kraut wählen —</option>'
+  let optHtml = '<option value="">Kraut wählen</option>'
   rarityOrder.forEach(rarity => {
     const group = herbs.filter(h => h.rarity === rarity)
     if (!group.length) return
@@ -810,7 +845,7 @@ function renderInventory() {
         <button id="ae-herb-add-btn">+</button>
       </div>
       <button id="ae-import-btn" class="ae-btn-import" ${state.importing || !state.charId ? 'disabled' : ''}>
-        ${state.importing ? '⏳ Lese Bogen…' : '⬇ Aus Roll20-Bogen importieren'}
+        ${state.importing ? 'Lese Bogen...' : 'Aus Roll20-Bogen importieren'}
       </button>
     </div>
     ${renderImportSummary()}`
@@ -838,7 +873,7 @@ function renderInventory() {
             <button class="ae-btn-sm" data-action="sub-herb" data-id="${id}">−</button>
             <span class="ae-herb-count">${count}</span>
             <button class="ae-btn-sm" data-action="add-herb" data-id="${id}">+</button>
-            <button class="ae-btn-sm ae-btn-push" data-action="push-herb" data-id="${id}" data-name="${herb?.name || id}" data-qty="${count}" ${!state.charId ? 'disabled title="Kein Charakter ausgewählt"' : ''}>⬆</button>
+            <button class="ae-btn-sm ae-btn-push" data-action="push-herb" data-id="${id}" data-name="${herb?.name || id}" data-qty="${count}" ${!state.charId ? 'disabled title="Kein Charakter ausgewählt"' : 'title="Auf den Roll20-Bogen schreiben"'}>Bogen</button>
           </div>`
       })
     })
@@ -857,7 +892,7 @@ function renderInventory() {
           <button class="ae-btn-sm" data-action="sub-potion" data-id="${recipeId}">−</button>
           <span class="ae-herb-count">${count}</span>
           <button class="ae-btn-sm" data-action="add-potion" data-id="${recipeId}">+</button>
-          <button class="ae-btn-sm ae-btn-push" data-action="push-potion" data-id="${recipeId}" data-qty="${count}" ${!state.charId ? 'disabled title="Kein Charakter ausgewählt"' : ''}>⬆</button>
+          <button class="ae-btn-sm ae-btn-drink" data-action="drink-potion" data-id="${recipeId}" ${!state.charId ? 'disabled title="Kein Charakter ausgewählt"' : 'title="Effekt im Roll20-Chat würfeln, verbraucht 1"'}>Trinken</button>
         </div>`
     })
   }
@@ -906,12 +941,19 @@ function renderInventory() {
           if (cur <= 1) delete inv.potions[id]
           else inv.potions[id] = cur - 1
         }
+      } else if (action === 'drink-potion') {
+        if (!inv.potions) inv.potions = {}
+        const cur = inv.potions[id] || 0
+        if (cur <= 0) return
+        if (cur <= 1) delete inv.potions[id]
+        else inv.potions[id] = cur - 1
+        drinkPotion(id)
       } else if (action === 'push-herb') {
         const herbObj = herbs.find(h => h.id === id)
         postPushCard({
           name:        btn.dataset.name || id,
           quantity:    parseInt(btn.dataset.qty) || 1,
-          description: herbObj ? herbObj.rarity + ' Herb — ' + (herbObj.description || '').slice(0, 100) : '',
+          description: herbObj ? herbObj.rarity + ' Herb - ' + (herbObj.description || '').slice(0, 100) : '',
         }, state.charId)
         return
       } else if (action === 'push-potion') {
@@ -970,7 +1012,7 @@ function renderBrew() {
     const { available, missing } = checkAvailability(recipe)
     const slug = recipe.rarity.toLowerCase().replace(' ', '-')
     const missingHtml = missing.length
-      ? `<div class="ae-missing">⚠ Missing: ${missing.map(m => `${m.name} (${m.have}/${m.need})`).join(', ')}</div>`
+      ? `<div class="ae-missing">Fehlt: ${missing.map(m => `${m.name} (${m.have}/${m.need})`).join(', ')}</div>`
       : ''
     html += `
       <div class="ae-recipe-card ${available ? '' : 'unavailable'}" data-id="${recipe.id}">
@@ -1002,7 +1044,7 @@ function renderBrewAction(el) {
     <div id="ae-brew-area">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <h4>${recipeIcon(recipe)} ${recipe.name}</h4>
-        <button class="ae-btn-back" id="ae-brew-back">← Zurück</button>
+        <button class="ae-btn-back" id="ae-brew-back">Zurück</button>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:10px;font-size:12px;color:#888">
         <span><span class="ae-rarity ae-rarity-${slug}">${recipe.rarity}</span></span>
@@ -1016,7 +1058,7 @@ function renderBrewAction(el) {
         <button class="ae-btn-skill" id="ae-skill-load" ${state.skillLoading ? 'disabled' : ''} title="Custom Skill &quot;Alchemy&quot; vom Roll20-Bogen lesen">Vom Bogen</button>
       </div>
       ${renderSkillStatus()}
-      <button class="ae-btn-brew" id="ae-brew-btn">🎲 Würfeln &amp; Brauen</button>
+      <button class="ae-btn-brew" id="ae-brew-btn">Würfeln &amp; Brauen</button>
     </div>`
 
   document.getElementById('ae-brew-back').addEventListener('click', () => {
@@ -1027,11 +1069,11 @@ function renderBrewAction(el) {
     state.modifier = parseInt(e.target.value) || 0
     state.skillSource = 'manual'
     saveModifier(state.charId, state.modifier)
-    // update the status line in place — a full re-render would steal input focus
+    // update the status line in place - a full re-render would steal input focus
     const st = document.getElementById('ae-skill-status')
     if (st) { st.textContent = 'Bonus manuell gesetzt (gespeichert)'; st.className = 'ae-skill-status' }
   })
-  document.getElementById('ae-skill-load').addEventListener('click', loadAlchemySkill)
+  document.getElementById('ae-skill-load').addEventListener('click', () => loadAlchemySkill(true))
   document.getElementById('ae-brew-btn').addEventListener('click', doBrew)
 }
 
@@ -1056,20 +1098,19 @@ function renderBrewResult(el) {
   const r      = state.brewResult
   const recipe = state.selectedRecipe
 
-  const qualityEmoji = r.quality === 'Masterwork' ? '⭐' : r.quality === 'Superior' ? '✨' : r.quality === 'Failure' ? '❌' : r.quality === 'Critical Failure' ? '💀' : '✅'
-  const critClass    = r.critSuccess ? 'ae-crit' : r.critFail ? 'ae-crit-fail' : ''
+  const critClass = r.critSuccess ? 'ae-crit' : r.critFail ? 'ae-crit-fail' : ''
 
   el.innerHTML = `
     <div id="ae-brew-result" class="${r.success ? 'success' : 'failure'}">
       ${r.success ? `<div style="text-align:center;margin-bottom:10px">${recipeIcon(recipe)}</div>` : ''}
-      <h4>${r.success ? '✅ Erfolg!' : '❌ Fehlgeschlagen!'}</h4>
+      <h4>${r.success ? 'Erfolg!' : 'Fehlgeschlagen!'}</h4>
       <div class="ae-result-roll">
         Würfel: <strong class="${critClass}">${r.roll}${r.critSuccess ? ' (Nat 20!)' : r.critFail ? ' (Nat 1!)' : ''}</strong>
         + ${r.modifier >= 0 ? '+' : ''}${r.modifier} = <strong>${r.total}</strong> vs DC ${r.dc}
       </div>
-      <div class="ae-result-quality">${qualityEmoji} ${r.quality}</div>
+      <div class="ae-result-quality">${r.quality}</div>
       ${r.success ? `<div style="font-size:12px;color:#ccc;margin-bottom:6px">${r.scaledEffect || recipe?.effect || ''}</div>` : ''}
-      ${r.success && r.multiplier > 1 ? `<div class="ae-result-bonus">${qualityEmoji} ${r.quality}: Wirkung ×${r.multiplier} (Würfel hochgerechnet)</div>` : ''}
+      ${r.success && r.multiplier > 1 ? `<div class="ae-result-bonus">${r.quality}: Wirkung ×${r.multiplier} (Würfel hochgerechnet)</div>` : ''}
       <button class="ae-btn-back" id="ae-brew-again">Weiteres Rezept brauen</button>
     </div>`
 
@@ -1117,7 +1158,7 @@ async function doBrew() {
   else if (critSuccess)         quality = 'Masterwork'
   else if (total >= dc + 5)     quality = 'Superior'
 
-  // Consume ingredients + optionally add brewed potion — one save
+  // Consume ingredients + optionally add brewed potion - one save
   const inv = state.inventory
   if (!inv.potions) inv.potions = {}
 
@@ -1179,7 +1220,7 @@ function renderRecipes() {
           </div>
           <div class="ae-recipe-meta">DC ${recipe.dc} · ${recipe.brewTime}</div>
           ${recipe.effect ? `<div class="ae-recipe-effect">${recipe.effect}</div>` : ''}
-          ${ingList ? `<div class="ae-recipe-ingredients">🌿 ${ingList}</div>` : ''}
+          ${ingList ? `<div class="ae-recipe-ingredients">Zutaten: ${ingList}</div>` : ''}
         </div>`
     })
   })
@@ -1244,8 +1285,24 @@ function postToChat(msg) {
   setTimeout(() => btn.click(), 80)
 }
 
+// Drink a potion: post its effect to the Roll20 chat with an inline roll
+// ([[2d4+2]] triggers the 3D dice) so the table sees the result immediately.
+function drinkPotion(recipeId) {
+  const recipe = recipes.find(r => r.id === recipeId)
+  if (!recipe) return
+  const effect = recipe.effect || ''
+  const dice   = effect.match(/\d+\s*d\s*\d+(\s*[+\-]\s*\d+)?/i)?.[0]?.replace(/\s+/g, '')
+  const who    = state.charName || 'Jemand'
+  const lines = [
+    `&{template:default}`,
+    `{{name=${who} trinkt: ${recipe.name}}}`,
+    `{{Effekt=${effect}}}`,
+  ]
+  if (dice) lines.push(`{{Wurf=[[${dice}]]}}`)
+  postToChat(lines.join(' '))
+}
+
 function postBrewCard(recipe, result) {
-  const qualityEmoji = result.quality === 'Masterwork' ? '⭐' : result.quality === 'Superior' ? '✨' : result.quality === 'Failure' ? '❌' : result.quality === 'Critical Failure' ? '💀' : '✅'
   const rollText = result.critSuccess ? `${result.roll} (Natural 20!)` : result.critFail ? `${result.roll} (Natural 1!)` : `${result.roll}`
   const mod = result.modifier >= 0 ? `+${result.modifier}` : `${result.modifier}`
   const effect = result.scaledEffect || recipe.effect || ''
@@ -1255,7 +1312,7 @@ function postBrewCard(recipe, result) {
     `{{name=Aetherial Brew}}`,
     `{{Potion=${recipe.name}}}`,
     `{{Effect=${effect}}}`,
-    `{{Quality=${qualityEmoji} ${result.quality}}}`,
+    `{{Quality=${result.quality}}}`,
     `{{Roll=Alchemy (d20): ${rollText} ${mod} = ${result.total} vs DC ${result.dc}}}`,
     `{{Brew Time=${recipe.brewTime}}}`,
   ]
@@ -1278,7 +1335,7 @@ buildSidebar()
 render()
 
 // Request character list from roll20-page.js (MAIN world).
-// roll20-page.js also polls and pushes automatically — this is just an early nudge.
+// roll20-page.js also polls and pushes automatically - this is just an early nudge.
 setTimeout(loadCharacters, 1000)
 
 

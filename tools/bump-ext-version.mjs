@@ -54,4 +54,4 @@ writeFileSync(updatesPath, `<?xml version='1.0' encoding='UTF-8'?>
 
 console.log(`[bump-ext] ${previous} → ${version} (extension id ${appId})`)
 console.log(`[bump-ext] updated: manifest.json + updates.xml`)
-console.log(`[bump-ext] next: commit + push — the deploy publishes release ext-v${version}`)
+console.log(`[bump-ext] next: commit + push - the deploy publishes release ext-v${version}`)

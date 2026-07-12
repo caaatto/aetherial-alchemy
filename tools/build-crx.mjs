@@ -34,8 +34,8 @@ const CRX_URL = process.env.CRX_URL || 'https://catto.at/alchemy-ext/aetherial-r
 const manifest = JSON.parse(readFileSync(join(extDir, 'manifest.json'), 'utf8'))
 
 if (!existsSync(KEY)) {
-  // No key on this host (e.g. a dev checkout) — skip without failing the deploy.
-  console.error(`[build-crx] signing key not found at ${KEY} — skipping CRX build`)
+  // No key on this host (e.g. a dev checkout) - skip without failing the deploy.
+  console.error(`[build-crx] signing key not found at ${KEY} - skipping CRX build`)
   process.exit(0)
 }
 

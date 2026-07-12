@@ -8,9 +8,10 @@ const SCRIPT_NAME = 'AetherialSync'
 
 // Whisper helper: quote the target and strip Roll20's " (GM)" suffix,
 // otherwise whispers to multi-word display names are never delivered.
+// noarchive keeps the protocol/ack chatter out of the chat archive.
 function whisper(msg, text) {
   const who = (msg.who || '').replace(/ \(GM\)\s*$/i, '')
-  sendChat(SCRIPT_NAME, '/w "' + who + '" ' + text)
+  sendChat(SCRIPT_NAME, '/w "' + who + '" ' + text, null, { noarchive: true })
 }
 
 // getSheetItem key candidates for a custom "Alchemy" skill on Beacon sheets.

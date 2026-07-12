@@ -1,6 +1,6 @@
 // Content script injected into the Alchemy App (localhost:5173 and catto.at)
 //
-// Content scripts run in an "isolated world" — a separate JS context from the page.
+// Content scripts run in an "isolated world" - a separate JS context from the page.
 // window.foo set here is NOT visible to React, and window.dispatchEvent() here
 // does NOT reach the page's listeners. Script injection can be blocked by CSP.
 //
