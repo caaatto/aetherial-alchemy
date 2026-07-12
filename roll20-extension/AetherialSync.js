@@ -45,7 +45,8 @@ async function writeEquipmentRow(cId, rId, name, desc, qty) {
   }
   // Fallback createObj
   const p = 'repeating_equipment_' + rId + '_'
-  [[p+'name',name],[p+'description',String(desc||'')],[p+'quantity',String(qty||1)]].forEach(([an,v]) => {
+  const fields = [[p+'name',name],[p+'description',String(desc||'')],[p+'quantity',String(qty||1)]]
+  fields.forEach(([an,v]) => {
     const ex = findObjs({ _type: 'attribute', _characterid: cId, name: an })[0]
     if (ex) { ex.set('current', v) } else { createObj('attribute', { name: an, current: v, _characterid: cId }) }
   })
@@ -102,6 +103,70 @@ on('chat:message', msg => {
   })
   const items = Object.values(rows).filter(r => r.name).map(r => ({ name: r.name || '', description: r.description || '', quantity: r.quantity || 1 }))
   sendChat(SCRIPT_NAME, '/w ' + msg.who + ' AETHERIAL-INVENTORY:' + JSON.stringify(items))
+})
+
+// Read the character's custom "Alchemy" skill modifier from the sheet.
+// Usage: !brew-skill [charId] (falls back to the player's own character).
+// Finds the skill in three ways, in order:
+//   1. a classic attribute whose NAME contains "alchemy" (e.g. custom attr "alchemy_bonus")
+//   2. a repeating row whose name/label field VALUE is "Alchemy" (custom skill rows),
+//      taking the best numeric sibling field (bonus/mod/total preferred)
+//   3. Beacon sheets via getSheetItem with common key candidates
+// Answers with a whisper: AETHERIAL-SKILL:{"found":true,"modifier":N,"source":"..."}
+on('chat:message', async msg => {
+  if (!msg.content.startsWith('!brew-skill')) return
+  const argId = msg.content.split(/\s+/)[1]
+  const char = argId ? getObj('character', argId) : findCharacterForPlayer(msg.playerid)
+  const answer = payload => sendChat(SCRIPT_NAME, '/w ' + msg.who + ' AETHERIAL-SKILL:' + JSON.stringify(payload))
+  if (!char) { answer({ found: false, reason: 'no-character' }); return }
+
+  const num = v => { const n = parseInt(v, 10); return isNaN(n) ? null : n }
+  const attrs = findObjs({ _type: 'attribute', _characterid: char.id })
+  let found = null
+
+  // 1) Direct attribute, name contains "alchemy" (skip repeating rows here)
+  const rankName = n => /bonus|mod|total/i.test(n) ? 2 : /prof|flat/i.test(n) ? 0 : 1
+  const direct = attrs
+    .filter(a => /alchemy/i.test(a.get('name')) && !/^repeating_/.test(a.get('name')))
+    .sort((a, b) => rankName(b.get('name')) - rankName(a.get('name')))
+  for (const a of direct) {
+    const n = num(a.get('current'))
+    if (n !== null) { found = { modifier: n, source: a.get('name') }; break }
+  }
+
+  // 2) Repeating custom-skill row: name field says "Alchemy", numeric sibling holds the bonus
+  if (!found) {
+    const rows = {}
+    attrs.forEach(a => {
+      const m = a.get('name').match(/^(repeating_[^_]+_[^_]+)_(.+)$/)
+      if (m) { (rows[m[1]] = rows[m[1]] || {})[m[2]] = a.get('current') }
+    })
+    const rankField = f => /bonus|mod|total|value/i.test(f) ? 2 : 1
+    for (const prefix in rows) {
+      const fields = rows[prefix]
+      const isAlchemy = Object.keys(fields).some(f =>
+        /name|label|skill/i.test(f) && /alchemy/i.test(String(fields[f])))
+      if (!isAlchemy) continue
+      const best = Object.keys(fields)
+        .map(f => ({ f, n: num(fields[f]) }))
+        .filter(x => x.n !== null)
+        .sort((a, b) => rankField(b.f) - rankField(a.f))[0]
+      if (best) { found = { modifier: best.n, source: prefix + '_' + best.f }; break }
+    }
+  }
+
+  // 3) Beacon sheet values (not mirrored as classic attributes)
+  if (!found && typeof getSheetItem === 'function') {
+    const keys = ['alchemy_bonus', 'alchemy_mod', 'alchemy_total', 'alchemy']
+    for (const k of keys) {
+      try {
+        const n = num(await getSheetItem(char.id, k))
+        if (n !== null) { found = { modifier: n, source: 'beacon:' + k }; break }
+      } catch (_) {}
+    }
+  }
+
+  answer(found ? { found: true, modifier: found.modifier, source: found.source } : { found: false })
 })
 
 on('chat:message', msg => {

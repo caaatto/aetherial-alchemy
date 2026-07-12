@@ -38,11 +38,19 @@ in `api/grants-store.json`. Beides übersteht Neustarts.
 
 ## 2. Einmalig: Mod-Script für Bogen-Sync (nur GM, braucht Roll20 Pro)
 
-*Optional. Nur nötig, wenn gebraute Tränke automatisch auf den Charakterbogen sollen.*
+*Optional. Nötig, wenn gebraute Tränke automatisch auf den Charakterbogen sollen und
+die Sidebar den Custom Skill „Alchemy" für den Brau-Wurf vom Bogen lesen soll.*
 
 1. Roll20-Spiel öffnen → Zahnrad → **Mod (API) Scripts** → **New Script**.
 2. Inhalt von `roll20-extension/AetherialSync.js` einfügen → **Save Script**.
 3. Bei **D&D-2024-Beacon-Bogen**: zusätzlich **Game Settings → API Server → Experimental** aktivieren.
+
+**Alchemy-Skill:** Legt beim Charakter einen Custom Skill (oder ein Custom-Attribut)
+mit dem Namen **„Alchemy"** an. Sobald ein Spieler seinen Charakter in der Sidebar
+wählt, liest die Extension den Bonus vom Bogen und trägt ihn im Brau-Panel ein
+(Feld „Alchemy Skill Bonus", Button „Vom Bogen" lädt neu). Manuell überschreiben
+geht weiterhin. Wer das Mod-Script schon installiert hat, ersetzt es einmal durch
+die aktuelle Version aus `roll20-extension/AetherialSync.js`.
 
 Ohne Pro überspringt ihr das. Brau-Ergebnisse erscheinen dann trotzdem als Chat-Karten,
 nur ohne automatischen Bogen-Eintrag. **Das Live-Dashboard funktioniert auch ohne Pro.**
@@ -144,6 +152,7 @@ Die Spieler werden über die **Roll20-Campaign-ID** gruppiert, kein manueller Ra
 | Dashboard bleibt leer | Spieler müssen die Sidebar geöffnet **und ihren Charakter gewählt** haben. Backend erreichbar? (`catto.at/api/v1` testen) |
 | „getrennt" im Dashboard | Backend läuft nicht oder Campaign-ID falsch. |
 | Tränke landen nicht auf dem Bogen | Mod-Script installiert? Bei D&D 2024: API Server → Experimental aktiv? Charakter „Controlled by" gesetzt? |
+| Alchemy-Bonus wird nicht vom Bogen gelesen | Skill/Attribut muss „Alchemy" heißen (Groß-/Kleinschreibung egal). Mod-Script auf der aktuellen Version? Sonst Bonus manuell eintragen. |
 | GM-Gabe kommt nicht an | Spieler muss seinen Charakter in der Sidebar gewählt haben; sonst wartet die Gabe als „ausstehend" auf dem Server. |
 
 ---

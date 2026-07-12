@@ -268,6 +268,9 @@ let state = {
   tab:        'brew',          // 'inventory' | 'brew' | 'recipes' | 'herbs' | 'gm'
   selectedRecipe: null,
   modifier:   0,
+  skillSource: null,           // null | 'sheet' | 'manual' | 'missing' | 'error'
+  skillAttr:  '',              // sheet attribute the Alchemy modifier was read from
+  skillLoading: false,
   brewResult: null,
   herbSearch: '',
   // GM live dashboard
@@ -358,6 +361,7 @@ async function onCharChange(e) {
   }
   connectGrantStream(state.charId)
   render()
+  if (state.charId) loadAlchemySkill()   // async, re-renders the brew tab when done
 }
 
 // ── Read characters from Roll20 (via roll20-page.js in MAIN world) ────────────
@@ -434,6 +438,55 @@ function readSheetInventory(timeoutMs = 12000) {
     const timer = setTimeout(() => { observer.disconnect(); reject(new Error('timeout')) }, timeoutMs)
     postToChat('!brew-read')
   })
+}
+
+// Ask the Mod Script for the selected character's custom "Alchemy" skill modifier;
+// resolves with {found, modifier, source} (see !brew-skill in AetherialSync.js).
+function readSheetSkill(timeoutMs = 12000) {
+  return new Promise((resolve, reject) => {
+    const chatEl = document.querySelector('#textchat')
+    if (!chatEl) { reject(new Error('chat-not-found')); return }
+    const observer = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
+          const text = node.textContent || ''
+          const match = text.match(/AETHERIAL-SKILL:(\{.*\})/)
+          if (match) {
+            observer.disconnect(); clearTimeout(timer)
+            try { resolve(JSON.parse(match[1])) } catch (_) { resolve({ found: false }) }
+            return
+          }
+        }
+      }
+    })
+    observer.observe(chatEl, { childList: true, subtree: true })
+    const timer = setTimeout(() => { observer.disconnect(); reject(new Error('timeout')) }, timeoutMs)
+    postToChat('!brew-skill ' + (state.charId || ''))
+  })
+}
+
+// Load the Alchemy skill from the Roll20 sheet into the brew modifier.
+// Runs on character select and via the "Vom Bogen" button; manual edits win afterwards.
+async function loadAlchemySkill() {
+  if (!state.charId || state.skillLoading) return
+  state.skillLoading = true
+  state.skillSource  = null
+  state.skillAttr    = ''
+  renderBrew()
+  try {
+    const res = await readSheetSkill()
+    if (res?.found && Number.isFinite(res.modifier)) {
+      state.modifier    = res.modifier
+      state.skillSource = 'sheet'
+      state.skillAttr   = res.source || ''
+    } else {
+      state.skillSource = 'missing'
+    }
+  } catch (_) {
+    state.skillSource = 'error'
+  }
+  state.skillLoading = false
+  renderBrew()
 }
 
 // Normalize a name for matching: lowercase, strip diacritics + punctuation, collapse spaces.
@@ -937,9 +990,11 @@ function renderBrewAction(el) {
       </div>
       ${recipe.effect ? `<div style="font-size:12px;color:#aaa;margin-bottom:12px">${recipe.effect}</div>` : ''}
       <div class="ae-modifier-row">
-        <label>Alchemy Bonus (Prof + Mod)</label>
+        <label>Alchemy Skill Bonus</label>
         <input type="number" id="ae-modifier" value="${state.modifier}" min="-5" max="15">
+        <button class="ae-btn-skill" id="ae-skill-load" ${state.skillLoading ? 'disabled' : ''} title="Custom Skill &quot;Alchemy&quot; vom Roll20-Bogen lesen">Vom Bogen</button>
       </div>
+      ${renderSkillStatus()}
       <button class="ae-btn-brew" id="ae-brew-btn">🎲 Würfeln &amp; Brauen</button>
     </div>`
 
@@ -949,8 +1004,28 @@ function renderBrewAction(el) {
   })
   document.getElementById('ae-modifier').addEventListener('input', e => {
     state.modifier = parseInt(e.target.value) || 0
+    state.skillSource = 'manual'
+    // update the status line in place — a full re-render would steal input focus
+    const st = document.getElementById('ae-skill-status')
+    if (st) { st.textContent = 'Bonus manuell gesetzt'; st.className = 'ae-skill-status' }
   })
+  document.getElementById('ae-skill-load').addEventListener('click', loadAlchemySkill)
   document.getElementById('ae-brew-btn').addEventListener('click', doBrew)
+}
+
+// Status line under the modifier input: where the Alchemy bonus came from.
+function renderSkillStatus() {
+  if (state.skillLoading)
+    return '<div class="ae-skill-status" id="ae-skill-status">Lese Skill "Alchemy" vom Bogen...</div>'
+  if (state.skillSource === 'sheet')
+    return `<div class="ae-skill-status ae-skill-ok" id="ae-skill-status">Skill "Alchemy" vom Bogen übernommen (${state.skillAttr})</div>`
+  if (state.skillSource === 'missing')
+    return '<div class="ae-skill-status ae-skill-warn" id="ae-skill-status">Kein Skill "Alchemy" auf dem Bogen gefunden. Bonus manuell eintragen.</div>'
+  if (state.skillSource === 'error')
+    return '<div class="ae-skill-status ae-skill-warn" id="ae-skill-status">Bogen nicht erreichbar. Läuft das AetherialSync Mod-Script? Bonus manuell eintragen.</div>'
+  if (state.skillSource === 'manual')
+    return '<div class="ae-skill-status" id="ae-skill-status">Bonus manuell gesetzt</div>'
+  return '<div class="ae-skill-status" id="ae-skill-status"></div>'
 }
 
 function renderBrewResult(el) {
@@ -1157,7 +1232,7 @@ function postBrewCard(recipe, result) {
     `{{Potion=${recipe.name}}}`,
     `{{Effect=${effect}}}`,
     `{{Quality=${qualityEmoji} ${result.quality}}}`,
-    `{{Roll=d20: ${rollText} ${mod} = ${result.total} vs DC ${result.dc}}}`,
+    `{{Roll=Alchemy (d20): ${rollText} ${mod} = ${result.total} vs DC ${result.dc}}}`,
     `{{Brew Time=${recipe.brewTime}}}`,
   ]
   if (result.multiplier > 1) lines.push(`{{Bonus=Wirkung ×${result.multiplier} (${result.quality})}}`)

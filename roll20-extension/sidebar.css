@@ -355,6 +355,23 @@
   text-align: center;
 }
 
+.ae-btn-skill {
+  background: #2a2a4a;
+  border: 1px solid #3a3a6a;
+  color: #ccc;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.ae-btn-skill:hover { background: #3a3a6a; }
+.ae-btn-skill:disabled { opacity: 0.5; cursor: default; }
+
+.ae-skill-status { font-size: 11px; color: #888; margin: -6px 0 12px; min-height: 14px; }
+.ae-skill-status.ae-skill-ok { color: #7ee0a0; }
+.ae-skill-status.ae-skill-warn { color: #e0b060; }
+
 .ae-btn-brew {
   width: 100%;
   padding: 12px;
