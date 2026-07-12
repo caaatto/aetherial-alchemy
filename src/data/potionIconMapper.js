@@ -149,7 +149,7 @@ export const getPotionIcon = (category, tier, rarity) => {
       1: 'Small Vial - GOLD - 0000.png',
       2: 'Round Potion - GOLD - 0000.png',
       3: 'Big Vial - GOLD - 0000.png',
-      4: 'Large Bottle - GOLD - 0000.png',
+      4: 'Encased Potion - GOLD - 0000.png',
       5: 'Glowing Potion - GOLD - 0000.png'
     }
     icon = fallbackByTier[tier] || fallbackByTier[1]

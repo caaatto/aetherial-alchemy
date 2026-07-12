@@ -25,7 +25,7 @@ const POTION_ICONS = {
   resistance_poison:   { 1:'Small Vial - GREEN - 0000.png',     2:'Round Potion - GREEN - 0000.png',      3:'Large Tonic - GREEN - 0000.png',      4:'Glowing Potion - GREEN - 0000.png' },
   resistance:          { 1:'Small Bottle - TEAL - 0000.png',    2:'Classic Jar - TEAL - 0000.png',        3:'Large Jar - TEAL - 0000.png' },
 }
-const FALLBACK_ICONS = { 1:'Small Vial - GOLD - 0000.png', 2:'Round Potion - GOLD - 0000.png', 3:'Big Vial - GOLD - 0000.png', 4:'Large Bottle - GOLD - 0000.png', 5:'Glowing Potion - GOLD - 0000.png' }
+const FALLBACK_ICONS = { 1:'Small Vial - GOLD - 0000.png', 2:'Round Potion - GOLD - 0000.png', 3:'Big Vial - GOLD - 0000.png', 4:'Encased Potion - GOLD - 0000.png', 5:'Glowing Potion - GOLD - 0000.png' }
 
 function getPotionIcon(category, tier, name = '') {
   let key = category
