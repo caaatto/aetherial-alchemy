@@ -377,17 +377,17 @@
 .ae-btn-brew {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, #e94560, #f5a623);
+  background: #e94560;
   border: none;
   border-radius: 8px;
   color: #fff;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
+  transition: background 0.15s;
 }
-.ae-btn-brew:hover { opacity: 0.9; transform: translateY(-1px); }
-.ae-btn-brew:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.ae-btn-brew:hover { background: #d13a54; }
+.ae-btn-brew:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* Brew result */
 #ae-brew-result {

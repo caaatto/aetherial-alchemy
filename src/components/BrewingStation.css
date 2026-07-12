@@ -140,7 +140,7 @@
 .brew-action-button {
   font-size: 18px;
   padding: 15px 40px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--warning) 100%);
+  background: var(--accent);
 }
 
 .brew-action-button:hover {
