@@ -1121,14 +1121,54 @@ function scaleEffect(effect, mult) {
       `${r(+count)}d${sides}` + (flat ? ` ${sign} ${r(+flat)}` : ''))
 }
 
+// Roll the brew check IN Roll20: post a card with an inline roll (triggers the
+// 3D dice), then read the raw d20 back out of the rendered chat message.
+// Resolves with the natural d20 value; rejects on timeout / missing chat.
+function rollBrewInChat(recipe, timeoutMs = 10000) {
+  return new Promise((resolve, reject) => {
+    const chatEl = document.querySelector('#textchat')
+    if (!chatEl) { reject(new Error('chat-not-found')); return }
+    const who    = state.charName || 'Jemand'
+    const marker = `${who} braut: ${recipe.name}`
+    const observer = new MutationObserver((muts) => {
+      for (const m of muts) {
+        for (const node of m.addedNodes) {
+          if (node.nodeType !== 1) continue
+          if (!(node.textContent || '').includes(marker)) continue
+          const ir = node.querySelector?.('.inlinerollresult')
+          if (!ir) continue
+          observer.disconnect(); clearTimeout(timer)
+          // natural roll sits in the tooltip: Rolling 1d20+X = (<span class="basicdiceroll">N</span>)+X
+          const raw = parseInt((ir.title.match(/basicdiceroll[^>]*>(\d+)</) || [])[1], 10)
+          if (Number.isFinite(raw)) { resolve(raw); return }
+          const total = parseInt(ir.textContent, 10)
+          if (Number.isFinite(total)) { resolve(total - state.modifier); return }
+          reject(new Error('unparseable-roll'))
+          return
+        }
+      }
+    })
+    observer.observe(chatEl, { childList: true, subtree: true })
+    const timer = setTimeout(() => { observer.disconnect(); reject(new Error('timeout')) }, timeoutMs)
+    const mod = state.modifier >= 0 ? `+${state.modifier}` : `${state.modifier}`
+    postToChat(`&{template:default} {{name=${marker}}} {{Wurf=[[1d20${mod}]]}} {{DC=${recipe.dc}}}`)
+  })
+}
+
 async function doBrew() {
   const recipe = state.selectedRecipe
   if (!recipe) return
 
   const btn = document.getElementById('ae-brew-btn')
-  if (btn) btn.disabled = true
+  if (btn) { btn.disabled = true; btn.textContent = 'Würfle...' }
 
-  const roll       = Math.floor(Math.random() * 20) + 1
+  // Roll in Roll20 (3D dice, visible to the table); local roll as fallback.
+  let roll
+  try {
+    roll = await rollBrewInChat(recipe)
+  } catch (_) {
+    roll = Math.floor(Math.random() * 20) + 1
+  }
   const total      = roll + state.modifier
   const dc         = recipe.dc
   const critSuccess = roll === 20
